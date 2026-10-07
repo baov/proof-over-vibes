@@ -8,8 +8,9 @@ description: >
   belong?", "is this an entity?", "how do I split this monolith into contexts?"). Use it ALSO
   when an audit or a remediation surfaces scattered domain logic, leaking layers, or tight
   coupling between subsystems — even when the word "DDD" is never said. The
-  ai-code-remediation, codebase-cartographer and codebase-harness skills may invoke this skill
-  to qualify design symptoms or to produce architecture invariants.
+  ai-code-remediation skill invokes it to qualify design symptoms. It reads the
+  codebase-cartographer output when it exists, and hands confirmed boundaries to
+  codebase-harness to become architecture invariants.
 ---
 
 # DDD Advisor

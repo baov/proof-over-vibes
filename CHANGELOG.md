@@ -4,10 +4,11 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
-No skill changed: all ten `SKILL.md` files are still identical to 0.1.0. What
-follows corrects the repository's own documentation and one overstated claim —
-it concerns contributors, not anyone installing the skills, which is why it
-carries no version of its own.
+One `SKILL.md` changed, and only the last sentence of its `description`: nine of
+the ten are still identical to 0.1.0, and the triggers of the tenth are untouched.
+What follows corrects the repository's own documentation, two overstated claims
+and one description — it concerns contributors more than anyone installing the
+skills, which is why it carries no version of its own.
 
 ### Changed
 
@@ -22,6 +23,12 @@ carries no version of its own.
   entirely English and checked like every other file.
 
 ### Fixed
+
+- The `description` of `ddd-advisor` said that `codebase-cartographer` and
+  `codebase-harness` may invoke it. Neither does: only `ai-code-remediation`
+  invokes it, `ddd-advisor` reads the cartographer's glossary, and it hands
+  confirmed boundaries to `codebase-harness`, not the reverse. The description now
+  says so, as the body of the skill, the README and `workflows.md` already did.
 
 - 0.1.0 described the glossary as "mechanically enforced" and the check as
   catching "off-glossary vocabulary". Both overstated it. The script catches
