@@ -32,7 +32,7 @@ Conformant to the [Agent Skills specification](https://agentskills.io/specificat
 
 ## Agent roles
 
-The skills can also be chained without a human in the loop: eleven roles, one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — each loading the skills that fit its job. A ticket goes in, a merge request comes out, and a person is called only on escalation.
+The skills can also be chained without a human in the loop: eleven roles, one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — each loading the skills that fit its job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
 
 The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
 

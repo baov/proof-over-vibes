@@ -52,8 +52,11 @@ used once, in one file, does not need an entry.
 | drift | divergence, rot, staleness | Documentation or tests falling out of step |
 | silent auto-fix | autofix | Always named to be forbidden |
 | role | persona, profile, actor | One file in `agents/`: the Orchestrator, the Reviewer… Capitalized when named |
+| request | job, task, work item | What starts a run: a prompt, or a ticket |
+| tracker | ticketing tool, issue system | Where tickets live. Never named: any tracker works |
 | brief | task file, ticket summary, spec | The file the Orchestrator writes first; every role reads it |
 | hand-off | handover, relay, transfer | A role passing its result to the next through a file |
+| merge gate | CI merge, merge check, release gate | The last step before the merge, outside the agents: a CI, or a person where there is none |
 | escalation | handover to a human, bubble-up | A run stopping to call a person |
 | iteration | cycle, round, loop turn | One Developer-to-Reviewer round, counted toward the limit of 5 |
 

@@ -14,7 +14,7 @@ The brief, the plan, every review report in `.reviews/`, and the developer's han
 ## What you do
 
 1. Find the pattern across the iterations: a rule that was unclear, an invariant that does not exist, a plan that left a behavior open, a check that passed when it should not have.
-2. Propose the improvement as a new plan in `.plans/<slug>-harness-improvement.md`. It is meant for a separate merge request: it must stand on its own, and it must not touch the code of the change that failed.
+2. Propose the improvement as a new plan in `.plans/<slug>-harness-improvement.md`. It is meant for a separate merge request (a pull request, on some platforms): it must stand on its own, and it must not touch the code of the change that failed.
 
 ## What you never do
 

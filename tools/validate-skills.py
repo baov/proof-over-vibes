@@ -30,6 +30,12 @@ MODEL_NAMES = re.compile(
     re.IGNORECASE,
 )
 
+# Same idea for the tracker: a role says "the tracker" and works with any.
+TRACKER_NAMES = re.compile(
+    r"\b(jira|linear|trello|asana|youtrack|clickup|azure devops|gitlab issues|github issues)\b",
+    re.IGNORECASE,
+)
+
 # Ends the multi-line literal string `install.sh` builds for Codex.
 TOML_LITERAL_DELIMITER = "'" * 3
 
@@ -46,6 +52,7 @@ RULES = [
     ("INV-AGENT-003", "error", f"`description` on one line, non-empty, <= {MAX_DESCRIPTION} characters"),
     ("INV-AGENT-004", "error", "No model name in a role: it inherits the session's model"),
     ("INV-AGENT-005", "error", "The body holds no run of three apostrophes (it would end the string generated for Codex)"),
+    ("INV-AGENT-006", "error", "No tracker named in a role: a request is a prompt or a ticket, from any tool"),
 ]
 
 
@@ -216,6 +223,12 @@ def validate_agent(file: Path, root: Path, violations: list) -> None:
             violations.append((
                 "error", f"{path}:{number}: [INV-AGENT-004] `{match.group(0)}` names a model"
                 " — a role carries none: it inherits the model of the session, whatever the vendor"
+            ))
+        tracker = TRACKER_NAMES.search(line)
+        if tracker:
+            violations.append((
+                "error", f"{path}:{number}: [INV-AGENT-006] `{tracker.group(0)}` names a tracker"
+                " — write \"the tracker\": the organization works with any"
             ))
         if TOML_LITERAL_DELIMITER in line and number > frontmatter_end + 1:
             violations.append((
