@@ -4,13 +4,21 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
-No skill changed: all ten `SKILL.md` files are still identical to 0.1.0. What
-follows corrects the repository's own documentation and one overstated claim —
-it concerns contributors, not anyone installing the skills, which is why it
-carries no version of its own.
+No skill changed: all ten `SKILL.md` files are still identical to 0.1.0. What is
+new is the layer of agent roles above them; the rest corrects the repository's
+own documentation and one overstated claim.
+
+### Added
+
+- Agent roles: eleven files in `agents/` — Orchestrator, Product Owner, Cartographer, Harness Engineer, Planner, Developer, Diagnostician, Reviewer, Failure Analyst, Auditor, Coach — each loading the skills that fit its job, and handing its result to the next through a file. They carry no model and no reasoning effort: each inherits the session's.
+- `docs/agent-organization.md` — the flows, the governance, the 5-iteration loop, the hand-off contract, the metrics, and the open risks.
+- `install.sh --with-agents` installs the roles for Claude Code and Gemini CLI (linked or copied) and for Codex (generated as TOML). `--client` now also accepts `codex` and `gemini`. The Codex and Gemini CLI adapters are written from their documentation and not yet run end to end.
+- `tools/validate-skills.py` checks the roles: name matching the file, one-line `description`, no model name.
+- `docs/glossary.md` gains `role`, `brief`, `hand-off`, `escalation` and `iteration`, and the hand-off front-matter contract.
 
 ### Changed
 
+- `AGENTS.md` forbids a model name anywhere in `agents/`, and limits naming a client to where it cannot be avoided.
 - `docs/glossary.md` is now indexed on the English term rather than on the French
   one it replaced. The French column was migration scaffolding — it forced ten
   parallel translators onto one word per term — and it pointed at the wrong risk

@@ -2,6 +2,8 @@
 
 Ten skills, two families, and one rule: artifacts circulate, and skills are never called into a vacuum.
 
+Everything below is the chain run by hand. To run it with a team of agents — a Planner, a Developer, a Reviewer, and the roles around them — see [docs/agent-organization.md](docs/agent-organization.md).
+
 ## Two families
 
 **Entry points** — invoked by a user request.

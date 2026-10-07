@@ -30,6 +30,12 @@ Conformant to the [Agent Skills specification](https://agentskills.io/specificat
 | [`ddd-advisor`](skills/ddd-advisor) | Domain-Driven Design audit and guidance | `ai-code-remediation` |
 | [`clarify-with-choices`](skills/clarify-with-choices) | Multiple-choice validation doctrine, and its degraded mode per host agent | `codebase-cartographer`, `codebase-harness`, `ddd-advisor` |
 
+## Agent roles
+
+The skills can also be chained without a human in the loop: eleven roles, one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — each loading the skills that fit its job. A ticket goes in, a merge request comes out, and a person is called only on escalation.
+
+The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
+
 ## How to chain them
 
 The nominal case — a feature on an already-tooled project:
@@ -49,6 +55,14 @@ The other cases (a production bug, a vibe-coded codebase, hollow tests…), how 
 ```
 
 The script lays down symlinks — repository updates are picked up without reinstalling. `--copy` produces independent copies, `--help` details the options.
+
+To install the agent roles as well, add `--with-agents`. They are written for Claude Code (`.claude/agents/`), Codex (`.codex/agents/`, generated as TOML) and Gemini CLI (`.gemini/agents/`):
+
+```bash
+./install.sh --scope project --into ~/projects/my-app --with-agents
+```
+
+Off by default, because a role acts on its own. The Codex and Gemini CLI adapters are written from their documentation and have not been run end to end: report what you find.
 
 By hand, if you prefer: skills are folders, so just put them where the client looks for them.
 
@@ -93,4 +107,4 @@ python3 tools/validate-skills.py --root .
 tools/check-glossary.sh
 ```
 
-No dependency to install. The validator covers the specification's rules (name, the 1024-character cap on `description`, name/folder match) and flags any `SKILL.md` over 500 lines. The glossary check catches leftover French; the one-word-per-concept rule binds the writer and is caught in review, since its rejected synonyms are ordinary English elsewhere. Both run in pre-commit (`pre-commit install`) and in CI. `--explain` describes each rule without checking anything.
+No dependency to install. The validator covers the specification's rules (name, the 1024-character cap on `description`, name/folder match) and flags any `SKILL.md` over 500 lines. It also checks the agent roles: a name matching the file, a one-line `description`, and no model name anywhere. The glossary check catches leftover French; the one-word-per-concept rule binds the writer and is caught in review, since its rejected synonyms are ordinary English elsewhere. Both run in pre-commit (`pre-commit install`) and in CI. `--explain` describes each rule without checking anything.

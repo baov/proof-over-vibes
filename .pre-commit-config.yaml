@@ -8,11 +8,11 @@ repos:
   - repo: local
     hooks:
       - id: validate-skills
-        name: skills conform to the Agent Skills spec
+        name: skills conform to the Agent Skills spec, roles to the agent contract
         entry: python3 tools/validate-skills.py --root .
         language: system
         pass_filenames: false
-        files: ^skills/.*\.md$
+        files: ^(skills|agents)/.*\.md$
       - id: check-glossary
         name: repository is English, and on-glossary
         entry: tools/check-glossary.sh
