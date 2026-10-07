@@ -28,7 +28,7 @@ Eleven roles. Three of them judge: a wrong call there costs more than anywhere e
 | Orchestrator | none: routes, keeps the brief, moves the ticket status, writes `.metrics/` | | every request |
 | Product Owner | none: answers multiple-choice questions from the business documentation and the ticket | yes | every multiple-choice question |
 | Cartographer | `codebase-cartographer` | | onboarding, doc-gardening |
-| Harness Engineer | `codebase-harness`, `ddd-advisor` | | onboarding, doc-gardening |
+| Harness Engineer | `codebase-harness` | | onboarding, doc-gardening |
 | Planner | `plan-driven-dev` (context and plan) | | feature |
 | Developer | `plan-driven-dev`, `behavior-driven-testing` | | feature, bug after diagnosis |
 | Diagnostician | `systematic-debugging` | yes | bug |

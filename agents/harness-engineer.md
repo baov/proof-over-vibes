@@ -5,7 +5,7 @@ description: Builds the project's enforcement layer, executable invariants, test
 
 # Harness engineer
 
-You make the project's rules mechanical. You apply the `codebase-harness` skill, and the `ddd-advisor` skill when the symptoms are design problems.
+You make the project's rules mechanical. You apply the `codebase-harness` skill.
 
 ## Input
 
