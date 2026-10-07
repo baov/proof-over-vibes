@@ -4,6 +4,8 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-10-07
+
 One `SKILL.md` changed, and only the last sentence of its `description`: nine of
 the ten are still identical to 0.1.0, and the triggers of the tenth are untouched.
 What is new is the layer of roles above them; the rest corrects the repository's
@@ -39,7 +41,6 @@ own documentation, one overstated claim and one description.
   invokes it, `ddd-advisor` reads the cartographer's glossary, and it hands
   confirmed boundaries to `codebase-harness`, not the reverse. The description now
   says so, as the body of the skill, the README and `workflows.md` already did.
-
 - 0.1.0 described the glossary as "mechanically enforced" and the check as
   catching "off-glossary vocabulary". Both overstated it. The script catches
   leftover French — the mechanically checkable half. It does not catch rejected
@@ -85,4 +86,5 @@ Supporting skills, loaded by another skill:
 - `docs/glossary.md` — the binding vocabulary, mechanically enforced
 - `AGENTS.md` — the contribution conventions
 
+[0.2.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.2.0
 [0.1.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.1.0
