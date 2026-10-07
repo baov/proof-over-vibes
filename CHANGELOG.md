@@ -6,12 +6,22 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 One `SKILL.md` changed, and only the last sentence of its `description`: nine of
 the ten are still identical to 0.1.0, and the triggers of the tenth are untouched.
-What follows corrects the repository's own documentation, two overstated claims
-and one description — it concerns contributors more than anyone installing the
-skills, which is why it carries no version of its own.
+What is new is the layer of roles above them; the rest corrects the repository's
+own documentation, one overstated claim and one description.
+
+### Added
+
+- Agent roles: eleven files in `agents/` — Orchestrator, Product Owner, Cartographer, Harness Engineer, Planner, Developer, Diagnostician, Reviewer, Failure Analyst, Auditor, Coach — most of them loading the skills that fit their job, all of them handing their result to the next through a file. They carry no model, no reasoning effort and no tracker: each inherits the session's model, and a request is a prompt or a ticket from any tracker.
+- A merge gate ends every run, outside the agents: the CI where there is one, a person otherwise (the default), or a local script a person starts. The Orchestrator never merges.
+- `docs/agent-organization.svg` — the diagram of the flows, standalone, with a dark mode.
+- `docs/agent-organization.md` — the flows, the governance, the 5-iteration loop, the hand-off contract, the metrics, and the open risks.
+- `install.sh --with-agents` installs the roles for Claude Code and Gemini CLI (linked or copied) and for Codex (generated as TOML). `--client` now also accepts `codex` and `gemini`. The Codex and Gemini CLI adapters are written from their documentation and not yet run end to end.
+- `tools/validate-skills.py` checks the roles: name matching the file, one-line `description`, no model name, no tracker name.
+- `docs/glossary.md` gains `role`, `brief`, `hand-off`, `escalation` and `iteration`, and the hand-off front-matter contract.
 
 ### Changed
 
+- `AGENTS.md` forbids a model name anywhere in `agents/`, and limits naming a client to where it cannot be avoided.
 - `docs/glossary.md` is now indexed on the English term rather than on the French
   one it replaced. The French column was migration scaffolding — it forced ten
   parallel translators onto one word per term — and it pointed at the wrong risk

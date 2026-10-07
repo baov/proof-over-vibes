@@ -4,7 +4,7 @@
 
 Software development skills for AI agents — a disciplined workflow, mechanical enforcement, defect-oriented review.
 
-Ten skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review.
+Ten skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review. An optional layer of roles chains them for you, calling on a person only where a decision is needed.
 
 Conformant to the [Agent Skills specification](https://agentskills.io/specification), so they load natively — with their description-based triggering — in Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, Amp, OpenCode and every other conformant client.
 
@@ -41,6 +41,12 @@ plan-driven-dev → premerge-review             (on every feature or bug)
 
 The other cases (a production bug, a vibe-coded codebase, hollow tests…), how artifacts circulate between skills, and the common chaining mistakes are in **[workflows.md](workflows.md)**.
 
+## Roles: an optional layer
+
+The skills work on their own, chained by you or by your agent as above. If you want the chain to run without a human in the loop, an optional layer of eleven roles sits on top: one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — most of them loading the skills that fit their job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
+
+The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
+
 ## Installation
 
 ```bash
@@ -49,6 +55,14 @@ The other cases (a production bug, a vibe-coded codebase, hollow tests…), how 
 ```
 
 The script lays down symlinks — repository updates are picked up without reinstalling. `--copy` produces independent copies, `--help` details the options.
+
+To install the agent roles as well, add `--with-agents`. They are written for Claude Code (`.claude/agents/`), Codex (`.codex/agents/`, generated as TOML) and Gemini CLI (`.gemini/agents/`):
+
+```bash
+./install.sh --scope project --into ~/projects/my-app --with-agents
+```
+
+Off by default, because a role acts on its own. The Codex and Gemini CLI adapters are written from their documentation and have not been run end to end: report what you find.
 
 By hand, if you prefer: skills are folders, so just put them where the client looks for them.
 
@@ -93,4 +107,4 @@ python3 tools/validate-skills.py --root .
 tools/check-glossary.sh
 ```
 
-No dependency to install. The validator covers the specification's rules (name, the 1024-character cap on `description`, name/folder match) and flags any `SKILL.md` over 500 lines. The glossary check catches leftover French; the one-word-per-concept rule binds the writer and is caught in review, since its rejected synonyms are ordinary English elsewhere. Both run in pre-commit (`pre-commit install`) and in CI. `--explain` describes each rule without checking anything.
+No dependency to install. The validator covers the specification's rules (name, the 1024-character cap on `description`, name/folder match) and flags any `SKILL.md` over 500 lines. It also checks the agent roles: a name matching the file, a one-line `description`, and no model or tracker name anywhere. The glossary check catches leftover French; the one-word-per-concept rule binds the writer and is caught in review, since its rejected synonyms are ordinary English elsewhere. Both run in pre-commit (`pre-commit install`) and in CI. `--explain` describes each rule without checking anything.

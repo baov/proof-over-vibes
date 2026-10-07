@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Validates this repository's skills against the Agent Skills specification.
+"""Validates this repository's skills against the Agent Skills specification,
+and its agent roles against the contract `install.sh` relies on.
 
 Reference: https://agentskills.io/specification
 
@@ -22,6 +23,22 @@ MAX_BODY_LINES = 500  # a spec recommendation, not a rule: severity warn
 
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
+# A role names no model: it inherits the session's. The list is not meant to be
+# exhaustive, only to catch the slip: a family name written out of habit.
+MODEL_NAMES = re.compile(
+    r"\b(opus|sonnet|haiku|fable|claude-\d|gpt-?\d|chatgpt|o[134]-(mini|pro)|gemini-?\d?|llama|mistral)\b",
+    re.IGNORECASE,
+)
+
+# Same idea for the tracker: a role says "the tracker" and works with any.
+TRACKER_NAMES = re.compile(
+    r"\b(jira|linear|trello|asana|youtrack|clickup|azure devops|gitlab issues|github issues)\b",
+    re.IGNORECASE,
+)
+
+# Ends the multi-line literal string `install.sh` builds for Codex.
+TOML_LITERAL_DELIMITER = "'" * 3
+
 RULES = [
     ("INV-SKILL-001", "error", "Every skill folder holds a SKILL.md"),
     ("INV-SKILL-002", "error", "SKILL.md opens on a YAML frontmatter delimited by ---"),
@@ -30,12 +47,18 @@ RULES = [
     ("INV-SKILL-005", "error", f"`description` present, non-empty, <= {MAX_DESCRIPTION} characters"),
     ("INV-SKILL-006", "error", f"`compatibility`, if present, <= {MAX_COMPATIBILITY} characters"),
     ("INV-SKILL-007", "warn", f"The SKILL.md body stays under {MAX_BODY_LINES} lines"),
+    ("INV-AGENT-001", "error", "Every agents/*.md opens on a YAML frontmatter delimited by ---"),
+    ("INV-AGENT-002", "error", "`name`: same pattern as a skill, and matches the file name"),
+    ("INV-AGENT-003", "error", f"`description` on one line, non-empty, <= {MAX_DESCRIPTION} characters"),
+    ("INV-AGENT-004", "error", "No model name in a role: it inherits the session's model"),
+    ("INV-AGENT-005", "error", "The body holds no run of three apostrophes (it would end the string generated for Codex)"),
+    ("INV-AGENT-006", "error", "No tracker named in a role: a request is a prompt or a ticket, from any tool"),
 ]
 
 
 def explain() -> None:
     print("Validating skills against the Agent Skills specification")
-    print("Scope: every subfolder of skills/ holding a SKILL.md\n")
+    print("Scope: every subfolder of skills/ holding a SKILL.md, and every agents/*.md\n")
     for code, severity, statement in RULES:
         print(f"  {code} [{severity:5}] {statement}")
     print("\nExit codes: 0 conformant - 1 error violation - 2 warnings only")
@@ -156,6 +179,64 @@ def validate_skill(folder: Path, root: Path, violations: list) -> None:
         ))
 
 
+def validate_agent(file: Path, root: Path, violations: list) -> None:
+    path = file.relative_to(root)
+    lines = file.read_text(encoding="utf-8").splitlines()
+    fields, frontmatter_end = read_frontmatter(lines)
+
+    if fields is None:
+        violations.append((
+            "error", f"{path}:1: [INV-AGENT-001] YAML frontmatter missing or never closed"
+            " — line 1 must be `---`, then `name` and `description`, then a closing `---`"
+        ))
+        return
+
+    name = fields.get("name", "").strip().strip("\"'")
+    if not NAME_PATTERN.match(name) or count_characters(name) > MAX_NAME:
+        violations.append((
+            "error", f"{path}:2: [INV-AGENT-002] `name: {name}` is invalid"
+            f" — 1 to {MAX_NAME} characters from [a-z0-9-], no leading or trailing hyphen"
+        ))
+    elif name != file.stem:
+        violations.append((
+            "error", f"{path}:2: [INV-AGENT-002] `name: {name}` != file `{file.name}`"
+            f" — rename the field to `{file.stem}`, or rename the file to `{name}.md`"
+        ))
+
+    description = fields.get("description", "").strip().strip("\"'")
+    header = next((l for l in lines[1:frontmatter_end] if l.startswith("description:")), "")
+    is_block = header.split(":", 1)[1].strip() in (">", "|", ">-", "|-")
+    if not description or is_block:
+        violations.append((
+            "error", f"{path}:3: [INV-AGENT-003] `description` missing, empty, or spread over"
+            " several lines — `install.sh` reads it as a single line to build the Codex file"
+        ))
+    elif count_characters(description) > MAX_DESCRIPTION:
+        violations.append((
+            "error", f"{path}:3: [INV-AGENT-003] `description` is {count_characters(description)}"
+            f" characters (max {MAX_DESCRIPTION})"
+        ))
+
+    for number, line in enumerate(lines, start=1):
+        match = MODEL_NAMES.search(line)
+        if match:
+            violations.append((
+                "error", f"{path}:{number}: [INV-AGENT-004] `{match.group(0)}` names a model"
+                " — a role carries none: it inherits the model of the session, whatever the vendor"
+            ))
+        tracker = TRACKER_NAMES.search(line)
+        if tracker:
+            violations.append((
+                "error", f"{path}:{number}: [INV-AGENT-006] `{tracker.group(0)}` names a tracker"
+                " — write \"the tracker\": the organization works with any"
+            ))
+        if TOML_LITERAL_DELIMITER in line and number > frontmatter_end + 1:
+            violations.append((
+                "error", f"{path}:{number}: [INV-AGENT-005] three apostrophes in a row in the body"
+                " — they would close early the string generated for Codex"
+            ))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validates skills against the Agent Skills spec.")
     parser.add_argument("--explain", action="store_true", help="describe the rules without checking anything")
@@ -177,6 +258,11 @@ def main() -> int:
     for folder in folders:
         validate_skill(folder, root, violations)
 
+    agents_folder = root / "agents"
+    agents = sorted(agents_folder.glob("*.md")) if agents_folder.is_dir() else []
+    for file in agents:
+        validate_agent(file, root, violations)
+
     for severity, message in violations:
         print(message)
 
@@ -184,10 +270,13 @@ def main() -> int:
     warnings = len(violations) - errors
 
     if not violations:
-        print(f"{len(folders)} skills validated, no violation.")
+        print(f"{len(folders)} skills and {len(agents)} agent roles validated, no violation.")
         return 0
 
-    print(f"\n{len(folders)} skills validated — {errors} error, {warnings} warn.", file=sys.stderr)
+    print(
+        f"\n{len(folders)} skills and {len(agents)} agent roles validated — {errors} error, {warnings} warn.",
+        file=sys.stderr,
+    )
     return 1 if errors else 2
 
 
