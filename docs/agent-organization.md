@@ -4,7 +4,7 @@ The skills of this repository can be chained by hand ([workflows.md](../workflow
 
 A request is either a prompt, which is the request itself, or a ticket in whatever tracker the project uses. The organization names no tracker: the Orchestrator reads a ticket with the access the client gives it, or asks the human to paste it.
 
-Each role is one file in [`agents/`](../agents), and loads one or more skills. The files carry no model name and no reasoning effort: they work with any model, and each role inherits the one your session runs on.
+Each role is one file in [`agents/`](../agents), and most of them load skills. The files carry no model name and no reasoning effort: they work with any model, and each role inherits the one your session runs on.
 
 ## Principles
 
@@ -81,7 +81,7 @@ Roles share no context. Everything passes through files of the repository: the o
 
 | File | Written by | Read by |
 |---|---|---|
-| Brief (`.plans/<slug>-brief.md`) | Orchestrator | every role |
+| Brief (`.plans/<slug>-brief.md`) | Orchestrator | every role it runs |
 | Answers (`.plans/<slug>-answers.md`) | Product Owner | Orchestrator, the role that asked |
 | Plan (`.plans/<slug>.md`) | Planner | Developer, Reviewer |
 | Hand-off note (`.plans/<slug>-<role>.md`) | Cartographer, Harness Engineer, Developer, Diagnostician | Orchestrator |

@@ -13,7 +13,7 @@ A request, in one of two forms: a prompt, which is the request itself, or a refe
 
 ## What you do
 
-1. **Write the brief** to `.plans/<slug>-brief.md`: the objective, the acceptance criteria, the request type (ticket or prompt) and the iteration counter, which starts at 0. Every other role reads it.
+1. **Write the brief** to `.plans/<slug>-brief.md`: the objective, the acceptance criteria, the request type (ticket or prompt) and the iteration counter, which starts at 0. Every role you run reads it.
 2. **Route.**
    - Feature: `planner`, then `developer` and `reviewer` in a loop.
    - Bug: `diagnostician`, then `reviewer` checks its proof, then `developer` and `reviewer` in a loop.

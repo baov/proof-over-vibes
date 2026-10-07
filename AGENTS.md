@@ -2,13 +2,13 @@
 
 Contribution conventions for this repository. They apply to every agent that writes here.
 
-This repository **produces** skills, and the agent roles that chain them; it does not consume them for itself. To know which skill to use in a project, see [workflows.md](workflows.md). For the organization of roles, see [docs/agent-organization.md](docs/agent-organization.md).
+This repository **produces** skills, and the roles that chain them; it does not consume them for itself. To know which skill to use in a project, see [workflows.md](workflows.md). For the organization of roles, see [docs/agent-organization.md](docs/agent-organization.md).
 
 ## Format
 
 Every skill is a folder under `skills/` conforming to the [Agent Skills specification](https://agentskills.io/specification): a `SKILL.md` with `name` and `description` in its frontmatter, the detail in `references/`.
 
-The agent roles are files under `agents/`, one per role: a frontmatter with `name` and `description` (nothing else), the prompt as the body. `install.sh` turns them into each client's own format. The validator checks them too.
+The roles are files under `agents/`, one per role: a frontmatter with `name` and `description` (nothing else), the prompt as the body. `install.sh` turns them into each client's own format. The validator checks them too.
 
 Before any commit:
 
