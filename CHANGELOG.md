@@ -4,6 +4,26 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-18
+
+Two roles and one skill for the work upstream of the plan: what to build, and
+how it is structured. The Product Owner and the flow of a feature change with
+them. The roles are written from the design and have not yet run end to end.
+
+### Added
+
+- `product-strategy` — a skill for the epic and the feature, never the user story: market watch (competitors, blue or red ocean), vision and roadmap, story map, a prioritized backlog, and the PRD of one chosen feature, written on demand. Everything goes under `docs/product/`; its conclusions are hypotheses the user validates, and without web access it says so and marks what it could not check.
+- `agents/product-manager.md` — the Product Manager. It runs outside a run, only at the human's request, and starts none: the human picks a backlog item and creates the request, citing its PRD. On an existing product it maps the features already built as `done`, citing the business documentation. It judges, and its questions go to the human, never to the Product Owner.
+- `agents/architect.md` — the Architect. It decides the structure before the Planner plans, once per feature, and exits at once when there is nothing to decide. A choice costly to reverse goes to the human; a lasting decision becomes an ADR; debt it meets becomes an ADR with the status `proposed`, without blocking the feature. On an empty project it runs first, with the Harness Engineer, and proposes the architectural style as ADR-0001. It judges.
+- `structure: unchanged | decided | escalated` in the hand-off front-matter, written by the Architect only, in `docs/glossary.md`.
+
+### Changed
+
+- The Product Owner cuts a picked feature into ordered user stories from its PRD, the story map and the business documentation, and writes them to `.plans/<slug>-stories.md`. It keeps answering multiple-choice questions, and still never touches the roadmap or the story map.
+- A feature now flows `Orchestrator → Product Owner → Architect → for each story: Planner → Developer ⇄ Reviewer → merge gate`. The Orchestrator runs the stories one by one, each with its own brief, iteration counter and merge request, and stops at the first escalation. A request that is a single story skips the Product Owner. The Planner stops with `status: blocked` when a story needs a structural decision, and the Architect runs again for that story.
+- The Harness Engineer turns each ADR of the Architect into an invariant, starting in `warn`.
+- `docs/agent-organization.md` and `README.md` now count thirteen roles, five of them judging. `docs/agent-organization.svg` is redrawn: idea, feature, bug and escalation paths. `workflows.md` lists `product-strategy` among the entry points.
+
 ## [0.2.0] — 2026-10-07
 
 One `SKILL.md` changed, and only the last sentence of its `description`: nine of
@@ -86,5 +106,6 @@ Supporting skills, loaded by another skill:
 - `docs/glossary.md` — the binding vocabulary, mechanically enforced
 - `AGENTS.md` — the contribution conventions
 
+[0.3.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.3.0
 [0.2.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.2.0
 [0.1.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.1.0
