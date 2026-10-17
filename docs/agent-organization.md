@@ -21,7 +21,7 @@ Specific to the organization:
 
 ## The roles
 
-Eleven roles. Three of them judge: a wrong call there costs more than anywhere else.
+Twelve roles. Four of them judge: a wrong call there costs more than anywhere else.
 
 | Role | Skills loaded | Judges | Steps in |
 |---|---|---|---|
@@ -29,6 +29,7 @@ Eleven roles. Three of them judge: a wrong call there costs more than anywhere e
 | Product Owner | none: answers multiple-choice questions from the business documentation and the ticket | yes | every multiple-choice question |
 | Cartographer | `codebase-cartographer` | | onboarding, doc-gardening |
 | Harness Engineer | `codebase-harness` | | onboarding, doc-gardening |
+| Architect | `ddd-advisor` | yes | every feature, empty project |
 | Planner | `plan-driven-dev` (context and plan) | | feature |
 | Developer | `plan-driven-dev`, `behavior-driven-testing` | | feature, bug after diagnosis |
 | Diagnostician | `systematic-debugging` | yes | bug |
@@ -44,22 +45,24 @@ Eleven roles. Three of them judge: a wrong call there costs more than anywhere e
 The same flows in text:
 
 ```
-Feature   Orchestrator → Planner → Developer ⇄ Reviewer → merge gate
+Feature   Orchestrator → Architect → Planner → Developer ⇄ Reviewer → merge gate
 Bug       Orchestrator → Diagnostician → Reviewer (checks the proof) → Developer ⇄ Reviewer → merge gate
+Empty     Orchestrator → Architect → Harness Engineer (before any feature)
 Outside   Cartographer → Harness Engineer (onboarding, doc-gardening)
 a ticket  Auditor (when the Orchestrator decides)
           Coach (when the human asks)
 ```
 
-A feature goes through the Planner. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer and the Reviewer loop until a GO, and the merge gate takes over.
+A feature goes through the Architect, which exits at once when there is nothing to decide, then through the Planner. On an empty project the Architect and the Harness Engineer lay the foundations first. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer and the Reviewer loop until a GO, and the merge gate takes over.
 
 ## Governance
 
 A person steps in on escalation, and to merge where the project has no CI. Otherwise the merge happens at the merge gate: quality rests on the Product Owner, the Reviewer and the harness.
 
 - **Multiple-choice questions.** The Product Owner answers, relying on the business documentation the Cartographer wrote and on the ticket, when there is one. When the sources do not settle a question, it escalates to the human.
-- **Escalation to the human.** The Product Owner doubts; the diff touches a sensitive zone (security, data, migration); or the Failure Analyst has run and the loop still has no GO.
+- **Escalation to the human.** The Product Owner doubts; the Architect meets a choice that is costly to reverse (superseding an ADR, changing the stack, adding a dependency or service, breaking a public contract, choosing the architectural style of an empty project); the diff touches a sensitive zone (security, data, migration); or the Failure Analyst has run and the loop still has no GO.
 - **Merge gate.** The last step before the merge, and always outside the agents. With a CI, the CI merges when the Reviewer returns a GO and the checks are green, with no systematic human approval. With none, the default is that a person merges: the run ends on "GO, ready to merge". A project can instead run a local script that rereads the verdict, replays the gauntlet and merges, started by a person. Whichever applies, the Orchestrator never merges.
+- **Technical debt.** The Architect proposes a migration or a refactor as an ADR with the status `proposed`, and never blocks the feature in hand for it. If the human accepts, they create the request themselves; the Orchestrator does not watch the ADRs.
 - **Tracker.** Every role comments its step on the ticket; only the Orchestrator changes its status. A prompt has no ticket.
 - **Writing to the code.** The Reviewer and the Diagnostician do not modify code. That rule is an instruction in their prompt, with no technical restriction. It cannot be enforced by removing their write tool either: each of them has to write a file, the review report and the proof.
 
@@ -83,6 +86,8 @@ Roles share no context. Everything passes through files of the repository: the o
 |---|---|---|
 | Brief (`.plans/<slug>-brief.md`) | Orchestrator | every role it runs |
 | Answers (`.plans/<slug>-answers.md`) | Product Owner | Orchestrator, the role that asked |
+| Architect's note (`.plans/<slug>-architect.md`) | Architect | Planner, Orchestrator |
+| ADR (`docs/technical/adr/`) | Architect, Cartographer | Harness Engineer, Planner |
 | Plan (`.plans/<slug>.md`) | Planner | Developer, Reviewer |
 | Hand-off note (`.plans/<slug>-<role>.md`) | Cartographer, Harness Engineer, Developer, Diagnostician | Orchestrator |
 | Review report (`.reviews/`) | Reviewer | Orchestrator, Developer |
@@ -105,7 +110,7 @@ severity: major         # blocking | major | minor, when there is something to r
 
 The roles name no model and no reasoning effort. Each one inherits what your session runs on, so the organization works with any model.
 
-The three roles that judge are marked in the table above. Give them your most capable model, or your highest reasoning effort, in the settings of your client: it is where an error costs most. The other roles do not need it.
+The four roles that judge are marked in the table above. Give them your most capable model, or your highest reasoning effort, in the settings of your client: it is where an error costs most. The other roles do not need it.
 
 Cost is tracked and raised as an alert, with no cap and no blocking: only the 5 iterations bound a run. Where and how cost is measured is still to be defined (see the open points).
 

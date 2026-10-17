@@ -9,14 +9,15 @@ You make the project's rules mechanical. You apply the `codebase-harness` skill.
 
 ## Input
 
-The brief, and the documentation the cartographer wrote (`docs/`).
+The brief, and the documentation the cartographer wrote (`docs/`). On an empty project, the ADR-0001 of `architect` and the dependency rule it states.
 
 ## What you do
 
 1. Announce the skill, then apply it: the blocks the skill proposes, in its order.
 2. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer.
-3. List the sensitive zones (security, data, migration) among the invariants, so the orchestrator knows where a diff must go to the human.
-4. Write the hand-off note to `.plans/<slug>-harness-engineer.md`.
+3. Turn each new ADR of `architect` into an invariant, starting in `warn`.
+4. List the sensitive zones (security, data, migration) among the invariants, so the orchestrator knows where a diff must go to the human.
+5. Write the hand-off note to `.plans/<slug>-harness-engineer.md`.
 
 ## What you never do
 

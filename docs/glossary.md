@@ -84,6 +84,7 @@ another file, other values.
 role: reviewer
 status: done               # done | blocked | escalate
 verdict: GO                # the Reviewer only: GO | NO-GO
+structure: decided         # the Architect only: unchanged | decided | escalated
 reasons: []
 severity: major            # blocking | major | minor
 ```

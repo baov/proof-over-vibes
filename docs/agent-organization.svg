@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 440" role="img">
 <title>Agent organization: how a request flows between roles</title>
-<desc>The Orchestrator sends a feature to the Planner and a bug to the Diagnostician. Both lead to the Developer, who loops with the Reviewer until a GO, then the merge gate takes over: a CI, or a person where there is none. After five NO-GO the Failure Analyst runs, then the human is called. The Product Owner answers questions the Orchestrator relays.</desc>
+<desc>The Orchestrator sends a feature to the Architect, then the Planner, and a bug to the Diagnostician. Both lead to the Developer, who loops with the Reviewer until a GO, then the merge gate takes over: a CI, or a person where there is none. After five NO-GO the Failure Analyst runs, then the human is called. The Product Owner answers questions the Orchestrator relays.</desc>
 <style>
 text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .th{font-size:14px;font-weight:500}
@@ -52,8 +52,8 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 
 <g class="purple">
 <rect x="56" y="130" width="130" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="121" y="149" text-anchor="middle" dominant-baseline="central">Planner</text>
-<text class="ts" x="121" y="169" text-anchor="middle" dominant-baseline="central">feature: plan</text>
+<text class="th" x="121" y="149" text-anchor="middle" dominant-baseline="central">Architect, Planner</text>
+<text class="ts" x="121" y="169" text-anchor="middle" dominant-baseline="central">feature: structure, plan</text>
 </g>
 <g class="teal">
 <rect x="56" y="220" width="130" height="56" rx="8" stroke-width="0.5"/>
