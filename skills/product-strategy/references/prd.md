@@ -9,7 +9,7 @@ A product requirements document for **one feature**, written when the user picks
 3. **Users and use**: who uses the feature and the main path they follow.
 4. **Scope**: what is in, and what is explicitly out.
 5. **Requirements**: what the feature must do, each one testable. These become the acceptance criteria of the request.
-6. **Risks and open questions**: the assumptions that, if false, change the feature.
+6. **Risks and open questions**: the assumptions that, if false, change the feature, and the technical unknowns (real time, several users at once, sensitive data, an external dependency). Name them without answering them: the structure is not decided here.
 
 ## Rules
 

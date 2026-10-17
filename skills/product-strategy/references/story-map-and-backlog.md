@@ -8,6 +8,8 @@
 
 Draw it as a Mermaid diagram or a table. Map to the level of the feature; stop there.
 
+**On an existing product**, read the business documentation (`docs/business/`) first and place the features already built in the map with the status `done`, citing the document as the source rather than copying its details. The whole journey then shows, and the gaps with it. New epics are proposed to fill those gaps.
+
 ## Backlog (`docs/product/backlog.md`)
 
 One line per epic and per feature, in priority order:
@@ -15,7 +17,7 @@ One line per epic and per feature, in priority order:
 - the epic it belongs to, the outcome it serves,
 - a one-sentence statement of the value,
 - its slice and horizon,
-- its status: *idea*, *shaped*, *picked*, *done*.
+- its status: *idea*, *shaped*, *picked*, *done* (a feature already built in the product).
 
 No user stories, no acceptance criteria: those come at the moment a feature is picked, in its PRD.
 

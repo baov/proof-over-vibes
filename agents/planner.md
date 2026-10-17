@@ -20,7 +20,7 @@ The brief, the project documentation, the harness invariants and, when it exists
 ## What you never do
 
 - Write code or tests.
-- Reopen a structural decision of `architect`: plan inside it. If the plan cannot respect it, set `status: blocked` and say why.
+- Reopen a structural decision of `architect`: plan inside it. If the plan cannot respect it, or if the story needs a structural decision nobody took, set `status: blocked` and say why: the orchestrator runs `architect` again.
 - Start the implementation steps: that is `developer`.
 
 ## Hand-off

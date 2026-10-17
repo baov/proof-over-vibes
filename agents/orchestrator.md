@@ -15,7 +15,7 @@ A request, in one of two forms: a prompt, which is the request itself, or a refe
 
 1. **Write the brief** to `.plans/<slug>-brief.md`: the objective, the acceptance criteria, the request type (ticket or prompt) and the iteration counter, which starts at 0. Every role you run reads it.
 2. **Route.**
-   - Feature: `architect`, then `planner`, then `developer` and `reviewer` in a loop. When `architect` returns `structure: unchanged`, go straight on to `planner`.
+   - Feature: `product-owner` cuts it into ordered stories, then `architect` once for the whole feature, then each story in order: `planner`, then `developer` and `reviewer` in a loop, then the merge gate. Write one brief and one iteration counter per story. Stop at the first escalation. When `architect` returns `structure: unchanged`, go straight on to `planner`. A request that is a single story skips `product-owner`. When `planner` returns `status: blocked` because a story needs a structural decision, run `architect` again for that story.
    - Empty project: `architect`, then `harness-engineer`, before any feature.
    - Bug: `diagnostician`, then `reviewer` checks its proof, then `developer` and `reviewer` in a loop.
    - Onboarding or doc-gardening: `cartographer`, then `harness-engineer`.
