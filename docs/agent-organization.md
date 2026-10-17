@@ -41,7 +41,7 @@ Thirteen roles. Five of them judge: a wrong call there costs more than anywhere 
 
 ## The flows
 
-![How a request flows between the roles: the Orchestrator routes a feature to the Planner and a bug to the Diagnostician; the Developer and the Reviewer loop until a GO; the merge gate takes over; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
+![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then each story through the Planner, the Developer and the Reviewer in a loop and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
 
 The same flows in text:
 

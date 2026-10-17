@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 440" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 500" role="img">
 <title>Agent organization: how a request flows between roles</title>
-<desc>The Orchestrator sends a feature to the Architect, then the Planner, and a bug to the Diagnostician. Both lead to the Developer, who loops with the Reviewer until a GO, then the merge gate takes over: a CI, or a person where there is none. After five NO-GO the Failure Analyst runs, then the human is called. The Product Owner answers questions the Orchestrator relays.</desc>
+<desc>Four paths. An idea with no code goes from the Product Manager to the human, then the Architect and the Harness Engineer. A feature goes from the Orchestrator to the Product Owner, who cuts it into stories, then once through the Architect; each story then goes through the Planner, the Developer and the Reviewer in a loop, then the merge gate. A bug goes through the Diagnostician, whose proof the Reviewer checks, then into the same loop. After five NO-GO the Failure Analyst runs, then the human is called.</desc>
 <style>
 text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .th{font-size:14px;font-weight:500}
@@ -37,69 +37,104 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 </style>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 
-<g class="gray">
-<rect x="56" y="20" width="400" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="256" y="39" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
-<text class="ts" x="256" y="59" text-anchor="middle" dominant-baseline="central">routes, keeps the brief, counts</text>
-</g>
-
+<text class="ts plain" x="40" y="18" dominant-baseline="central">Idea, no code</text>
 <g class="teal">
-<rect x="530" y="20" width="130" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="595" y="39" text-anchor="middle" dominant-baseline="central">Product Owner</text>
-<text class="ts" x="595" y="59" text-anchor="middle" dominant-baseline="central">answers questions</text>
-</g>
-<path class="arr" d="M460 48 L526 48" stroke-dasharray="4 3" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-
-<g class="purple">
-<rect x="56" y="130" width="130" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="121" y="149" text-anchor="middle" dominant-baseline="central">Architect, Planner</text>
-<text class="ts" x="121" y="169" text-anchor="middle" dominant-baseline="central">feature: structure, plan</text>
-</g>
-<g class="teal">
-<rect x="56" y="220" width="130" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="121" y="239" text-anchor="middle" dominant-baseline="central">Diagnostician</text>
-<text class="ts" x="121" y="259" text-anchor="middle" dominant-baseline="central">bug: proves cause</text>
-</g>
-<g class="purple">
-<rect x="236" y="130" width="120" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="296" y="149" text-anchor="middle" dominant-baseline="central">Developer</text>
-<text class="ts" x="296" y="169" text-anchor="middle" dominant-baseline="central">writes the code</text>
-</g>
-<g class="teal">
-<rect x="406" y="130" width="110" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="461" y="149" text-anchor="middle" dominant-baseline="central">Reviewer</text>
-<text class="ts" x="461" y="169" text-anchor="middle" dominant-baseline="central">GO or NO-GO</text>
+<rect x="40" y="28" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="115" y="47" text-anchor="middle" dominant-baseline="central">Product Manager</text>
+<text class="ts" x="115" y="67" text-anchor="middle" dominant-baseline="central">vision, backlog</text>
 </g>
 <g class="gray">
-<rect x="556" y="130" width="104" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="608" y="149" text-anchor="middle" dominant-baseline="central">Merge gate</text>
-<text class="ts" x="608" y="169" text-anchor="middle" dominant-baseline="central">CI, or a person</text>
+<rect x="220" y="28" width="100" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="270" y="47" text-anchor="middle" dominant-baseline="central">Human</text>
+<text class="ts" x="270" y="67" text-anchor="middle" dominant-baseline="central">validates</text>
+</g>
+<g class="teal">
+<rect x="350" y="28" width="120" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="410" y="47" text-anchor="middle" dominant-baseline="central">Architect</text>
+<text class="ts" x="410" y="67" text-anchor="middle" dominant-baseline="central">style, ADR-0001</text>
 </g>
 <g class="purple">
-<rect x="370" y="320" width="144" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="442" y="339" text-anchor="middle" dominant-baseline="central">Failure analyst</text>
-<text class="ts" x="442" y="359" text-anchor="middle" dominant-baseline="central">after 5 NO-GO</text>
+<rect x="500" y="28" width="140" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="570" y="47" text-anchor="middle" dominant-baseline="central">Harness Engineer</text>
+<text class="ts" x="570" y="67" text-anchor="middle" dominant-baseline="central">dependency rule</text>
+</g>
+<path class="arr" d="M190 56 L216 56" marker-end="url(#arrow)"/>
+<path class="arr" d="M320 56 L346 56" marker-end="url(#arrow)"/>
+<path class="arr" d="M470 56 L496 56" marker-end="url(#arrow)"/>
+<text class="ts plain" x="40" y="118" dominant-baseline="central">Feature</text>
+<g class="gray">
+<rect x="40" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="115" y="147" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
+<text class="ts" x="115" y="167" text-anchor="middle" dominant-baseline="central">routes, keeps the brief</text>
+</g>
+<g class="teal">
+<rect x="265" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="340" y="147" text-anchor="middle" dominant-baseline="central">Product Owner</text>
+<text class="ts" x="340" y="167" text-anchor="middle" dominant-baseline="central">stories, and answers</text>
+</g>
+<g class="teal">
+<rect x="490" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="565" y="147" text-anchor="middle" dominant-baseline="central">Architect</text>
+<text class="ts" x="565" y="167" text-anchor="middle" dominant-baseline="central">once per feature</text>
+</g>
+<path class="arr" d="M190 156 L261 156" marker-end="url(#arrow)"/>
+<path class="arr" d="M415 156 L486 156" marker-end="url(#arrow)"/>
+<rect x="40" y="236" width="600" height="110" rx="16" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="5 4"/>
+<text class="ts plain" x="135" y="256" dominant-baseline="central">For each story, one after the other</text>
+<g class="purple">
+<rect x="60" y="276" width="110" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="115" y="295" text-anchor="middle" dominant-baseline="central">Planner</text>
+<text class="ts" x="115" y="315" text-anchor="middle" dominant-baseline="central">plan</text>
+</g>
+<g class="purple">
+<rect x="210" y="276" width="110" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="265" y="295" text-anchor="middle" dominant-baseline="central">Developer</text>
+<text class="ts" x="265" y="315" text-anchor="middle" dominant-baseline="central">writes the code</text>
+</g>
+<g class="teal">
+<rect x="360" y="276" width="110" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="415" y="295" text-anchor="middle" dominant-baseline="central">Reviewer</text>
+<text class="ts" x="415" y="315" text-anchor="middle" dominant-baseline="central">GO or NO-GO</text>
 </g>
 <g class="gray">
-<rect x="562" y="320" width="98" height="56" rx="8" stroke-width="0.5"/>
-<text class="th" x="611" y="339" text-anchor="middle" dominant-baseline="central">Human</text>
-<text class="ts" x="611" y="359" text-anchor="middle" dominant-baseline="central">escalation</text>
+<rect x="510" y="276" width="110" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="565" y="295" text-anchor="middle" dominant-baseline="central">Merge gate</text>
+<text class="ts" x="565" y="315" text-anchor="middle" dominant-baseline="central">CI or a person</text>
 </g>
-
-<path class="arr" d="M121 76 L121 126" marker-end="url(#arrow)"/>
-<path class="arr" d="M56 48 L36 48 L36 248 L52 248" marker-end="url(#arrow)"/>
-<path class="arr" d="M186 248 L296 248 L296 190" marker-end="url(#arrow)"/>
-<path class="arr" d="M186 158 L232 158" marker-end="url(#arrow)"/>
-<path class="arr" d="M356 148 L402 148" marker-end="url(#arrow)"/>
-<path class="arr" d="M406 168 L360 168" marker-end="url(#arrow)"/>
-<path class="arr" d="M516 158 L552 158" marker-end="url(#arrow)"/>
-<path class="arr" d="M442 186 L442 316" marker-end="url(#arrow)"/>
-<path class="arr" d="M514 348 L558 348" marker-end="url(#arrow)"/>
-
-<rect class="key-purple" x="56" y="404" width="14" height="14" rx="3" stroke-width="0.5"/>
-<text class="ts plain" x="78" y="411" dominant-baseline="central">does the work</text>
-<rect class="key-teal" x="200" y="404" width="14" height="14" rx="3" stroke-width="0.5"/>
-<text class="ts plain" x="222" y="411" dominant-baseline="central">judges</text>
-<rect class="key-gray" x="300" y="404" width="14" height="14" rx="3" stroke-width="0.5"/>
-<text class="ts plain" x="322" y="411" dominant-baseline="central">orchestrates or ends the run</text>
+<path class="arr" d="M565 184 L565 210 L115 210 L115 272" marker-end="url(#arrow)"/>
+<path class="arr" d="M170 304 L206 304" marker-end="url(#arrow)"/>
+<path class="arr" d="M320 294 L356 294" marker-end="url(#arrow)"/>
+<path class="arr" d="M356 314 L324 314" marker-end="url(#arrow)"/>
+<path class="arr" d="M470 304 L506 304" marker-end="url(#arrow)"/>
+<text class="ts plain" x="40" y="376" dominant-baseline="central">Bug, routed by the Orchestrator</text>
+<g class="teal">
+<rect x="40" y="388" width="120" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="100" y="407" text-anchor="middle" dominant-baseline="central">Diagnostician</text>
+<text class="ts" x="100" y="427" text-anchor="middle" dominant-baseline="central">proves the cause</text>
+</g>
+<g class="teal">
+<rect x="190" y="388" width="120" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="250" y="407" text-anchor="middle" dominant-baseline="central">Reviewer</text>
+<text class="ts" x="250" y="427" text-anchor="middle" dominant-baseline="central">checks the proof</text>
+</g>
+<g class="purple">
+<rect x="360" y="388" width="140" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="430" y="407" text-anchor="middle" dominant-baseline="central">Failure analyst</text>
+<text class="ts" x="430" y="427" text-anchor="middle" dominant-baseline="central">after 5 NO-GO</text>
+</g>
+<g class="gray">
+<rect x="540" y="388" width="100" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="590" y="407" text-anchor="middle" dominant-baseline="central">Human</text>
+<text class="ts" x="590" y="427" text-anchor="middle" dominant-baseline="central">escalation</text>
+</g>
+<path class="arr" d="M160 416 L186 416" marker-end="url(#arrow)"/>
+<path class="arr" d="M250 388 L250 336" marker-end="url(#arrow)"/>
+<path class="arr" d="M415 332 L415 384" marker-end="url(#arrow)"/>
+<path class="arr" d="M500 416 L536 416" marker-end="url(#arrow)"/>
+<rect class="key-purple" x="56" y="474" width="14" height="14" rx="3" stroke-width="0.5"/>
+<text class="ts plain" x="78" y="481" dominant-baseline="central">does the work</text>
+<rect class="key-teal" x="200" y="474" width="14" height="14" rx="3" stroke-width="0.5"/>
+<text class="ts plain" x="222" y="481" dominant-baseline="central">judges</text>
+<rect class="key-gray" x="300" y="474" width="14" height="14" rx="3" stroke-width="0.5"/>
+<text class="ts plain" x="322" y="481" dominant-baseline="central">orchestrates, the human, or ends the run</text>
 </svg>
