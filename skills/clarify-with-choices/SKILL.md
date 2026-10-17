@@ -4,7 +4,7 @@ description: >
   Doctrine for validating with multiple-choice questions — how a skill questions the user
   before writing anything, and how it degrades when the host agent offers no multiple-choice
   mechanism. Loaded by the skills that validate structuring decisions (codebase-cartographer,
-  codebase-harness, ddd-advisor), rarely invoked directly. Use it too when writing or revising
+  codebase-harness, ddd-advisor, product-strategy), rarely invoked directly. Use it too when writing or revising
   a skill that has to ask the user for a decision, or when wondering how many questions to ask,
   in what shape, or what to do when the user answers "your call". Not to be confused with
   code-assimilation-quiz, whose multiple-choice questions quiz the developer so that they

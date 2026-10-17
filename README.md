@@ -14,6 +14,7 @@ Conformant to the [Agent Skills specification](https://agentskills.io/specificat
 
 | Skill | Role | Produces |
 |---|---|---|
+| [`product-strategy`](skills/product-strategy) | Market watch, vision, roadmap, story map, prioritized backlog of epics and features, PRD of a chosen feature | `docs/product/` |
 | [`codebase-cartographer`](skills/codebase-cartographer) | Maps a project into business + technical documentation (glossary, features, test-cases, ADRs) | `docs/`, a section in `AGENTS.md` |
 | [`codebase-harness`](skills/codebase-harness) | The enforcement layer: executable invariants, test-case bridge, mutation testing, doc-gardening | `tools/harness/`, `docs/technical/invariants.md` |
 | [`plan-driven-dev`](skills/plan-driven-dev) | Implementation workflow: validated plan, behavior-driven TDD, invariants inside the loop | `.plans/` |
@@ -28,7 +29,7 @@ Conformant to the [Agent Skills specification](https://agentskills.io/specificat
 |---|---|---|
 | [`behavior-driven-testing`](skills/behavior-driven-testing) | Test doctrine: behaviors rather than classes | `plan-driven-dev`, `ai-code-remediation` |
 | [`ddd-advisor`](skills/ddd-advisor) | Domain-Driven Design audit and guidance | `ai-code-remediation` |
-| [`clarify-with-choices`](skills/clarify-with-choices) | Multiple-choice validation doctrine, and its degraded mode per host agent | `codebase-cartographer`, `codebase-harness`, `ddd-advisor` |
+| [`clarify-with-choices`](skills/clarify-with-choices) | Multiple-choice validation doctrine, and its degraded mode per host agent | `codebase-cartographer`, `codebase-harness`, `ddd-advisor`, `product-strategy` |
 
 ## How to chain them
 
@@ -43,7 +44,7 @@ The other cases (a production bug, a vibe-coded codebase, hollow tests…), how 
 
 ## Roles: an optional layer
 
-The skills work on their own, chained by you or by your agent as above. If you want the chain to run without a human in the loop, an optional layer of twelve roles sits on top: one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — most of them loading the skills that fit their job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
+The skills work on their own, chained by you or by your agent as above. If you want the chain to run without a human in the loop, an optional layer of thirteen roles sits on top: one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — most of them loading the skills that fit their job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
 
 The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
 

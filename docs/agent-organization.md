@@ -21,7 +21,7 @@ Specific to the organization:
 
 ## The roles
 
-Twelve roles. Four of them judge: a wrong call there costs more than anywhere else.
+Thirteen roles. Five of them judge: a wrong call there costs more than anywhere else.
 
 | Role | Skills loaded | Judges | Steps in |
 |---|---|---|---|
@@ -29,6 +29,7 @@ Twelve roles. Four of them judge: a wrong call there costs more than anywhere el
 | Product Owner | none: answers multiple-choice questions from the business documentation and the ticket | yes | every multiple-choice question |
 | Cartographer | `codebase-cartographer` | | onboarding, doc-gardening |
 | Harness Engineer | `codebase-harness` | | onboarding, doc-gardening |
+| Product Manager | `product-strategy` | yes | at the human's request, outside a run |
 | Architect | `ddd-advisor` | yes | every feature, empty project |
 | Planner | `plan-driven-dev` (context and plan) | | feature |
 | Developer | `plan-driven-dev`, `behavior-driven-testing` | | feature, bug after diagnosis |
@@ -47,6 +48,7 @@ The same flows in text:
 ```
 Feature   Orchestrator → Architect → Planner → Developer ⇄ Reviewer → merge gate
 Bug       Orchestrator → Diagnostician → Reviewer (checks the proof) → Developer ⇄ Reviewer → merge gate
+Idea      Product Manager → human validates → Architect → Harness Engineer (before any feature)
 Empty     Orchestrator → Architect → Harness Engineer (before any feature)
 Outside   Cartographer → Harness Engineer (onboarding, doc-gardening)
 a ticket  Auditor (when the Orchestrator decides)
@@ -62,6 +64,7 @@ A person steps in on escalation, and to merge where the project has no CI. Other
 - **Multiple-choice questions.** The Product Owner answers, relying on the business documentation the Cartographer wrote and on the ticket, when there is one. When the sources do not settle a question, it escalates to the human.
 - **Escalation to the human.** The Product Owner doubts; the Architect meets a choice that is costly to reverse (superseding an ADR, changing the stack, adding a dependency or service, breaking a public contract, choosing the architectural style of an empty project); the diff touches a sensitive zone (security, data, migration); or the Failure Analyst has run and the loop still has no GO.
 - **Merge gate.** The last step before the merge, and always outside the agents. With a CI, the CI merges when the Reviewer returns a GO and the checks are green, with no systematic human approval. With none, the default is that a person merges: the run ends on "GO, ready to merge". A project can instead run a local script that rereads the verdict, replays the gauntlet and merges, started by a person. Whichever applies, the Orchestrator never merges.
+- **Product strategy.** The Product Manager runs outside a run, only at the human's request, and starts none. It writes `docs/product/` (research, vision, roadmap, story map, backlog of epics and features, and the PRD of a feature the human picked). A vision, a positioning and a prioritization are bets: its questions go to the human, never to the Product Owner. The human picks a backlog item and creates the request, citing its PRD. It writes no user stories.
 - **Technical debt.** The Architect proposes a migration or a refactor as an ADR with the status `proposed`, and never blocks the feature in hand for it. If the human accepts, they create the request themselves; the Orchestrator does not watch the ADRs.
 - **Tracker.** Every role comments its step on the ticket; only the Orchestrator changes its status. A prompt has no ticket.
 - **Writing to the code.** The Reviewer and the Diagnostician do not modify code. That rule is an instruction in their prompt, with no technical restriction. It cannot be enforced by removing their write tool either: each of them has to write a file, the review report and the proof.
@@ -86,6 +89,7 @@ Roles share no context. Everything passes through files of the repository: the o
 |---|---|---|
 | Brief (`.plans/<slug>-brief.md`) | Orchestrator | every role it runs |
 | Answers (`.plans/<slug>-answers.md`) | Product Owner | Orchestrator, the role that asked |
+| Product files (`docs/product/`) | Product Manager | human, Product Owner, Cartographer |
 | Architect's note (`.plans/<slug>-architect.md`) | Architect | Planner, Orchestrator |
 | ADR (`docs/technical/adr/`) | Architect, Cartographer | Harness Engineer, Planner |
 | Plan (`.plans/<slug>.md`) | Planner | Developer, Reviewer |
@@ -110,7 +114,7 @@ severity: major         # blocking | major | minor, when there is something to r
 
 The roles name no model and no reasoning effort. Each one inherits what your session runs on, so the organization works with any model.
 
-The four roles that judge are marked in the table above. Give them your most capable model, or your highest reasoning effort, in the settings of your client: it is where an error costs most. The other roles do not need it.
+The five roles that judge are marked in the table above. Give them your most capable model, or your highest reasoning effort, in the settings of your client: it is where an error costs most. The other roles do not need it.
 
 Cost is tracked and raised as an alert, with no cap and no blocking: only the 5 iterations bound a run. Where and how cost is measured is still to be defined (see the open points).
 
