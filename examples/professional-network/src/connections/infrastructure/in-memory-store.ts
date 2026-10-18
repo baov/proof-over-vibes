@@ -50,8 +50,9 @@ export class InMemoryStore implements RequestStore {
   }
 }
 
+/** Order-free key of a pair. Member ids are free strings (D-15), so a joined string would be ambiguous: JSON quoting is not. */
 function pairKey(a: MemberId, b: MemberId): string {
-  return [a, b].sort().join(":");
+  return JSON.stringify([a, b].sort());
 }
 
 function keepOnly<T>(items: T[], keep: (item: T) => boolean): void {
