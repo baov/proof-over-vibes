@@ -1,0 +1,23 @@
+{
+  "name": "professional-network",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "harness": "bash tools/harness/run_all.sh",
+    "harness:selftest": "node --test tools/harness/selftest.test.mjs",
+    "mutation": "bash tools/harness/run_mutation.sh --scope critical",
+    "mutation:diff": "bash tools/harness/run_mutation.sh --scope diff"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

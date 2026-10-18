@@ -1,0 +1,8 @@
+{
+  "_note": "Edited by a human only, after a multiple-choice question. threshold = baseline rounded down, never lowered to get green. null until the first baseline exists.",
+  "threshold": null,
+  "baseline": null,
+  "baselineDate": null,
+  "baselineSha": null,
+  "severity": "warn"
+}
