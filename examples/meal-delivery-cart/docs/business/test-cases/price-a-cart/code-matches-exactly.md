@@ -11,4 +11,4 @@ status: covered
 
 - Given: a promotion with the code WELCOME10 and a supplied code that differs by case, by a space or by a character
 - When: the cart is priced with that code
-- Then: the code is unknown: no discount and the unknown-code reason; only the exact text applies
+- Then: the code is unknown: no discount and the unknown-code reason; only the exact text applies. A space here is a space around or inside a code that has other characters: a code that is only blank is no code (see blank-code-is-no-code)

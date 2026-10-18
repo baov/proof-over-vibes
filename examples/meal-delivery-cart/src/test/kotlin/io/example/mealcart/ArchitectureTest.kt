@@ -6,6 +6,7 @@ import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.SourceCodeLocation
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackages
+import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
 import com.tngtech.archunit.junit.AnalyzeClasses
 import com.tngtech.archunit.junit.ArchTest
@@ -14,10 +15,14 @@ import com.tngtech.archunit.lang.ArchRule
 import com.tngtech.archunit.lang.ConditionEvents
 import com.tngtech.archunit.lang.SimpleConditionEvent
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
- * INV-001 to INV-004, from ADR-0001 and ADR-0002. Technical test: it has no test-case (see INV-005 exclusions).
+ * INV-001 to INV-004, from ADR-0001 and ADR-0002; INV-007, from ADR-0004. Technical test: it has no test-case (see INV-005 exclusions).
  * Severity: warn (see docs/technical/invariants.md). Run it with: python3 tools/harness/check_layers.py
  *
  * The base package is named here and in pom.xml (`base.package`): change both together. On an empty codebase the
@@ -47,6 +52,16 @@ class ArchitectureTest {
         private const val FIX_PURE =
             " -- the core takes everything as arguments; if it needs the clock, randomness or I/O, " +
                 "that is a port owned by `application` (see INV-004)"
+
+        private const val FIX_FINAL =
+            " -- make the field a `val`; hold no cache, memo or counter in the core, and compute from the arguments " +
+                "(see INV-007 and ADR-0004)"
+
+        private fun fieldsAreFinal(inside: DescribedPredicate<JavaClass>): ArchRule = fields()
+            .that().areDeclaredInClassesThat(inside)
+            .should().beFinal()
+            .allowEmptyShould(true)
+            .`as`("[INV-007] every field of `domain` and `application` is final$FIX_FINAL")
 
         private fun isCallTo(owners: DescribedPredicate<JavaClass>, names: Set<String>): DescribedPredicate<JavaCall<*>> =
             object : DescribedPredicate<JavaCall<*>>("calls ${names.joinToString()}") {
@@ -143,5 +158,50 @@ class ArchitectureTest {
             )
             .allowEmptyShould(true)
             .`as`("[INV-004] `domain` and `application` read no clock, randomness, environment, file or network$FIX_PURE")
+
+        @JvmField
+        @ArchTest
+        val coreFieldsAreFinal: ArchRule = fieldsAreFinal(resideInAnyPackage(DOMAIN, APPLICATION))
+    }
+
+    // Self-test of INV-007 on throwaway fixtures (never on feature code): the rule must flag a mutable field
+    // and let a `val`, a `const`, an `object` and a companion pass.
+    class FixtureGood(val a: Int) {
+        val b: List<Int> = listOf(a)
+        companion object { const val C = 1; val D = "d" }
+    }
+
+    object FixtureObject { val e = 1 }
+
+    class FixtureBadVar { var counter = 0 }
+
+    class FixtureBadLateinit { lateinit var cache: String }
+
+    object FixtureBadObject { var memo = mutableMapOf<Int, Int>() }
+
+    private fun violationsOnFixtures(): List<String> {
+        val classes = ClassFileImporter().importClasses(
+            FixtureGood::class.java, FixtureGood.Companion::class.java, FixtureObject::class.java,
+            FixtureBadVar::class.java, FixtureBadLateinit::class.java, FixtureBadObject::class.java,
+        )
+        val inside = DescribedPredicate.describe<JavaClass>("a fixture") { it.simpleName.startsWith("Fixture") }
+        val result = fieldsAreFinal(inside).evaluate(classes)
+        return result.failureReport.details.map { it.toString() }
+    }
+
+    @Test
+    fun `INV-007 flags var, lateinit and a mutable object field`() {
+        val details = violationsOnFixtures().joinToString("\n")
+        assertTrue("FixtureBadVar.counter" in details, details)
+        assertTrue("FixtureBadLateinit.cache" in details, details)
+        assertTrue("FixtureBadObject.memo" in details, details)
+    }
+
+    @Test
+    fun `INV-007 lets val, const, object and companion fields pass`() {
+        val details = violationsOnFixtures().joinToString("\n")
+        assertTrue("FixtureGood" !in details, details)
+        assertTrue("FixtureObject" !in details, details)
+        assertEquals(3, violationsOnFixtures().size, details)
     }
 }

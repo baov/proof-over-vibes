@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""INV-001 to INV-004 -- the ArchUnit rules of ADR-0001 and ADR-0002.
+"""INV-001 to INV-004 and INV-007 -- the ArchUnit rules of ADR-0001, ADR-0002 and ADR-0004.
 
 Runs src/test/kotlin/**/ArchitectureTest.kt through Maven (profile `invariants`) and prints one line per violation:
     path:line: [INV-NNN] message -- remediation
 
   INV-001 dependency rule (ADR-0001)      INV-002 single rounding point (ADR-0001)
   INV-003 no Double/Float/BigDecimal (ADR-0002)      INV-004 purity of the core (architect note)
+  INV-007 every field of the core is final (ADR-0004)
 
 Contract (see docs/technical/invariants.md):
   --explain      describes the rules without checking anything
@@ -23,7 +24,7 @@ import sys
 from pathlib import Path
 
 # warn | error, per invariant. Changing one is a human decision recorded in invariants.md, in the same commit.
-SEVERITY = {"INV-001": "warn", "INV-002": "warn", "INV-003": "warn", "INV-004": "warn"}
+SEVERITY = {"INV-001": "warn", "INV-002": "warn", "INV-003": "warn", "INV-004": "warn", "INV-007": "warn"}
 
 EXPLANATION = """\
 [INV-001] Hexagonal dependency rule (ADR-0001), severity {INV-001}
@@ -40,6 +41,10 @@ EXPLANATION = """\
 [INV-004] Purity of the core (architect note), severity {INV-004}
   - `domain` and `application` use no java.time, java.io, java.nio, java.net, java.util.concurrent, kotlin.random,
     kotlin.io, kotlin.time, System, Thread, Runtime, Random, Date, Calendar
+[INV-007] Every field of the core is final (ADR-0004), severity {INV-007}
+  - every field of every class in `domain` and `application` is final (a Kotlin `val`): no `var`, `lateinit var`,
+    cache, memo or counter. Known limit: it sees the field, not its content -- a final field holding a mutable
+    list, or a `lazy` delegate, passes. It also runs a self-test on throwaway fixtures (flags a `var`, lets a `val` pass).
 Checked by ArchUnit (src/test/kotlin/**/ArchitectureTest.kt), run via Maven profile `invariants`.
 """
 
@@ -48,6 +53,7 @@ REMEDIATION = {
     "INV-002": "call the single rounding function of `domain.money` (see INV-002, ADR-0001)",
     "INV-003": "hold amounts as `Money` (Long minor units) and rates as `Percentage` (see INV-003, ADR-0002)",
     "INV-004": "pass the value in as an argument, or define a port in `application` (see INV-004)",
+    "INV-007": "make the field a `val` and hold no cache, memo or counter in the core (see INV-007, ADR-0004)",
 }
 
 # "what (File.kt:12)" -- the location may come last or be followed by more text.

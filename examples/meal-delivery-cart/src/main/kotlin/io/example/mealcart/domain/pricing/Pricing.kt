@@ -10,6 +10,7 @@ fun price(cart: Cart, rules: PricingRules, code: String? = null): Price {
     require(cart.lines.all { it.unitPrice.currency == rules.currency }) {
         "A line is not in the currency of the rules, ${rules.currency}"
     }
+    val code = code?.takeUnless { it.isBlank() }
     val zero = Money.zero(rules.currency)
     val subtotal = cart.lines.fold(zero) { sum, line -> sum + line.unitPrice * line.quantity }
     val promotion = rules.promotion

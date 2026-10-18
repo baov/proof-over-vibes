@@ -12,8 +12,9 @@ Run every check: `bash tools/harness/run_all.sh` (add `--with-mutation` for INV-
 | INV-004 | `domain` and `application` read no clock, randomness, environment, file or network | warn | active |
 | INV-005 | Every business test-case points at an automated test that exists, and every test has a test-case | warn (broken reference: error) | active |
 | INV-006 | Mutation testing covers `domain` and `application`; no threshold yet | warn | active |
+| INV-007 | Every field of every class in `domain` and `application` is final | warn | active |
 
-INV-001 to INV-004 are ArchUnit rules in `src/test/kotlin/io/example/mealcart/ArchitectureTest.kt`, run through the Maven profile `invariants` (excluded from the default `mvn test`) and wrapped by `python3 tools/harness/check_layers.py`. The base package `io.example.mealcart` is named in `pom.xml` (`base.package`) and in `ArchitectureTest`: change both together. On an empty codebase the rules pass vacuously, and a wrong package name would keep them passing.
+INV-001 to INV-004 and INV-007 are ArchUnit rules in `src/test/kotlin/io/example/mealcart/ArchitectureTest.kt`, run through the Maven profile `invariants` (excluded from the default `mvn test`) and wrapped by `python3 tools/harness/check_layers.py`. The base package `io.example.mealcart` is named in `pom.xml` (`base.package`) and in `ArchitectureTest`: change both together. On an empty codebase the rules pass vacuously, and a wrong package name would keep them passing.
 
 Moving a rule to `error` is a human decision: change `SEVERITY` in `check_layers.py` and the entry here in the same commit.
 
@@ -100,6 +101,19 @@ Moving a rule to `error` is a human decision: change `SEVERITY` in `check_layers
 - **Kotlin bytecode**: on a throwaway fixture (a data class, an object and a few functions) PIT generated no mutant on the compiler's null-check intrinsics and no unviable one; the survivors were real gaps (getters of a data class that no test reads, a `require` boundary). Re-check on the real code: inline functions, `when` over sealed types and `copy`/`componentN` of data classes are where noise is expected. Exclude a class or mutator in `pom.xml` only with a comment saying why.
 - **Remediation**: for each surviving mutant, find the unprotected behavior and add a test that states it. Never add a test whose only purpose is killing the mutant; if the mutant matches no behavior that counts, exclude it in `pom.xml` with a comment explaining why. Never lower a threshold to get back to green.
 - **Not in pre-commit**: a run takes minutes at least.
+
+## INV-007 — Final fields in the core
+
+- **Status**: active
+- **Statement**: every field of every class in `domain` and `application` is final (a Kotlin `val`). A `var`, a `lateinit var`, a cache, a memo or a counter is a violation; `object` instances and `companion` statics are final and pass.
+- **Source**: ADR-0004 (pricing is pure over immutable inputs, safe for simultaneous use); architect note `edge-codes-and-concurrency/architect.md`
+- **Script**: `python3 tools/harness/check_layers.py` (rule `coreFieldsAreFinal` in `ArchitectureTest`)
+- **Severity**: warn (exit 2)
+- **Remediation**: make the field a `val`; compute from the arguments instead of remembering; if state is really needed, that is an ADR-level change superseding ADR-0004, ask the architect.
+- **Example violation**: `private var hits = 0` in a class of `domain.pricing`.
+- **Fix**: drop the counter, or return the value in the result.
+- **Self-test**: two tests in `ArchitectureTest` run the same rule on throwaway fixture classes declared in the test file (never on feature code): a `var`, a `lateinit var` and a mutable field of an `object` are flagged; `val`, `const`, `object` and companion fields pass. A broken rule fails the build, which `check_layers.py` reports as exit 1.
+- **Known limit**: it sees the field, not its content. A final field holding a mutable list or map passes (`Cart.lines` is one, acceptable because pricing never writes it), and so does a `lazy` delegate. It does not ban `synchronized` or locks (INV-004 already bans `java.util.concurrent`). It cannot prove the absence of a race; tests of simultaneous use and ADR-0004 carry the rest.
 
 ---
 
