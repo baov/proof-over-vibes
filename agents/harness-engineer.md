@@ -16,7 +16,7 @@ The brief, and the documentation the cartographer wrote (`docs/`). On an empty p
 1. Announce the skill, then apply it: the blocks the skill proposes, in its order.
 2. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer.
 3. Turn each new ADR of `architect` into an invariant, starting in `warn`.
-4. List the sensitive zones (security, data, migration) among the invariants, so the orchestrator knows where a diff must go to the human.
+4. Declare the sensitive zones in `docs/technical/invariants.md`, in a section titled `Sensitive zones`: one line per zone, with the paths or the area it covers and the reason (security, data, migration, money, personal data). If you believe no zone needs a human, write the single line `None` only after a multiple-choice question has been answered (write it in your report and set `status: blocked`, as for any question): a guess does not make `None` valid. An absent section is not the same as `None`: the orchestrator treats an absent section as undeclared.
 5. Write the hand-off note to `harness-engineer.md` in the work folder.
 
 ## What you never do

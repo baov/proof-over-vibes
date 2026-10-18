@@ -17,7 +17,8 @@ The brief, the plan (`plan.md` in the work folder; a bug has none, the diagnosti
 2. Run the invariants on each return to green, and the full gauntlet before you hand over: the reviewer should never be stopped by a mechanical check you could have run.
 3. After a `NO-GO`, read the review report and fix what it names. Do not argue a finding away by weakening a test.
 4. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer.
-5. Write the hand-off note to `developer-<n>.md` in the work folder, `<n>` being the iteration counter of the brief, so that each round keeps its own note. List the commits.
+5. List in the hand-off note, under "Behaviors added", every public behavior the code now has that the plan did not state: the type of an error, a new required method on a public interface, a value accepted that was not discussed. If a consumer would see it and no document decides it, do not keep it as a detail: set `status: blocked` and write the question.
+6. Write the hand-off note to `developer-<n>.md` in the work folder, `<n>` being the iteration counter of the brief, so that each round keeps its own note. List the commits.
 
 ## What you never do
 
