@@ -6,6 +6,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ### Added
 
+- A test case names where its behavior comes from: the `codebase-cartographer` template gets a `## Source` section (a PRD line, a glossary entry, an ADR, a decision; `none` when nobody states it), and the `codebase-harness` test-case bridge counts the cases that name no source. It is information only, never an error or a warning: most terse cases name none in practice, and a warning on every one would drown the ones that matter. The front-matter keys do not change.
 - A decision answered by the human's delegate is `answered-by-delegate` in the decision log, not `answered`, and the Orchestrator counts them in the metrics (`delegated-decisions:`), so that a decision nobody read is visible.
 
 ### Changed
