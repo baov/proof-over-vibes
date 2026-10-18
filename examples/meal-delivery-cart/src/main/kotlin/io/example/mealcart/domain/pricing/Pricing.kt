@@ -7,6 +7,9 @@ import io.example.mealcart.domain.result.PromotionNotApplied
 import io.example.mealcart.domain.rules.PricingRules
 
 fun price(cart: Cart, rules: PricingRules, code: String? = null): Price {
+    require(cart.lines.all { it.unitPrice.currency == rules.currency }) {
+        "A line is not in the currency of the rules, ${rules.currency}"
+    }
     val zero = Money.zero(rules.currency)
     val subtotal = cart.lines.fold(zero) { sum, line -> sum + line.unitPrice * line.quantity }
     val promotion = rules.promotion
