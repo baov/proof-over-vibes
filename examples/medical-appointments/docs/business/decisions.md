@@ -177,3 +177,51 @@ Append only. `answered` = a person read and answered (source: human). `answered-
 - answer: an exception at creation (IllegalArgumentException), so every Slot is valid by construction
 - source: D-27; the Planner's recommendation (relayed by the orchestrator, nobody read it)
 - request: book-a-slot
+
+### D-30 Reason for a refused blank patient or slot identifier
+- status: answered
+- answer: one new common refusal reason for both identifiers, distinct from UNKNOWN_SLOT, PAST, TAKEN, OVERLAPPING
+- source: human; docs/product/prd/book-a-slot-edge-blank-ids.md, req 4
+- request: edge-blank-ids
+
+### D-31 What the loser of a same-slot race sees
+- status: answered
+- answer: TAKEN
+- source: human; docs/product/prd/book-a-slot-edge-simultaneous.md, req 2
+- request: edge-simultaneous
+
+### D-32 What the loser of a one-patient overlapping race sees
+- status: answered
+- answer: OVERLAPPING
+- source: human; docs/product/prd/book-a-slot-edge-simultaneous.md, req 4
+- request: edge-simultaneous
+
+### D-33 Meaning of a blank identifier
+- status: answered-by-delegate
+- answer: blank = empty or only Unicode white space (no other character); absent, empty and blank all refused
+- source: docs/product/prd/book-a-slot-edge-blank-ids.md, req 1-3 (recommendation of the Product Manager, relayed by the orchestrator, nobody read it)
+- request: edge-blank-ids
+
+### D-34 Place of the blank check in the refusal order
+- status: answered-by-delegate
+- answer: first: missing identifier, unknown slot, past, taken, overlap (extends D-21)
+- source: docs/product/prd/book-a-slot-edge-blank-ids.md, req 5 (recommendation of the Product Manager, relayed by the orchestrator, nobody read it)
+- request: edge-blank-ids
+
+### D-35 Which of two simultaneous requests wins
+- status: answered-by-delegate
+- answer: either may win; no ordering promised
+- source: docs/product/prd/book-a-slot-edge-simultaneous.md, req 6 (recommendation of the Product Manager, relayed by the orchestrator, nobody read it)
+- request: edge-simultaneous
+
+### D-36 Public name of the refusal reason of D-30
+- status: answered-by-delegate
+- answer: MISSING_IDENTIFIER (covers absent, empty and blank, for both identifiers)
+- source: docs/product/prd/book-a-slot-edge-blank-ids.md, req 4 (name left to the plan); Planner's and Architect's recommendation, relayed by the orchestrator, nobody read it
+- request: edge-blank-ids
+
+### D-37 Zero-width and invisible characters under D-33
+- status: answered-by-delegate
+- answer: U+200B, U+FEFF, U+180E are NOT blank (Unicode White_Space only); an identifier made only of them is an ordinary identifier; a person may revisit
+- source: D-33; docs/product/prd/book-a-slot-edge-blank-ids.md, req 3 (relayed by the orchestrator, nobody read it)
+- request: edge-blank-ids

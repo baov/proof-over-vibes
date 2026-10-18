@@ -59,6 +59,129 @@ class BookSlotTest {
         return slotStartingAt(id, NOW.plus(Duration.ofHours(hoursAfterNow)));
     }
 
+    /** Values that count as missing: empty, or only Unicode white space (D-33), including non-breaking and ideographic spaces. */
+    private static final List<String> MISSING_VALUES = List.of(
+            "", " ", "\t\n", "\u00A0", "\u2007", "\u202F", "\u3000", "\u0085", " \u00A0\t\u2003 ");
+
+    private static List<PatientId> missingPatients() {
+        var patients = new java.util.ArrayList<PatientId>();
+        patients.add(null);
+        patients.add(new PatientId(null));
+        MISSING_VALUES.forEach(value -> patients.add(new PatientId(value)));
+        return patients;
+    }
+
+    @Test
+    void refusesAPatientIdentifierThatIsAbsentEmptyOrBlank() {
+        for (PatientId missing : missingPatients()) {
+            BookingOutcome first = bookSlot.book(missing, S);
+            BookingOutcome second = bookSlot.book(missing, S);
+
+            assertEquals(new BookingOutcome.Refused(RefusalReason.MISSING_IDENTIFIER), first, "patient " + missing);
+            assertEquals(first, second);
+            assertEquals(Optional.empty(), store.activeBookingOf(S));
+        }
+    }
+
+    private static List<SlotId> missingSlots() {
+        var slots = new java.util.ArrayList<SlotId>();
+        slots.add(null);
+        slots.add(new SlotId(null));
+        MISSING_VALUES.forEach(value -> slots.add(new SlotId(value)));
+        return slots;
+    }
+
+    /** A store that fails the moment it is asked about a missing identifier, as a real database could. */
+    private static BookingStore strictAboutMissing(BookingStore real) {
+        return new BookingStore() {
+            private void reject(Object id) {
+                if (id == null) {
+                    throw new IllegalStateException("asked about a missing identifier");
+                }
+            }
+
+            @Override
+            public Optional<Slot> findSlot(SlotId slot) {
+                reject(slot);
+                reject(slot.value());
+                return real.findSlot(slot);
+            }
+
+            @Override
+            public Optional<Booking> activeBookingOf(SlotId slot) {
+                reject(slot);
+                reject(slot.value());
+                return real.activeBookingOf(slot);
+            }
+
+            @Override
+            public List<Slot> slotsHeldBy(PatientId patient) {
+                reject(patient);
+                reject(patient.value());
+                return real.slotsHeldBy(patient);
+            }
+
+            @Override
+            public void save(Booking booking) {
+                real.save(booking);
+            }
+
+            @Override
+            public <T> T atomically(java.util.function.Supplier<T> unit) {
+                return real.atomically(unit);
+            }
+        };
+    }
+
+    @Test
+    void refusesASlotIdentifierThatIsAbsentEmptyOrBlank() {
+        BookSlot strict = new BookSlot(strictAboutMissing(store), CLOCK);
+
+        for (SlotId missing : missingSlots()) {
+            BookingOutcome first = strict.book(A, missing);
+            BookingOutcome second = strict.book(A, missing);
+
+            assertEquals(new BookingOutcome.Refused(RefusalReason.MISSING_IDENTIFIER), first, "slot " + missing);
+            assertEquals(first, second);
+            assertEquals(List.of(), store.slotsHeldBy(A));
+        }
+    }
+
+    @Test
+    void onlyWhiteSpaceMakesAnIdentifierBlank() {
+        // zero-width characters (D-37) and control characters are not Unicode white space; surrounding white space is kept
+        List<String> notBlank = List.of("\u200B", "\uFEFF", "\u180E", "\u001F", "  patient-x ");
+        List<Slot> slots = new java.util.ArrayList<>();
+        for (int i = 0; i < notBlank.size(); i++) {
+            slots.add(slot(new SlotId("free-" + i), i + 1));
+        }
+        BookingStore own = new InMemoryBookingStore(slots);
+        BookSlot book = new BookSlot(own, CLOCK);
+
+        for (int i = 0; i < notBlank.size(); i++) {
+            PatientId patient = new PatientId(notBlank.get(i));
+            SlotId free = new SlotId("free-" + i);
+
+            assertEquals(new BookingOutcome.Booked(new Booking(patient, free)), book.book(patient, free));
+            assertEquals(Optional.of(new Booking(patient, free)), own.activeBookingOf(free));
+        }
+        for (String slotValue : List.of("\u200B", " slot-1 ")) {
+            assertEquals(new BookingOutcome.Refused(RefusalReason.UNKNOWN_SLOT), bookSlot.book(A, new SlotId(slotValue)));
+        }
+        assertEquals(Optional.empty(), store.activeBookingOf(S));
+    }
+
+    @Test
+    void reportsOneRefusalWhenBothIdentifiersAreMissing() {
+        var refused = new BookingOutcome.Refused(RefusalReason.MISSING_IDENTIFIER);
+
+        assertEquals(refused, bookSlot.book(null, null));
+        assertEquals(refused, bookSlot.book(new PatientId(null), new SlotId(null)));
+        assertEquals(refused, bookSlot.book(new PatientId(" "), new SlotId("")));
+        assertEquals(refused, bookSlot.book(new PatientId("\u00A0"), new SlotId("\t")));
+        assertEquals(Optional.empty(), store.activeBookingOf(S));
+    }
+
     @Test
     void refusesAnUnknownSlot() {
         SlotId unknown = new SlotId("no-such-slot");
@@ -211,6 +334,54 @@ class BookSlotTest {
         assertEquals(new BookingOutcome.Refused(RefusalReason.UNKNOWN_SLOT), later.book(A, new SlotId("absent")));
         assertEquals(Optional.of(new Booking(A, S)), store.activeBookingOf(S));
         assertEquals(Optional.empty(), store.activeBookingOf(S2));
+    }
+
+    @Test
+    void reportsAMissingIdentifierBeforeAnyOtherRefusal() {
+        var missing = new BookingOutcome.Refused(RefusalReason.MISSING_IDENTIFIER);
+        SlotId past = new SlotId("past");
+        SlotId heldByB = new SlotId("held-by-b");
+        BookingStore store = new InMemoryBookingStore(List.of(
+                slotAt(S, DOCTOR, 60, 120), slotAt(S2, DOCTOR, 90, 150), slotAt(heldByB, DOCTOR, 200, 260),
+                slotAt(past, DOCTOR, -60, -30)));
+        BookSlot book = new BookSlot(store, CLOCK);
+        book.book(A, S);
+        book.book(B, heldByB);
+        Map<String, Object> before = snapshot(store, S, S2, heldByB, past);
+
+        // a missing patient, whatever is wrong with the slot: unknown, past, taken, overlapping the patient's own
+        assertEquals(missing, book.book(new PatientId(" "), new SlotId("absent")));
+        assertEquals(missing, book.book(null, past));
+        assertEquals(missing, book.book(new PatientId(""), heldByB));
+        assertEquals(missing, book.book(new PatientId(null), S2));
+        // a missing slot, whatever the patient holds, even after everything has started
+        BookSlot later = new BookSlot(store, Clock.fixed(NOW.plus(Duration.ofHours(5)), ZoneOffset.UTC));
+        assertEquals(missing, later.book(A, new SlotId("\u00A0")));
+        assertEquals(missing, later.book(A, null));
+
+        assertEquals(before, snapshot(store, S, S2, heldByB, past));
+    }
+
+    @Test
+    void aMissingIdentifierRefusalChangesNothing() {
+        SlotId free = new SlotId("free");
+        SlotId other = new SlotId("other");
+        BookingStore store = new InMemoryBookingStore(List.of(
+                slotAt(S, DOCTOR, 60, 120), slotAt(free, DOCTOR, 200, 260), slotAt(other, DOCTOR, 300, 360)));
+        BookSlot book = new BookSlot(store, CLOCK);
+        book.book(A, S);
+        Map<String, Object> before = snapshot(store, S, free, other);
+
+        book.book(null, free);
+        book.book(new PatientId("  "), free);
+        book.book(A, new SlotId(""));
+        book.book(null, null);
+
+        assertEquals(before, snapshot(store, S, free, other));
+        // no null patient was stored: later bookings still work, in either order
+        assertEquals(new BookingOutcome.Booked(new Booking(A, free)), book.book(A, free));
+        assertEquals(new BookingOutcome.Booked(new Booking(B, other)), book.book(B, other));
+        assertEquals(new BookingOutcome.Refused(RefusalReason.MISSING_IDENTIFIER), book.book(null, other));
     }
 
     @Test

@@ -5,5 +5,6 @@ public enum RefusalReason {
     UNKNOWN_SLOT,
     PAST,
     TAKEN,
-    OVERLAPPING
+    OVERLAPPING,
+    MISSING_IDENTIFIER
 }
