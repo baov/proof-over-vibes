@@ -56,6 +56,7 @@ The agent writes `tools/harness/check_test_coverage.*` — a complete, dependenc
 - Parses each YAML front-matter
 - Sorts them into `covered_ok` / `covered_broken` / `pending` / `manual`
 - Lists orphan tests (existing in the code but with no test-case attached)
+- Counts the test-cases that name no source (a `source` key, a `## Source` section or a `Source:` line): **information only**, never an error or a warning, so that the project can see how many behaviors nobody states
 - Exits 0 if all is well, 1 if there is at least one `covered_broken`, 2 if there are warns only
 
 ## 4.4 — Integration

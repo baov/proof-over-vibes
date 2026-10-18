@@ -114,6 +114,9 @@ What the user (or the upstream system) triggers. One clear main action.
 ## Expected result
 What must happen. Final system state, what the user gets back, observable side effects.
 
+## Source
+Where this behavior comes from: a line of the PRD, an entry of the glossary, an ADR, a decision of the decision log, a ticket. Write `none` when nothing states it: nobody has decided that behavior yet, and a multiple-choice question is due before the case is kept.
+
 ## Notes (optional)
 - Existing automated test: `path/to/test.py::test_xxx` (if applicable)
 - Endpoint involved: `POST /api/...` (if applicable)

@@ -98,6 +98,25 @@ def is_ignored(path: Path) -> bool:
     return any(part in IGNORED_DIRS for part in path.parts)
 
 
+SOURCE_RE = re.compile(r"(?im)^\s*(?:#{1,6}\s*source\b|[-*]?\s*\*{0,2}source\*{0,2}\s*:)")
+
+
+def has_source(case_path: Path, fields: dict) -> bool:
+    """True when the case names where its behavior comes from (a `source` key, a
+    `## Source` section or a `Source:` line) and does not say `none`."""
+    if fields.get("source", "").strip():
+        return fields["source"].strip().lower() not in ("none", "null", "~")
+    try:
+        text = case_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    match = SOURCE_RE.search(text)
+    if not match:
+        return False
+    following = text[match.end():].lstrip(" \t*:\n")[:12].lower()
+    return not following.startswith("none")
+
+
 def collect_test_files(root: Path) -> set[Path]:
     found: set[Path] = set()
     for pattern in TEST_GLOBS:
@@ -119,6 +138,7 @@ class Report:
     manual: list[str] = field(default_factory=list)
     malformed: list[tuple[str, int, str]] = field(default_factory=list)
     orphans: list[str] = field(default_factory=list)
+    unsourced: list[str] = field(default_factory=list)  # information only: never changes the exit code
 
 
 def check(root: Path) -> Report:
@@ -138,6 +158,8 @@ def check(root: Path) -> Report:
     for case_path in sorted(cases_root.rglob("*.md")):
         relative = case_path.relative_to(root).as_posix()
         fields, end_line = parse_front_matter(case_path)
+        if fields is not None and not has_source(case_path, fields):
+            report.unsourced.append(relative)
 
         if not fields:
             report.malformed.append(
@@ -239,6 +261,12 @@ def emit(report: Report) -> int:
         f"{len(report.orphans)} orphan test(s).",
         file=sys.stderr,
     )
+    if report.unsourced:
+        print(
+            f"{len(report.unsourced)} of {total} test-cases name no source "
+            f"(information only: a behavior nobody states may be a decision nobody took).",
+            file=sys.stderr,
+        )
 
     if report.covered_broken or report.malformed:
         return 1
@@ -259,6 +287,8 @@ exist, and reports the test files no test-case mentions.
 Severities:
   error  covered_broken (broken reference), malformed front-matter
   warn   pending (scenario not automated), orphan test
+  info   test-cases that name no source (a `source` key, a `## Source` section or a
+         `Source:` line): counted, never an error and never a warning
 
 Known limit: this check verifies that a test EXISTS, never what it is worth. A
 referenced test may assert nothing at all. That question belongs to block D
