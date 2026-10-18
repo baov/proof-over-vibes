@@ -3,6 +3,7 @@ import { listPendingRequests } from "./application/pending-requests.js";
 import { acceptRequest } from "./application/accept-request.js";
 import type { AcceptRejection } from "./application/accept-request.js";
 import { eraseMember } from "./application/erase-member.js";
+import type { EraseResult } from "./application/erase-member.js";
 import { declineRequest } from "./application/decline-request.js";
 import type { DeclineRejection } from "./application/decline-request.js";
 import { withdrawRequest } from "./application/withdraw-request.js";
@@ -28,9 +29,9 @@ export interface Connections {
   acceptRequest(id: RequestId, actingMember: MemberId): Promise<Result<ConnectionRequest, AcceptRejection>>;
   declineRequest(id: RequestId, actingMember: MemberId): Promise<Result<ConnectionRequest, DeclineRejection>>;
   withdrawRequest(id: RequestId, actingMember: MemberId): Promise<Result<ConnectionRequest, WithdrawRejection>>;
-  eraseMember(member: MemberId): Promise<{ ok: true }>;
-  getPairState(a: MemberId, b: MemberId): Promise<PairState>;
-  listPendingRequests(recipient: MemberId): Promise<readonly ConnectionRequest[]>;
+  eraseMember(member: MemberId): Promise<EraseResult>;
+  getPairState(a: MemberId, b: MemberId): Promise<Result<PairState, "blank-member-id">>;
+  listPendingRequests(recipient: MemberId): Promise<Result<readonly ConnectionRequest[], "blank-member-id">>;
 }
 
 export function createConnections(options: { ids: IdGenerator }): Connections {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { memberId } from "../../src/connections/index.js";
 import { alice, bob, carol, connectionsWithIds, freshConnections, sendOrFail } from "./support.js";
 
 async function rejection(result: Promise<{ ok: boolean; reason?: string }>): Promise<string> {
@@ -67,5 +68,23 @@ describe("rejection reasons", () => {
       "previously-declined",
       "request-id-taken",
     ]);
+  });
+
+  it("gives the blank member id rejection its own reason, distinct from the others", async () => {
+    const connections = freshConnections();
+    const id = await sendOrFail(connections, alice, bob);
+    const blank = await rejection(connections.sendRequest(memberId(""), bob));
+    const blankAccept = await rejection(connections.acceptRequest("req-404", memberId(" ")));
+    const blankState = await rejection(connections.getPairState(alice, memberId("")));
+    const others = [
+      await rejection(connections.sendRequest(alice, alice)),
+      await rejection(connections.acceptRequest("req-404", bob)),
+      await rejection(connections.acceptRequest(id, carol)),
+      await rejection(connections.withdrawRequest(id, bob)),
+    ];
+
+    expect([blank, blankAccept, blankState]).toEqual(["blank-member-id", "blank-member-id", "blank-member-id"]);
+    expect(others).not.toContain("blank-member-id");
+    expect(new Set([blank, ...others]).size).toBe(others.length + 1);
   });
 });

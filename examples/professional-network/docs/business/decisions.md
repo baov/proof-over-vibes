@@ -193,3 +193,27 @@ Append-only. Entries D-1 to D-10 were taken before any code existed, by the huma
 - answer: (a) business rules first: the caller gets the business reason (`self-request`, `duplicate-pending`, ...); `request-id-taken` only when the rules allow the send
 - source: PRD section 5, rules 8-11 and 7 (the business rule is what the member can act on; an id clash is a technical fault); D-13 (reason precedence follows the same logic: the member-facing cause first); D-25. Preference for a person to revisit.
 - request: decline-and-withdraw
+
+### D-33 What "whitespace" covers in a blank member id
+- status: answered-by-delegate
+- answer: (a) standard Unicode whitespace (space, tab, line breaks, no-break space, ideographic space); zero-width and invisible characters are not blank
+- source: docs/product/prd/connection-requests-edge-ids-and-decliner.md section 5, rule 2 ("whitespace", taken literally; a zero-width character is not whitespace, and an id made of one is a non-blank id, left to D-15)
+- request: edge-ids-and-decliner
+
+### D-34 Send reason when the decline block and a current-state rule both apply
+- status: answered-by-delegate
+- answer: (a) the current-state rule wins: `reverse-pending` when the reverse request is pending, `already-connected` when connected; `previously-declined` otherwise. Today's guard order, no code change.
+- source: docs/product/prd/connection-requests-edge-ids-and-decliner.md section 5, rule 6 ("a reverse request is pending anyway"); D-13 (the cause that describes the present state first); D-29
+- request: edge-ids-and-decliner
+
+### D-35 Name of the blank-id reason
+- status: answered-by-delegate
+- answer: `blank-member-id`, the same on every operation and for either id
+- source: docs/product/prd/connection-requests-edge-ids-and-decliner.md section 5, rule 1 (one reason, distinct from every existing one); D-22 (PRD vocabulary). Name: preference for a person to revisit.
+- request: edge-ids-and-decliner
+
+### D-36 Amendment of D-19 and D-26 for blank member ids
+- status: answered-by-delegate
+- answer: supersedes D-19 and D-26 for a blank member id only: the state query, the pending list and erase reject it with `blank-member-id` (D-35) instead of answering or succeeding. For every non-blank id D-19 and D-26 hold unchanged.
+- source: docs/product/prd/connection-requests-edge-ids-and-decliner.md section 5, rule 1; section 6 (reads never rejecting and erase always succeeding change for blank ids only)
+- request: edge-ids-and-decliner

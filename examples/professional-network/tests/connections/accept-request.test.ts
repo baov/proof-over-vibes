@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alice, bob, carol, freshConnections, sendOrFail } from "./support.js";
+import { alice, bob, carol, freshConnections, sendOrFail, stateOf, pendingOf } from "./support.js";
 
 describe("accept a connection request", () => {
   it("the recipient accepts a pending request and it is no longer pending", async () => {
@@ -13,7 +13,7 @@ describe("accept a connection request", () => {
       ok: true,
       value: { id, sender: alice, recipient: bob, state: "accepted" },
     });
-    expect(await connections.listPendingRequests(bob)).toEqual([
+    expect(await pendingOf(connections, bob)).toEqual([
       { id: "req-2", sender: carol, recipient: bob, state: "pending" },
     ]);
   });
@@ -25,7 +25,7 @@ describe("accept a connection request", () => {
     const result = await connections.acceptRequest(id, carol);
 
     expect(result).toEqual({ ok: false, reason: "not-recipient" });
-    expect(await connections.listPendingRequests(bob)).toHaveLength(1);
+    expect(await pendingOf(connections, bob)).toHaveLength(1);
   });
 
   it("rejects the sender accepting their own request", async () => {
@@ -35,7 +35,7 @@ describe("accept a connection request", () => {
     const result = await connections.acceptRequest(id, alice);
 
     expect(result).toEqual({ ok: false, reason: "not-recipient" });
-    expect(await connections.listPendingRequests(bob)).toHaveLength(1);
+    expect(await pendingOf(connections, bob)).toHaveLength(1);
   });
 
   it("rejects a request that is not found, whoever asks", async () => {
@@ -81,7 +81,21 @@ describe("accept a connection request", () => {
     expect(await connections.acceptRequest(declined, bob)).toEqual({ ok: false, reason: "not-pending" });
     expect(await connections.acceptRequest(withdrawn, bob)).toEqual({ ok: false, reason: "not-pending" });
 
-    expect(await connections.getPairState(alice, bob)).toEqual({ connected: false, requestState: "declined" });
-    expect(await connections.getPairState(carol, bob)).toEqual({ connected: false, requestState: "withdrawn" });
+    expect(await stateOf(connections, alice, bob)).toEqual({ connected: false, requestState: "declined" });
+    expect(await stateOf(connections, carol, bob)).toEqual({ connected: false, requestState: "withdrawn" });
+  });
+
+  it("connects the two when the original sender accepts the decliner's request", async () => {
+    const connections = freshConnections();
+    const first = await sendOrFail(connections, alice, bob);
+    await connections.declineRequest(first, bob);
+    const second = await sendOrFail(connections, bob, alice);
+
+    const result = await connections.acceptRequest(second, alice);
+
+    expect(result).toEqual({ ok: true, value: { id: second, sender: bob, recipient: alice, state: "accepted" } });
+    expect(await stateOf(connections, alice, bob)).toEqual({ connected: true, requestState: "accepted" });
+    expect(await stateOf(connections, bob, alice)).toEqual({ connected: true, requestState: "accepted" });
+    expect(await connections.acceptRequest(first, bob)).toEqual({ ok: false, reason: "not-pending" });
   });
 });
