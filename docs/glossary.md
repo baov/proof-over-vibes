@@ -55,6 +55,7 @@ used once, in one file, does not need an entry.
 | request | job, task, work item | What starts a run: a prompt, or a ticket |
 | tracker | ticketing tool, issue system | Where tickets live. Never named: any tracker works |
 | brief | task file, ticket summary, spec | The file the Orchestrator writes first; every role reads it |
+| work folder | task folder, workspace, run directory | `.plans/in-progress/<slug>/`: every file the roles write for one request. The Orchestrator moves it to `.plans/done/` or `.plans/aborted/` when the run ends |
 | hand-off | handover, relay, transfer | A role passing its result to the next through a file |
 | merge gate | CI merge, merge check, release gate | The last step before the merge, outside the agents: a CI, or a person where there is none |
 | escalation | handover to a human, bubble-up | A run stopping to call a person |

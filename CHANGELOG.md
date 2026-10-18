@@ -4,6 +4,10 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Changed
+
+- The files the roles write for a request now live in a work folder, `.plans/in-progress/<slug>/` (`brief.md`, `stories.md`, `architect.md`, `plan.md`, `<role>.md`), instead of flat `.plans/<slug>-*.md` files. A feature gets one folder with one subfolder per story. The Orchestrator archives the folder to `.plans/done/` or `.plans/aborted/` at the end of the run. `plan-driven-dev` follows the same layout: its plan is `.plans/in-progress/<slug>/plan.md`, archived as a folder. The Failure Analyst's improvement plan gets its own folder. The Product Manager is now listed among the hand-off note writers.
+
 ## [0.3.0] — 2026-10-18
 
 Two roles and one skill for the work upstream of the plan: what to build, and

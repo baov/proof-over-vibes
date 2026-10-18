@@ -15,7 +15,7 @@ Everything below is the chain run by hand. To run it with a team of agents — a
 | `codebase-harness` | "set up the guardrails" | `tools/harness/`, `docs/technical/invariants.md` |
 | `ai-code-remediation` | "audit this codebase" | `.audit/<project>-<date>.md` + a remediation plan |
 | `systematic-debugging` | "why does this crash" | A proven root cause (no file) |
-| `plan-driven-dev` | "implement", "fix" | `.plans/done/<slug>.md`, `.plans/FEEDBACK.md` |
+| `plan-driven-dev` | "implement", "fix" | `.plans/done/<slug>/plan.md`, `.plans/FEEDBACK.md` |
 | `premerge-review` | "review my branch" | `.reviews/<branch>-<date>.md` + a verdict |
 | `code-assimilation-quiz` | "quiz me" — **never automatic** | Nothing (learning) |
 

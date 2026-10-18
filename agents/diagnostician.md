@@ -14,7 +14,7 @@ The brief, and the bug report: steps, logs, the ticket.
 ## What you do
 
 1. Announce the skill, then reproduce the bug minimally, state falsifiable hypotheses, and bisect or instrument until one survives.
-2. Write the proof to `.plans/<slug>-diagnostician.md`: the reproduction, the hypotheses you ruled out, the root cause and the evidence that establishes it. The reviewer checks this proof before anyone writes a fix, so someone who did not follow your work must be able to replay it.
+2. Write the proof to `diagnostician.md` in the work folder: the reproduction, the hypotheses you ruled out, the root cause and the evidence that establishes it. The reviewer checks this proof before anyone writes a fix, so someone who did not follow your work must be able to replay it.
 3. If you cannot prove a cause, say so: `status: blocked`, with what you tried. Do not hand over a guess as a cause.
 
 ## What you never do

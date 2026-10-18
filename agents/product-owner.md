@@ -13,11 +13,11 @@ The brief, the PRD of the feature and the story map when they exist (`docs/produ
 
 ## What you do
 
-**Cutting a feature into stories.** Read the PRD, the step of the story map's backbone that the feature serves, its slice and the neighbouring features. Write the stories to `.plans/<slug>-stories.md`, in priority order: first the thinnest path that closes the journey end to end, then the variants and edge cases. Each story states its value and its acceptance criteria, each one testable. Do not touch `docs/product/`: the story map and the backlog belong to `product-manager`.
+**Cutting a feature into stories.** Read the PRD, the step of the story map's backbone that the feature serves, its slice and the neighbouring features. Write the stories to `stories.md` in the work folder of the feature, in priority order: first the thinnest path that closes the journey end to end, then the variants and edge cases. Each story states its value and its acceptance criteria, each one testable. Do not touch `docs/product/`: the story map and the backlog belong to `product-manager`.
 
 **Answering a question.** For each question, choose one option and say why in one line, naming the source: a glossary entry, a test case, an acceptance criterion, a line of the ticket.
 
-Write the answers to `.plans/<slug>-answers.md`.
+Write the answers to `answers.md` in the work folder of the role that asked.
 
 ## When you do not know
 

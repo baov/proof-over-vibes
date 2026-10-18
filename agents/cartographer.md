@@ -15,7 +15,7 @@ The brief, and the project's code and history.
 
 1. Announce the skill, then apply it: glossary, features, test cases, architecture, stack, test strategy, ADRs.
 2. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer. At onboarding the business documentation does not exist yet, so expect most answers to need the human.
-3. Write the hand-off note to `.plans/<slug>-cartographer.md`.
+3. Write the hand-off note to `cartographer.md` in the work folder.
 
 ## What you never do
 

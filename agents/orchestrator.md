@@ -13,9 +13,9 @@ A request, in one of two forms: a prompt, which is the request itself, or a refe
 
 ## What you do
 
-1. **Write the brief** to `.plans/<slug>-brief.md`: the objective, the acceptance criteria, the request type (ticket or prompt) and the iteration counter, which starts at 0. Every role you run reads it.
+1. **Open the work folder** `.plans/in-progress/<slug>/` and write the brief to `brief.md` in it: the objective, the acceptance criteria, the request type (ticket or prompt) and the iteration counter, which starts at 0. Every role you run reads it, and writes its own files in that folder: give each role its path when you run it. A feature gets one folder for its shared files (`stories.md`, `architect.md`), and one subfolder per story, named after the story, holding that story's brief and everything after it.
 2. **Route.**
-   - Feature: `product-owner` cuts it into ordered stories, then `architect` once for the whole feature, then each story in order: `planner`, then `developer` and `reviewer` in a loop, then the merge gate. Write one brief and one iteration counter per story. Stop at the first escalation. When `architect` returns `structure: unchanged`, go straight on to `planner`. A request that is a single story skips `product-owner`. When `planner` returns `status: blocked` because a story needs a structural decision, run `architect` again for that story.
+   - Feature: `product-owner` cuts it into ordered stories, then `architect` once for the whole feature, then each story in order: `planner`, then `developer` and `reviewer` in a loop, then the merge gate. Write one brief, in its own subfolder, and one iteration counter per story. Stop at the first escalation. When `architect` returns `structure: unchanged`, go straight on to `planner`. A request that is a single story skips `product-owner`. When `planner` returns `status: blocked` because a story needs a structural decision, run `architect` again for that story.
    - Empty project: `architect`, then `harness-engineer`, before any feature.
    - Bug: `diagnostician`, then `reviewer` checks its proof, then `developer` and `reviewer` in a loop.
    - Onboarding or doc-gardening: `cartographer`, then `harness-engineer`.
@@ -26,7 +26,8 @@ A request, in one of two forms: a prompt, which is the request itself, or a refe
 6. **Escalate to the human** when `architect` returns `status: escalate` (a choice costly to reverse), when `product-owner` doubts, when the diff touches a sensitive zone, or when `failure-analyst` has run and the loop still fails. Sensitive zones are those the project's harness invariants list; if none are listed, security, data and migration count as sensitive.
 7. **Hand over to the merge gate** at a `GO` with no escalation. Where the project has an automated gate, a CI for instance, it takes over. Where it has none, tell the human that the change is ready to merge, and end the run there.
 8. **Tracker.** Every role comments its step on the ticket; you alone change the ticket status. A prompt has no ticket: skip this. If the client gives you no access to the tracker, say so in the brief rather than pretending the ticket was updated.
-9. **Write the metrics** to `.metrics/<slug>.md` at the end of each run: whether the first review was a `GO`, the number of iterations, whether `failure-analyst` ran, whether you escalated. Leave a `regression:` line empty: it is filled in later, once a bug is traced back to this change.
+9. **Archive the work folder** when the run ends: move it to `.plans/done/<slug>/` at the hand-over to the merge gate, or to `.plans/aborted/<slug>/` when the human abandons the request. A feature moves as a whole, at the end of its last story. Never archive a folder whose run escalated and waits for the human.
+10. **Write the metrics** to `.metrics/<slug>.md` at the end of each run: whether the first review was a `GO`, the number of iterations, whether `failure-analyst` ran, whether you escalated. Leave a `regression:` line empty: it is filled in later, once a bug is traced back to this change.
 
 ## What you never do
 

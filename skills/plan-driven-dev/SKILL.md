@@ -5,7 +5,7 @@ description: Disciplined workflow for implementing a new feature OR fixing a bug
 
 # plan-driven-dev
 
-A disciplined workflow that forces the agent to understand before coding, to plan before acting, and to capture lessons once it is done. The **plan** is a file persisted on disk (`.plans/in-progress/<slug>.md`) that acts as a compass for the whole task.
+A disciplined workflow that forces the agent to understand before coding, to plan before acting, and to capture lessons once it is done. The **plan** is a file persisted on disk (`.plans/in-progress/<slug>/plan.md`) that acts as a compass for the whole task.
 
 ---
 
@@ -68,7 +68,7 @@ If the user corrects you → restate again until validated.
 
 ## Step 3 — Plan → VALIDATION
 
-Create the file `.plans/in-progress/<slug>.md` (slug = short kebab-case identifier derived from the task, e.g. `add-user-export`, `fix-login-timeout`).
+Create the file `.plans/in-progress/<slug>/plan.md` (slug = short kebab-case identifier derived from the task, e.g. `add-user-export`, `fix-login-timeout`). The folder `<slug>/` is the work folder of the task: when other files belong to it (a brief, hand-off notes), they sit next to the plan.
 
 **The file must contain EXACTLY these 10 sections, in this order:**
 
@@ -153,7 +153,7 @@ Run section 5 (Steps) and section 4 (Expected behaviors) through these determini
 >
 > *Two options:*
 > *(a) **Refine the plan here** until it can be run mechanically (I can do it now if you are on a strong model such as Opus).*
-> *(b) **Switch to a strong model for execution** if you are currently on a lighter one (Sonnet/Haiku): open a new chat on Opus, and I will pick up at step 5 with the existing plan in `.plans/in-progress/<slug>.md`.*
+> *(b) **Switch to a strong model for execution** if you are currently on a lighter one (Sonnet/Haiku): open a new chat on Opus, and I will pick up at step 5 with the existing plan in `.plans/in-progress/<slug>/plan.md`.*
 >
 > *Which do you prefer?"*
 
@@ -257,9 +257,10 @@ Once every step of section 5 is ticked:
 6. **Final validation and moving the plan**
    - Update the status in section 1: `done` or `aborted`
    - Once the user gives final validation:
-     - If the task was carried through → move the file to `.plans/done/<slug>.md`
-     - If it was abandoned → move it to `.plans/aborted/<slug>.md`
-   - Confirm to the user: *"Plan archived in `.plans/done/<slug>.md`."*
+     - If the task was carried through → move the work folder to `.plans/done/<slug>/`
+     - If it was abandoned → move it to `.plans/aborted/<slug>/`
+     - If another role already archived the folder (the Orchestrator does at the end of a run), leave it where it is.
+   - Confirm to the user: *"Plan archived in `.plans/done/<slug>/`."*
 
 ---
 

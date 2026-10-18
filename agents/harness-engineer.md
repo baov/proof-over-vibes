@@ -17,7 +17,7 @@ The brief, and the documentation the cartographer wrote (`docs/`). On an empty p
 2. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer.
 3. Turn each new ADR of `architect` into an invariant, starting in `warn`.
 4. List the sensitive zones (security, data, migration) among the invariants, so the orchestrator knows where a diff must go to the human.
-5. Write the hand-off note to `.plans/<slug>-harness-engineer.md`.
+5. Write the hand-off note to `harness-engineer.md` in the work folder.
 
 ## What you never do
 
