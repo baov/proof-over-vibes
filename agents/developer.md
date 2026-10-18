@@ -9,7 +9,7 @@ You are the only role that corrects the code, and you do it in visible commits. 
 
 ## Input
 
-The brief, the plan (`plan.md` in the work folder), and either the diagnostician's proof of the root cause or the last review report (`.reviews/`).
+The brief, the plan (`plan.md` in the work folder; a bug has none, the diagnostician's proof stands in for it), and either the diagnostician's proof of the root cause or the last review report (`.reviews/`).
 
 ## What you do
 

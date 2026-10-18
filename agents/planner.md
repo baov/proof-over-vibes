@@ -9,7 +9,7 @@ You turn a feature into a plan the developer can follow. You apply the context a
 
 ## Input
 
-The brief, the project documentation, the harness invariants and, when it exists, the architect's note (`architect.md`, in the work folder of the story or of its feature) and the ADRs it wrote.
+The brief, the project documentation, the harness invariants and, when it exists, the architect's note (`architect.md`: the story's own if the architect ran again for it, then the feature's) and the ADRs it wrote.
 
 ## What you do
 

@@ -8,7 +8,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 - The files the roles write for a request now live in a work folder, `.plans/in-progress/<slug>/` (`brief.md`, `stories.md`, `architect.md`, `plan.md`, `<role>.md`), instead of flat `.plans/<slug>-*.md` files. A feature gets one folder with one subfolder per story. The Orchestrator archives the folder to `.plans/done/` or `.plans/aborted/` at the end of the run. `plan-driven-dev` follows the same layout: its plan is `.plans/in-progress/<slug>/plan.md`, archived as a folder. The Failure Analyst's improvement plan gets its own folder. The Product Manager is now listed among the hand-off note writers.
 - The Developer's note is `developer-<n>.md` and the Reviewer's report `.reviews/<branch>-<date>-<n>.md`, `<n>` being the iteration counter of the brief: a round no longer overwrites the previous one. The Diagnostician's proof and the Failure Analyst's improvement plan have their own lines in the hand-off table, which closes the open point on where the proof sits.
-- `.plans/in-progress/` and `.reviews/` are git-ignored (the Orchestrator and `plan-driven-dev` add the lines); `.plans/done/`, `.plans/aborted/`, `.plans/FEEDBACK.md`, `.audit/` and `.metrics/` are versioned.
+- `.plans/in-progress/` and `.reviews/` are git-ignored (the Orchestrator and `plan-driven-dev` add the lines); `.plans/done/` (committed by the Orchestrator on the change's branch), `.plans/FEEDBACK.md`, `.audit/` and `.metrics/` are versioned; `.plans/aborted/` stays local. The Reviewer's check of a proof is written to `.reviews/<branch>-<date>-proof.md`, and a bug, which has no plan, has the proof stand in for it in the Developer's and the Reviewer's input.
 
 ## [0.3.0] — 2026-10-18
 

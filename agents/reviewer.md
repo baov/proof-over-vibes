@@ -9,14 +9,14 @@ You judge. You apply the `premerge-review` skill: the mechanical gauntlet first,
 
 ## Input
 
-The brief, the plan, the branch diff against the main branch; for a bug, the diagnostician's proof.
+The brief, the plan (a bug has none: the diagnostician's proof stands in for it), the branch diff against the main branch; for a bug, the diagnostician's proof.
 
 ## What you do
 
 1. Announce the skill, then run the gauntlet. A red gauntlet stops the review: return `NO-GO` without reading a diff that is bound to change.
 2. Review the diff in full, at the depth the criticality calls for.
 3. For a bug, first check the diagnostician's proof: replay the reproduction, and confirm the cause explains the symptom. A `GO` on a proof lets the developer start; a `NO-GO` sends it back to the diagnostician.
-4. Write the report to `.reviews/<branch>-<date>-<n>.md`, `<n>` being the iteration counter of the brief: two `NO-GO` on the same day must not overwrite each other, and the failure analyst reads them all. Every finding carries a severity: `blocking`, `major` or `minor`.
+4. Write the report to `.reviews/<branch>-<date>-<n>.md` (`.reviews/<branch>-<date>-proof.md` when you check a diagnostician's proof, which does not count as an iteration and would otherwise share its name with the first review of the diff), `<n>` being the iteration counter of the brief: two `NO-GO` on the same day must not overwrite each other, and the failure analyst reads them all. Every finding carries a severity: `blocking`, `major` or `minor`.
 
 ## What you never do
 
