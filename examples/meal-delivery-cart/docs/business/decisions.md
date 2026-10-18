@@ -195,3 +195,27 @@ Append only. `answered` = a person read and answered; `answered-by-delegate` = a
 - answer: (a) accepted, fee line applies
 - source: orchestrator relaying plan.md section 6 Q3; PRD R12, R17, R18
 - request: price-a-cart
+
+### D-33 Promotion reasons: closed set UNKNOWN_CODE and SUBTOTAL_BELOW_MINIMUM in one field; empty when the promotion applied or no code was supplied; a valid code whose discount rounds to zero is applied (discount zero, no reason)
+- status: answered
+- answer: (a) closed set of two reasons in one field
+- source: human; apply-a-promotion plan.md Q1; PRD R9
+- request: price-a-cart
+
+### D-34 The promotion is optional in the rules (rules without one are valid, any supplied code is then unknown); one promotion = one code, one rate, one minimum; the code matches by exact text (case-sensitive, no trimming)
+- status: answered
+- answer: (a) optional promotion, exact-text match
+- source: human; apply-a-promotion plan.md Q2; PRD R7, R9
+- request: price-a-cart
+
+### D-35 Percentage(numerator, scale) is numerator over 10^scale as a fraction of the amount, scale 0..18; a negative numerator is built but refused by the rules per D-28
+- status: answered-by-delegate
+- answer: (a) as stated
+- source: orchestrator relaying apply-a-promotion plan.md Q3; D-13, D-28
+- request: price-a-cart
+
+### D-36 Rate bounds are enforced by the rules, not by Percentage: Percentage validates only its scale; the rules reject any rate outside 0..100 percent (D-28 prevails over the architect note)
+- status: answered-by-delegate
+- answer: follow D-28 and the stories
+- source: orchestrator; D-28, D-29; architect.md
+- request: price-a-cart
