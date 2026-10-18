@@ -52,7 +52,7 @@ Always in this order:
 
 **In parallel with all of the above**: read `.plans/FEEDBACK.md` if it exists. That file holds the lessons accumulated from previous tasks (project conventions, traps already hit, durable principles). **Apply those lessons** in everything that follows.
 
-If `.plans/` does not exist yet, create the folder now (along with its `in-progress/`, `done/` and `aborted/` subfolders).
+If `.plans/` does not exist yet, create the folder now (along with its `in-progress/`, `done/` and `aborted/` subfolders), and add `.plans/in-progress/` to the project's `.gitignore` if it is not there: work in progress stays out of the repository, while `done/`, `aborted/` and `FEEDBACK.md` are versioned.
 
 ---
 

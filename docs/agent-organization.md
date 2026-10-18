@@ -94,13 +94,17 @@ Roles share no context. Everything passes through files of the repository: the o
 | Architect's note (`architect.md`) | Architect | Planner, Orchestrator |
 | ADR (`docs/technical/adr/`) | Architect, Cartographer | Harness Engineer, Planner |
 | Plan (`plan.md`) | Planner | Developer, Reviewer |
-| Hand-off note (`<role>.md`) | Cartographer, Harness Engineer, Product Manager, Developer, Diagnostician | Orchestrator |
-| Review report (`.reviews/`) | Reviewer | Orchestrator, Developer |
+| Proof of the cause (`diagnostician.md`) | Diagnostician | Reviewer, Developer |
+| Hand-off note (`<role>.md`, `developer-<n>.md` for the Developer) | Cartographer, Harness Engineer, Product Manager, Developer | Orchestrator |
+| Improvement plan (`<slug>-harness-improvement/plan.md`) | Failure Analyst | the human, Orchestrator |
+| Review report (`.reviews/<branch>-<date>-<n>.md`) | Reviewer | Orchestrator, Developer |
 | Audit report (`.audit/`) | Auditor | Orchestrator, Product Owner |
 | Metrics (`.metrics/`) | Orchestrator | the human |
 
 - The `.plans/` files above live in a **work folder**, `.plans/in-progress/<slug>/`, one per request. A feature has one folder for its shared files (`stories.md`, `architect.md`) and one subfolder per story, with the story's brief, plan and notes. The Orchestrator gives each role the path, and moves the folder to `.plans/done/` or `.plans/aborted/` when the run ends, as `plan-driven-dev` does for a plan on its own. The Failure Analyst's improvement plan is a request of its own, so it gets its own folder.
 - The brief holds the objective, the acceptance criteria, the type of request (ticket or prompt) and the iteration counter, which the Orchestrator updates.
+- `<n>` is the iteration counter of the brief. The Developer's note and the Reviewer's report carry it, so no round overwrites the previous one.
+- **Versioning.** Working state stays out of the repository: `.plans/in-progress/` and `.reviews/` are git-ignored, and the Orchestrator adds them to `.gitignore` if needed. The record is versioned: `.plans/done/`, `.plans/aborted/` and `.plans/FEEDBACK.md`, as well as `.audit/` and `.metrics/`. Since the Orchestrator archives the folder before the merge gate, the plan and the decisions of a change ship in its own merge request.
 - A role never asks the Product Owner directly. A role that needs a decision writes its multiple-choice question in its report and sets `status: blocked`. The Orchestrator relays the question, appends the answer to the brief, and runs the role again.
 - Every output opens on a YAML front-matter, followed by a report in prose. The Orchestrator reads only the front-matter to decide whether to resend or escalate.
 
@@ -163,7 +167,6 @@ Three choices are assumed, and reduce the safeguards. Revisit them after the fir
 **Open points**
 
 - The Failure Analyst triggers at the 5th iteration, and "Failure Analyst exhausted" is also an escalation trigger: specify exactly when the human is told.
-- The Diagnostician must write the proof of the cause that the Reviewer checks. Until a location is defined, the proof sits in its hand-off note, `diagnostician.md`.
 - Who defines the "sensitive zones" (security, data, migration), and where: for example in the invariants of the harness. Until then the Orchestrator falls back on the three named above.
 - At onboarding the business documentation does not exist yet, since the Cartographer is writing it: the Product Owner has nothing to rely on, and its answers will mostly escalate to the human.
 - Linking the verdict to the merge gate. With a CI: a check that reads `verdict` in the latest review report, and `status` for an escalation. With a local gate: a script. Both depend on the platform, so neither is provided.
