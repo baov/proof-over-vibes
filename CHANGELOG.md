@@ -4,11 +4,21 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added
+
+- A decision answered by the human's delegate is `answered-by-delegate` in the decision log, not `answered`, and the Orchestrator counts them in the metrics (`delegated-decisions:`), so that a decision nobody read is visible.
+
 ### Changed
 
+- Business decisions can no longer slip through silently. The Product Owner writes only acceptance criteria it can source, and lists the others as open points; the Planner also asks about the behaviors its own plan creates (a repeated call, an absent or invalid value, an edge, an order); the Developer lists the public behaviors it added and blocks on a consumer-visible one; the Reviewer rates an undecided consumer-visible behavior `major`, which carries to the next planner; and the Orchestrator reads the plans' technical choices and the stories' open points and sends back what a consumer would see.
 - The files the roles write for a request now live in a work folder, `.plans/in-progress/<slug>/` (`brief.md`, `stories.md`, `architect.md`, `plan.md`, `<role>.md`), instead of flat `.plans/<slug>-*.md` files. A feature gets one folder with one subfolder per story. The Orchestrator archives the folder to `.plans/done/` or `.plans/aborted/` at the end of the run; a feature is archived story by story, so each merge request ships its own plan. `plan-driven-dev` follows the same layout: its plan is `.plans/in-progress/<slug>/plan.md`, archived as a folder. The Failure Analyst's improvement plan gets its own folder. The Product Manager is now listed among the hand-off note writers.
 - The Developer's note is `developer-<n>.md` and the Reviewer's report `.reviews/<branch>-<date>-<n>.md`, `<n>` being the iteration counter of the brief: a round no longer overwrites the previous one. The Diagnostician's proof and the Failure Analyst's improvement plan have their own lines in the hand-off table, which closes the open point on where the proof sits.
 - `.plans/in-progress/` and `.reviews/` are git-ignored (the Orchestrator and `plan-driven-dev` add the lines); `.plans/done/` (committed by the Orchestrator on the change's branch), `.plans/FEEDBACK.md`, `.audit/` and `.metrics/` are versioned; `.plans/aborted/` stays local. The Reviewer's check of a proof is written to `.reviews/<branch>-<date>-proof.md`, and a bug, which has no plan, has the proof stand in for it in the Developer's and the Reviewer's input.
+- The Product Owner keeps a decision log, `docs/business/decisions.md`: it reads it before answering and appends every answer, `answered` or `human-needed`, so the same question is never asked twice and a pending decision is visible. The Orchestrator may continue on the recommended option of a pending decision when no person is reachable and the choice is cheap to reverse, and counts it in the metrics.
+- A `GO` no longer buries a known defect: the Reviewer lists its open major findings in `open_majors`, the Orchestrator carries them into the brief of the project's next request, and the Planner plans or defers each one by a question.
+- The iteration limit lives in the brief (5 by default), a single source that the Failure Analyst and the documentation read; the human may change it for a run.
+- The Planner no longer settles an open point that the consumer of the feature would see (a business rule, an order, a tie-break, the shape of a response): it writes a multiple-choice question and stops, at most three per round. Only choices no consumer can observe stay in the plan.
+- Sensitive zones have a home: a `Sensitive zones` section of `docs/technical/invariants.md`, written by the Harness Engineer, with `None` valid only after an explicit answer. The Orchestrator and the Reviewer escalate on those zones; when the section is absent they fall back on security, data and migration and the metrics record `sensitive-zones: undeclared`.
 
 ## [0.3.0] — 2026-10-18
 

@@ -1,6 +1,6 @@
 ---
 name: failure-analyst
-description: Explains why the harness did not hold when the developer and reviewer loop reached 5 iterations without a GO, and proposes a harness improvement. Use only when the orchestrator reports that threshold.
+description: Explains why the harness did not hold when the developer and reviewer loop reached the iteration limit of the brief (5 by default) without a GO, and proposes a harness improvement. Use only when the orchestrator reports that threshold.
 ---
 
 # Failure analyst
