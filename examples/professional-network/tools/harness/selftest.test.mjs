@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { check as layers } from "./check_layers.mjs";
 import { check as shape } from "./check_shape.mjs";
 import { check as bridge } from "./check_test_coverage.mjs";
+import { check as serialized } from "./check_serialized.mjs";
 import { summarise } from "./mutation_report.mjs";
 
 function project(files) {
@@ -94,4 +95,22 @@ test("mutation: score, threshold and exit codes", () => {
   assert.equal(summarise(report, { threshold: 60, severity: "warn" }, "critical").code, 0);
   assert.equal(summarise(report, { threshold: 70, severity: "warn" }, "critical").code, 2);
   assert.equal(summarise(report, { threshold: 70, severity: "error" }, "critical").code, 1);
+});
+
+test("serialized: pending without a queue file, clean when wired, caught when a method bypasses it", () => {
+  const index = (body) =>
+    'import { SerialQueue } from "./infrastructure/serial-queue.js";\n' +
+    "export function createConnections(o: { ids: unknown }) {\n  const queue = new SerialQueue();\n  return {\n" + body + "\n  };\n}\n";
+  const queueFile = { "src/connections/infrastructure/serial-queue.ts": "export class SerialQueue { run<T>(f: () => Promise<T>) { return f(); } }\n" };
+  const quiet = (fn) => { const log = console.log; console.log = () => {}; try { return fn(); } finally { console.log = log; } };
+  assert.deepEqual(quiet(() => serialized(project({ "src/connections/index.ts": index("    a: () => 1,") }))), []);
+  const ok = project({ ...queueFile, "src/connections/index.ts": index("    a: (x) => queue.run(() => use(x)),\n    b: (y) => queue.run(async () => use(y)),") });
+  assert.deepEqual(serialized(ok), []);
+  const bad = project({ ...queueFile, "src/connections/index.ts": index("    a: (x) => queue.run(() => use(x)),\n    b: (y) => use(y),") });
+  const found = serialized(bad);
+  assert.deepEqual(ids(found), ["src/connections/index.ts:INV-011"]);
+  assert.match(found[0].message, /`b`/);
+  assert.ok(found[0].severity === "warn" && found[0].remediation.length > 20);
+  const unwired = project({ ...queueFile, "src/connections/index.ts": "export function createConnections() { return { a: () => 1 }; }\n" });
+  assert.deepEqual(ids(serialized(unwired)), ["src/connections/index.ts:INV-011"]);
 });

@@ -16,6 +16,7 @@ import type { MemberId } from "./domain/member-id.js";
 import type { PairState } from "./domain/pair-state.js";
 import type { Result } from "./domain/result.js";
 import { InMemoryStore } from "./infrastructure/in-memory-store.js";
+import { createSerialQueue } from "./infrastructure/serial-queue.js";
 
 export { memberId } from "./domain/member-id.js";
 export type { MemberId } from "./domain/member-id.js";
@@ -36,13 +37,14 @@ export interface Connections {
 
 export function createConnections(options: { ids: IdGenerator }): Connections {
   const deps = { store: new InMemoryStore(), ids: options.ids };
+  const queue = createSerialQueue();
   return {
-    sendRequest: (sender, recipient) => sendRequest(deps, sender, recipient),
-    acceptRequest: (id, actingMember) => acceptRequest(deps, id, actingMember),
-    declineRequest: (id, actingMember) => declineRequest(deps, id, actingMember),
-    withdrawRequest: (id, actingMember) => withdrawRequest(deps, id, actingMember),
-    eraseMember: (member) => eraseMember(deps, member),
-    getPairState: (a, b) => getPairState(deps, a, b),
-    listPendingRequests: (recipient) => listPendingRequests(deps, recipient),
+    sendRequest: (sender, recipient) => queue(() => sendRequest(deps, sender, recipient)),
+    acceptRequest: (id, actingMember) => queue(() => acceptRequest(deps, id, actingMember)),
+    declineRequest: (id, actingMember) => queue(() => declineRequest(deps, id, actingMember)),
+    withdrawRequest: (id, actingMember) => queue(() => withdrawRequest(deps, id, actingMember)),
+    eraseMember: (member) => queue(() => eraseMember(deps, member)),
+    getPairState: (a, b) => queue(() => getPairState(deps, a, b)),
+    listPendingRequests: (recipient) => queue(() => listPendingRequests(deps, recipient)),
   };
 }

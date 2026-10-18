@@ -217,3 +217,15 @@ Append-only. Entries D-1 to D-10 were taken before any code existed, by the huma
 - answer: supersedes D-19 and D-26 for a blank member id only: the state query, the pending list and erase reject it with `blank-member-id` (D-35) instead of answering or succeeding. For every non-blank id D-19 and D-26 hold unchanged.
 - source: docs/product/prd/connection-requests-edge-ids-and-decliner.md section 5, rule 1; section 6 (reads never rejecting and erase always succeeding change for blank ids only)
 - request: edge-ids-and-decliner
+
+### D-37 Which of two same-moment operations wins
+- status: answered-by-delegate
+- answer: (a) unspecified: either sequential order is correct; the module promises no arrival order. Tests accept either and check the outcome equals one of the two sequential orders; same for erase against another operation and a read against a write.
+- source: docs/product/prd/connection-requests-edge-concurrency.md section 5, rules 1 and 6 (no priority between members or kinds of operation); docs/technical/adr/0002-operations-serialized-in-process.md
+- request: edge-concurrency
+
+### D-38 An operation fails with an error underneath
+- status: answered-by-delegate
+- answer: (a) its own caller receives the same error unchanged; operations queued behind it run normally and get their own answers; the failed operation wrote nothing. No new rejection reason, no change of result shapes.
+- source: D-21 (rejection values are business rules; a fault underneath is not one); PRD section 5, rule 1 (the other operation's outcome must still equal a sequential order); docs/technical/adr/0002-operations-serialized-in-process.md. PRD silent on faults; preference for a person to revisit.
+- request: edge-concurrency

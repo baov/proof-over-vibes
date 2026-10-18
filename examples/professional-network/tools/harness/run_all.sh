@@ -5,7 +5,7 @@ set -uo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_args=("$@")
 worst=0
-for check in check_layers check_shape check_test_coverage; do
+for check in check_layers check_shape check_test_coverage check_serialized; do
   echo "== $check"
   node "$here/$check.mjs" ${root_args[@]+"${root_args[@]}"}
   rc=$?

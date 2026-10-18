@@ -48,3 +48,55 @@ export async function pendingOf(module: Connections, member: MemberId): Promise<
   if (!result.ok) throw new Error(`pending list rejected: ${result.reason}`);
   return result.value;
 }
+
+/** Two operations on the same fresh module, plus what is observed once both have answered. */
+export interface Scenario<Context, A, B, Observed> {
+  /** Builds the starting state; its result is handed to both operations and to `observe`. */
+  setup: (module: Connections) => Promise<Context>;
+  a: (module: Connections, context: Context) => Promise<A>;
+  b: (module: Connections, context: Context) => Promise<B>;
+  /** The final state worth comparing (pair state, pending lists, next id...). */
+  observe: (module: Connections, context: Context) => Promise<Observed>;
+}
+
+export interface Outcome<A, B, Observed> {
+  a: A;
+  b: B;
+  final: Observed;
+}
+
+/** Runs the two operations one after the other on a fresh module, in the given order. */
+async function runSequentially<Context, A, B, Observed>(
+  scenario: Scenario<Context, A, B, Observed>,
+  first: "a" | "b",
+): Promise<Outcome<A, B, Observed>> {
+  const module = freshConnections();
+  const context = await scenario.setup(module);
+  let a: A;
+  let b: B;
+  if (first === "a") {
+    a = await scenario.a(module, context);
+    b = await scenario.b(module, context);
+  } else {
+    b = await scenario.b(module, context);
+    a = await scenario.a(module, context);
+  }
+  return { a, b, final: await scenario.observe(module, context) };
+}
+
+/** The oracle: the two outcomes of running the operations sequentially, a then b and b then a. */
+export async function bothOrders<Context, A, B, Observed>(
+  scenario: Scenario<Context, A, B, Observed>,
+): Promise<[Outcome<A, B, Observed>, Outcome<A, B, Observed>]> {
+  return [await runSequentially(scenario, "a"), await runSequentially(scenario, "b")];
+}
+
+/** Starts both operations in the same tick, before either has answered, on a fresh module. */
+export async function simultaneously<Context, A, B, Observed>(
+  scenario: Scenario<Context, A, B, Observed>,
+): Promise<Outcome<A, B, Observed>> {
+  const module = freshConnections();
+  const context = await scenario.setup(module);
+  const [a, b] = await Promise.all([scenario.a(module, context), scenario.b(module, context)]);
+  return { a, b, final: await scenario.observe(module, context) };
+}

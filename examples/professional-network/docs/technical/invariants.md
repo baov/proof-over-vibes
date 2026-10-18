@@ -16,6 +16,7 @@ Run every check: `bash tools/harness/run_all.sh` (or `npm run harness`). Mutatio
 | INV-008 | A function takes at most 5 parameters | warn | active |
 | INV-009 | Every test-case points at a real test, and every test has a test-case | warn (broken reference: error) | active |
 | INV-010 | The mutation score of the critical scope does not fall below its threshold | warn | active, no threshold until the first baseline |
+| INV-011 | Every operation built in `createConnections` goes through the module's queue | warn | pending until the queue file exists |
 
 ---
 
@@ -142,6 +143,24 @@ Run every check: `bash tools/harness/run_all.sh` (or `npm run harness`). Mutatio
   src/connections/domain/request.ts:44  [EqualityOperator]  Survived
   ```
 - **Fix**: a test that fails if the comparison at line 44 is off by one.
+
+## INV-011 — Operations go through the queue
+
+- **Status**: pending (the queue `src/connections/infrastructure/serial-queue.ts` is not built yet). While that file is absent the check prints `pending` and exits 0; it never fails the build for a missing queue. It becomes active by itself once the file exists.
+- **Statement**: `src/connections/index.ts` imports the queue, `createConnections` creates it, and every method of the object it returns uses it (all five writes and both reads).
+- **Source**: ADR-0002, serialization of the operations of a module
+- **Script**: `tools/harness/check_serialized.mjs`
+- **Severity**: warn
+- **Limit**: structural. It proves each method references the queue, not that the whole use case runs inside one queued call; that is covered by the concurrency tests.
+- **Remediation**: wrap the whole use case in the queue (`queue.run(() => useCase(...))`); never split the rule check from the write. One queue per `createConnections` instance.
+- **Example violation**:
+  ```
+  src/connections/index.ts:41: [INV-011] operation `withdrawRequest` of createConnections does not go through the queue
+  ```
+- **Fix**:
+  ```ts
+  withdrawRequest: (id, acting) => queue.run(() => withdrawRequest(deps, id, acting)),
+  ```
 
 ---
 
