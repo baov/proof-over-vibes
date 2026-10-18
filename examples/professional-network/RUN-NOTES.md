@@ -20,3 +20,17 @@ The human told the Orchestrator to decide every question for them ("decide for m
 | PRD | Product Manager | escalated on 3 consumer-visible rule sets; delegate took the recommended options; PRD `ready` |
 
 Observed: the Product Manager never answered a bet itself and stopped each time (3 escalations), as its role file says. It also found, on its own, a gap in its PRD (a decliner sending a request back) and left it open instead of deciding.
+
+## Foundations (empty project)
+
+| Step | Role | Outcome |
+|---|---|---|
+| Request | Orchestrator | brief for "connection requests", citing the PRD; stack (TypeScript, Node 22, npm, Vitest) given in the brief as the human's constraint |
+| Architect | Architect | escalated the architectural style (costly to reverse); delegate took option a, modular monolith with hexagonal modules; ADR-0001 written after the answer, not before |
+| Harness Engineer | Harness Engineer | blocked on 3 questions (blocks, how to check the rule, sensitive zones), delegate took the recommended options; then 2 follow-ups (test-case location, ADR cross-reference) |
+
+Frictions:
+- The Harness Engineer's questions are technical, and the organization says nothing on where they go (open point of `docs/agent-organization.md`). With the human delegating, the Orchestrator answered them with the role's recommendation. No Product Owner was involved.
+- The Harness Engineer pinned TypeScript to `~6` because `npm install` picked TypeScript 7, whose compiler API is unstable and which its checks need. A real-world surprise the role caught while installing.
+- Its Python-starter checks were rewritten in Node (`.mjs`): the skill's starter is generic, the project is Node only.
+- Not verified by the role: mutation `--scope diff` end to end, any mutation baseline, false positives on real code. They show up in the next steps.
