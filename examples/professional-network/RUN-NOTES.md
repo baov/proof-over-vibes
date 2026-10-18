@@ -55,3 +55,42 @@ Frictions:
 - The Product Owner answered technical interface questions (ids supplied by the caller, async results, reason names) only because the Orchestrator relayed them; its role file says to escalate them. With a human delegating, "escalate" has no destination.
 - The Planner could not return a 21 KB plan in its final message: the Orchestrator read the file.
 - Review reports (`.reviews/`) are git-ignored, so the findings quoted here are the only versioned trace of them.
+
+## Edge cases (two requests, written by the Product Manager at the human's request, delegated)
+
+- Request 1, blank member ids and the decliner writing back (4 PRD cases a, b): GO at the first review, mutation 100%. The survivor left by story 2 is killed by the decliner tests. The Developer caught that `trim()` would treat U+FEFF as blank, against D-33, and used a Unicode whitespace class instead.
+- Request 2, simultaneous operations (cases c, d): the Architect wrote ADR-0002 (one in-process queue), the Harness Engineer turned it into INV-011 (`warn`, `pending` until the queue exists), the Developer showed 8 of 12 tests red without the queue. GO at the first review, with one open major (an operation that never settles blocks the module).
+- Request 1's Architect decided a public-contract break by itself; that is an escalation case of its role file (see above). Request 2's Architect applied its role file strictly and escalated nothing, since there was nothing costly to reverse.
+- The Developer of request 2 stopped (`blocked`) because test K6 could not be red-first, as the plan told it to; the Planner settled it (a guard green by nature). The two read wrappers stay protected only by INV-011, which is `warn`.
+
+## Planted regression (the only part of the run that is staged)
+
+An agent that had read no role of the repository planted the bug in commit `347911f`: `InMemoryStore` keyed connections by `[a, b].sort().join(":")`, which collides for ids that contain `:` (`ann:bo` + `cy` and `ann` + `bo:cy`). It passed the 86 tests, the type check, the harness and its self-tests. Only the mutation score fell (100% to 90.1%, from dead code left behind), and nothing fails on it, since the threshold is still a human decision.
+
+- The bug report came from the planting agent, as a user would phrase it, with no hint of the cause. The Orchestrator copied it into the brief unchanged.
+- The Diagnostician reproduced it, found the commit with a toggle, and proved the cause. It also listed three fix options, which its role file forbids ("never propose the fix as part of the diagnosis"): minor deviation.
+- The Reviewer replayed the proof independently and found a second symptom of the same cause that the Diagnostician had not: a later connection overwrites an earlier one, so erasing a member leaves the other pair "connected" (against D-26). It went into the Developer's tests.
+- The Developer fixed it with `JSON.stringify` of the sorted pair, tests red first. The Reviewer checked in a scratch copy that both new tests fail without the fix. GO at the first review.
+- Why the regression got through: ids are unvalidated (D-15, deferred on purpose), the tests use plain names, the store is outside the mutation scope, and the harness checks structure only. This is the kind of gap the example is meant to expose, not a failure of a role.
+- Left open: `connects()` is dead code (the Reviewer asked for a separate cleanup), so the mutation score stays at 90.1%.
+
+## Totals
+
+- Runs: 2 stories, 2 edge-case requests, 1 bug. Reviews: 6 of the diff, 1 of a proof. NO-GO: 0. Failure Analyst: never ran. The iteration loop (Developer and Reviewer going back and forth) never went round, so this example shows nothing about it.
+- Decisions: D-1 to D-38 (plus the amendment), all `answered-by-delegate`. No person answered any question. Every Reviewer verdict came with `status: escalate` for the sensitive zones, and no person reviewed them either. This is the main limit of the example.
+- Tests: 88; business test-cases: 87, each with a source and an exact automated test; mutation: 90.1% (100% before the planted regression).
+
+## What the Orchestrator did itself
+
+- Wrote the idea in one sentence, the briefs and the metrics, and relayed every question.
+- Chose, for the human who delegated: the segment (freelance translators and interpreters in the EU), the backlog item to build, and the order of the edge-case requests.
+- Reworded one sentence of the Product Manager's research to get past a false positive of `check-glossary.sh`.
+- Wrote the three paragraphs of the notes above and the README. No code, test, plan or review.
+
+## Frictions and limits
+
+- Where a question goes when the human delegates and the role's file says "escalate": the Orchestrator took the recommended option every time, with the cost that nothing checked a recommendation.
+- Hand-off notes of the Product Manager (`.plans/in-progress/product/`) are git-ignored, like all in-progress files; only the files they produced (`docs/product/`) are versioned. Review reports (`.reviews/`) are ignored too, so the findings are quoted here, not archived.
+- Nobody owns the update of `docs/technical/invariants.md` after the Developer builds what an invariant was waiting for: INV-011 still says "pending" and its fix snippet says `queue.run(...)` while the code calls `queue(...)` (found by the Reviewer, left as is).
+- Stryker 10's Vitest runner needs Vitest 4.x: the Developer pinned it, and a human has not confirmed.
+- Nothing was run in a client with the roles installed (`install.sh --with-agents`): each role was started as a fresh general-purpose agent that read its role file and its skill. The result tells about the files, not about the install.
