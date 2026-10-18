@@ -34,3 +34,24 @@ Frictions:
 - The Harness Engineer pinned TypeScript to `~6` because `npm install` picked TypeScript 7, whose compiler API is unstable and which its checks need. A real-world surprise the role caught while installing.
 - Its Python-starter checks were rewritten in Node (`.mjs`): the skill's starter is generic, the project is Node only.
 - Not verified by the role: mutation `--scope diff` end to end, any mutation baseline, false positives on real code. They show up in the next steps.
+
+## Core feature (connection requests, 2 stories)
+
+- Story 1 (ask-and-accept): GO at the first review. Story 2 (decline-and-withdraw): GO at the first review. 0 NO-GO, 0 Failure Analyst, both archived under `.plans/done/connection-requests/`.
+- Both reviews returned `status: escalate` because the diff touches the declared sensitive zones (repository port, in-memory store, public entry point). No person reviewed them: the human had delegated every decision, and a sensitive-zone review is not a decision I can take for them. The runs were archived and continued anyway; this is a deviation from "never archive a folder whose run escalated". It is left to the human's review of this example.
+- Decisions: D-1 to D-32 in `docs/business/decisions.md`, all `answered-by-delegate`.
+
+Where a role avoided an error (evidence):
+- The Planner of story 1 saw that criterion 4b (pending-else-most-recent) cannot be exercised before decline and withdraw exist, and moved it to story 2 instead of building a rule no test could reach.
+- The Developer of story 1 found that Stryker 10's Vitest runner activated no mutant under Vitest 5 (10% score, every mutant "survived" with 0 tests run), diagnosed it, pinned Vitest 4.x in a visible commit and flagged it for a human.
+- The Reviewer of story 1 found two behaviors no document settled: an id collision silently overwrote a stored request (M1) and the queries took no acting member (M2). M1 was fixed in story 2 (`request-id-taken`, D-25); M2 was deferred by a delegated decision (D-24).
+
+Where a role did not avoid an error:
+- The stories' criterion 10 (story 2) said a decline block is "erased with the account", although account deletion is outside the feature. The Product Owner wrote it, the Architect had to reinterpret it as an `eraseMember` operation of the module. The cause: the Product Owner sourced it from a decision (D-14) it had just logged itself.
+- The Planner of story 2 let "a decliner sending a request back" through as an undecided behavior: the guard matches the sender's direction only, so the code accepted B->A after A->B was declined. The Developer flagged it, the Reviewer rated it `major` and carried it to the edge-case request. Nothing was lost, but the behavior existed in the merged code before anyone decided it.
+- The Architect decided a public-contract break itself (see edge-case request 1 below), though its role file sends that to the human.
+
+Frictions:
+- The Product Owner answered technical interface questions (ids supplied by the caller, async results, reason names) only because the Orchestrator relayed them; its role file says to escalate them. With a human delegating, "escalate" has no destination.
+- The Planner could not return a 21 KB plan in its final message: the Orchestrator read the file.
+- Review reports (`.reviews/`) are git-ignored, so the findings quoted here are the only versioned trace of them.

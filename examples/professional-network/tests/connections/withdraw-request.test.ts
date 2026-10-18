@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alice, bob, carol, freshConnections, sendOrFail } from "./support.js";
+import { alice, bob, carol, freshConnections, sendOrFail, stateOf, pendingOf } from "./support.js";
 
 const notConnected = (requestState: string) => ({ connected: false, requestState });
 
@@ -14,9 +14,9 @@ describe("withdraw a connection request", () => {
       ok: true,
       value: { id, sender: alice, recipient: bob, state: "withdrawn" },
     });
-    expect(await connections.getPairState(alice, bob)).toEqual(notConnected("withdrawn"));
-    expect(await connections.getPairState(bob, alice)).toEqual(notConnected("withdrawn"));
-    expect(await connections.listPendingRequests(bob)).toEqual([]);
+    expect(await stateOf(connections, alice, bob)).toEqual(notConnected("withdrawn"));
+    expect(await stateOf(connections, bob, alice)).toEqual(notConnected("withdrawn"));
+    expect(await pendingOf(connections, bob)).toEqual([]);
   });
 
   it("rejects a member who is not the sender, the recipient included, and the request stays pending", async () => {
@@ -26,8 +26,8 @@ describe("withdraw a connection request", () => {
     expect(await connections.withdrawRequest(id, carol)).toEqual({ ok: false, reason: "not-sender" });
     expect(await connections.withdrawRequest(id, bob)).toEqual({ ok: false, reason: "not-sender" });
 
-    expect(await connections.getPairState(alice, bob)).toEqual(notConnected("pending"));
-    expect(await connections.listPendingRequests(bob)).toHaveLength(1);
+    expect(await stateOf(connections, alice, bob)).toEqual(notConnected("pending"));
+    expect(await pendingOf(connections, bob)).toHaveLength(1);
   });
 
   it("rejects withdrawing a request that is not found, whoever asks", async () => {
@@ -50,9 +50,9 @@ describe("withdraw a connection request", () => {
     expect(await connections.withdrawRequest(declined, carol)).toEqual({ ok: false, reason: "not-pending" });
     expect(await connections.withdrawRequest(withdrawn, carol)).toEqual({ ok: false, reason: "not-pending" });
 
-    expect(await connections.getPairState(alice, bob)).toEqual({ connected: true, requestState: "accepted" });
-    expect(await connections.getPairState(carol, bob)).toEqual(notConnected("declined"));
-    expect(await connections.getPairState(carol, alice)).toEqual(notConnected("withdrawn"));
+    expect(await stateOf(connections, alice, bob)).toEqual({ connected: true, requestState: "accepted" });
+    expect(await stateOf(connections, carol, bob)).toEqual(notConnected("declined"));
+    expect(await stateOf(connections, carol, alice)).toEqual(notConnected("withdrawn"));
   });
 
   it("tells a member who is not the sender so, even if the request is no longer pending", async () => {

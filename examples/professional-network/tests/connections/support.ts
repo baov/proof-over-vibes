@@ -1,5 +1,5 @@
 import { createConnections, memberId } from "../../src/connections/index.js";
-import type { Connections, IdGenerator, MemberId } from "../../src/connections/index.js";
+import type { Connections, ConnectionRequest, IdGenerator, MemberId, PairState } from "../../src/connections/index.js";
 
 export const alice = memberId("alice");
 export const bob = memberId("bob");
@@ -33,4 +33,18 @@ export async function sendOrFail(
 export function connectionsWithIds(...ids: string[]): Connections {
   let index = 0;
   return createConnections({ ids: { next: () => ids[Math.min(index++, ids.length - 1)] as string } });
+}
+
+/** The state of a pair, which must be answered (not rejected). */
+export async function stateOf(module: Connections, a: MemberId, b: MemberId): Promise<PairState> {
+  const result = await module.getPairState(a, b);
+  if (!result.ok) throw new Error(`state query rejected: ${result.reason}`);
+  return result.value;
+}
+
+/** The pending requests of a member, which must be answered (not rejected). */
+export async function pendingOf(module: Connections, member: MemberId): Promise<readonly ConnectionRequest[]> {
+  const result = await module.listPendingRequests(member);
+  if (!result.ok) throw new Error(`pending list rejected: ${result.reason}`);
+  return result.value;
 }

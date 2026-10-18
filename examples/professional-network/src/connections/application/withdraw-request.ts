@@ -3,15 +3,18 @@ import type { WithdrawRejection as RequestRejection, ConnectionRequest, RequestI
 import type { MemberId } from "../domain/member-id.js";
 import { rejected } from "../domain/result.js";
 import type { Result } from "../domain/result.js";
+import { blankIdRejection } from "./blank-ids.js";
 import type { RequestStore } from "./ports.js";
 
-export type WithdrawRejection = RequestRejection | "request-not-found";
+export type WithdrawRejection = RequestRejection | "request-not-found" | "blank-member-id";
 
 export async function withdrawRequest(
   deps: { store: RequestStore },
   id: RequestId,
   actingMember: MemberId,
 ): Promise<Result<ConnectionRequest, WithdrawRejection>> {
+  const blank = blankIdRejection(actingMember);
+  if (blank) return blank;
   const request = await deps.store.findRequest(id);
   if (!request) return rejected("request-not-found");
   const result = withdraw(request, actingMember);

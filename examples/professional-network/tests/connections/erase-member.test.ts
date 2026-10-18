@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alice, bob, carol, dave, freshConnections, sendOrFail } from "./support.js";
+import { alice, bob, carol, dave, freshConnections, sendOrFail, stateOf, pendingOf } from "./support.js";
 
 const none = { connected: false, requestState: "none" };
 
@@ -16,12 +16,12 @@ describe("erase a member", () => {
     const result = await connections.eraseMember(alice);
 
     expect(result).toEqual({ ok: true });
-    expect(await connections.getPairState(alice, bob)).toEqual(none);
-    expect(await connections.getPairState(alice, carol)).toEqual(none);
-    expect(await connections.getPairState(alice, dave)).toEqual(none);
-    expect(await connections.listPendingRequests(bob)).toEqual([]);
-    expect(await connections.listPendingRequests(alice)).toEqual([]);
-    expect(await connections.getPairState(bob, carol)).toEqual({ connected: true, requestState: "accepted" });
+    expect(await stateOf(connections, alice, bob)).toEqual(none);
+    expect(await stateOf(connections, alice, carol)).toEqual(none);
+    expect(await stateOf(connections, alice, dave)).toEqual(none);
+    expect(await pendingOf(connections, bob)).toEqual([]);
+    expect(await pendingOf(connections, alice)).toEqual([]);
+    expect(await stateOf(connections, bob, carol)).toEqual({ connected: true, requestState: "accepted" });
   });
 
   it("lifts the decline block when either member of the declined pair is erased", async () => {
@@ -29,13 +29,13 @@ describe("erase a member", () => {
     const first = await sendOrFail(connections, alice, bob);
     await connections.declineRequest(first, bob);
     await connections.eraseMember(alice);
-    expect(await connections.getPairState(alice, bob)).toEqual(none);
+    expect(await stateOf(connections, alice, bob)).toEqual(none);
     expect((await connections.sendRequest(alice, bob)).ok).toBe(true);
 
     const second = await sendOrFail(connections, carol, dave);
     await connections.declineRequest(second, dave);
     await connections.eraseMember(dave);
-    expect(await connections.getPairState(carol, dave)).toEqual(none);
+    expect(await stateOf(connections, carol, dave)).toEqual(none);
     expect((await connections.sendRequest(carol, dave)).ok).toBe(true);
   });
 
@@ -56,7 +56,7 @@ describe("erase a member", () => {
 
     await connections.eraseMember(alice);
 
-    expect(await connections.getPairState(bob, alice)).toEqual(none);
+    expect(await stateOf(connections, bob, alice)).toEqual(none);
     expect((await connections.sendRequest(bob, alice)).ok).toBe(true);
   });
 
@@ -68,7 +68,7 @@ describe("erase a member", () => {
     expect(await connections.eraseMember(alice)).toEqual({ ok: true });
     expect(await connections.eraseMember(alice)).toEqual({ ok: true });
 
-    expect(await connections.listPendingRequests(bob)).toEqual([]);
-    expect(await connections.getPairState(alice, bob)).toEqual(none);
+    expect(await pendingOf(connections, bob)).toEqual([]);
+    expect(await stateOf(connections, alice, bob)).toEqual(none);
   });
 });
