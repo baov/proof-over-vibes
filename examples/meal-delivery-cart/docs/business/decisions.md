@@ -219,3 +219,54 @@ Append only. `answered` = a person read and answered; `answered-by-delegate` = a
 - answer: follow D-28 and the stories
 - source: orchestrator; D-28, D-29; architect.md
 - request: price-a-cart
+
+### D-37 Negative quantity or negative unit price is refused as invalid input like quantity zero; a negative fee or minimum refuses the rules when built; a total is never negative
+- status: answered
+- answer: Negative quantity or negative unit price is refused as invalid input like quantity zero; a negative fee or minimum refuses the rules when built; a total is never negative
+- source: human; docs/product/prd/price-a-cart-edge-amounts.md A7-A9
+- supersedes: D-30 (for these points)
+- request: price-a-cart-edge-amounts
+
+### D-38 An amount beyond the money range gives no price and a refusal named 'amount too large', distinct from the other refusals, for every amount along the way
+- status: answered
+- answer: An amount beyond the money range gives no price and a refusal named 'amount too large', distinct from the other refusals, for every amount along the way
+- source: human; docs/product/prd/price-a-cart-edge-amounts.md A2-A4, A10
+- supersedes: D-30 (for these points)
+- request: price-a-cart-edge-amounts
+
+### D-39 Every accepted rate scale prices correctly; only a result beyond the range is refused as too large
+- status: answered
+- answer: Every accepted rate scale prices correctly; only a result beyond the range is refused as too large
+- source: human; docs/product/prd/price-a-cart-edge-amounts.md A11-A12
+- supersedes: D-30 (for these points)
+- request: price-a-cart-edge-amounts
+
+### D-40 A blank or empty code supplied with a cart means no code: no discount, no reason; a blank or empty promotion code in the rules is refused when the rules are built
+- status: answered
+- answer: A blank or empty code supplied with a cart means no code: no discount, no reason; a blank or empty promotion code in the rules is refused when the rules are built
+- source: human; docs/product/prd/price-a-cart-edge-codes-and-concurrency.md C7-C8
+- request: price-a-cart-edge-codes-and-concurrency
+
+### D-41 Simultaneous pricings need no new rule: C2-C6 restate R3 and R5 (nobody read this)
+- status: answered-by-delegate
+- answer: Simultaneous pricings need no new rule: C2-C6 restate R3 and R5 (nobody read this)
+- source: orchestrator; docs/product/prd/price-a-cart-edge-codes-and-concurrency.md C2-C6; PRD R3, R5
+- request: price-a-cart-edge-codes-and-concurrency
+
+### D-42 A line in another currency than the rules together with an amount too large: the currency refusal (IllegalArgumentException) always wins, whatever the amounts
+- status: answered-by-delegate
+- answer: option A
+- source: orchestrator relaying edge-amounts plan.md Q1; docs/product/prd/price-a-cart-edge-amounts.md; docs/technical/adr/0003-*
+- request: price-a-cart-edge-amounts
+
+### D-43 What the caller learns from 'amount too large' is the type alone (AmountTooLargeException in domain.money, an ArithmeticException); the message is for humans, not a contract, and does not name which amount
+- status: answered-by-delegate
+- answer: option A
+- source: orchestrator relaying edge-amounts plan.md Q2; docs/product/prd/price-a-cart-edge-amounts.md; docs/technical/adr/0003-*
+- request: price-a-cart-edge-amounts
+
+### D-44 The public Money.times(rate) with a negative amount or a negative rate numerator is refused with IllegalArgumentException; zero is accepted
+- status: answered-by-delegate
+- answer: option A
+- source: orchestrator relaying edge-amounts plan.md Q3; docs/product/prd/price-a-cart-edge-amounts.md; docs/technical/adr/0003-*
+- request: price-a-cart-edge-amounts
