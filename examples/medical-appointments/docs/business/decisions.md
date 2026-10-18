@@ -159,3 +159,21 @@ Append only. `answered` = a person read and answered (source: human). `answered-
 - answer: UNKNOWN_SLOT, PAST, TAKEN, OVERLAPPING (names fixed now; story 1 produces only TAKEN)
 - source: .plans/in-progress/book-a-slot/architect.md, 'Stories pass' lean; the Planner's recommendation (relayed by the orchestrator, nobody read it)
 - request: book-a-slot
+
+### D-27 Validity of a slot's time range
+- status: answered
+- answer: valid only if its end is strictly after its start; a zero-length, inverted or absent range is rejected at creation (also resolves the PRD's overlap formula vs its sentence for a zero-length slot)
+- source: human; Planner question on .plans/in-progress/book-a-slot/refuse-unhonourable/plan.md
+- request: book-a-slot
+
+### D-28 Overlapping slots of the same practitioner booked by different patients
+- status: answered
+- answer: allowed; the overlap rule stays per patient; the practitioner's agenda consistency belongs to F4.1
+- source: human; Planner question on .plans/in-progress/book-a-slot/refuse-unhonourable/plan.md
+- request: book-a-slot
+
+### D-29 How an invalid time range is reported at slot creation
+- status: answered-by-delegate
+- answer: an exception at creation (IllegalArgumentException), so every Slot is valid by construction
+- source: D-27; the Planner's recommendation (relayed by the orchestrator, nobody read it)
+- request: book-a-slot
