@@ -1,0 +1,19 @@
+# Working state of the roles (see docs/agent-organization.md, "Versioning")
+.plans/in-progress/
+.plans/aborted/
+.reviews/
+
+# Client copies of the skills and roles
+.claude/
+.agents/
+.codex/
+.gemini/
+
+# Dependencies, caches, build output
+node_modules/
+dist/
+coverage/
+.stryker-tmp/
+reports/
+*.log
+.DS_Store
