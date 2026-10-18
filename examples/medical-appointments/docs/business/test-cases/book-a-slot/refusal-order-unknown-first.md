@@ -7,7 +7,7 @@ automated_test: src/test/java/io/example/medical/BookSlotTest.java::reportsUnkno
 status: covered
 ---
 
-# An unknown slot is reported before any other reason
+# An unknown slot is reported before any other reason, once the identifiers are present
 
 - Given: a patient holds slots and the current moment is after all of them
 - When: the patient tries to book a slot that does not exist
