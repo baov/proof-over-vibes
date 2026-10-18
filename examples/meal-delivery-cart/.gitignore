@@ -1,0 +1,18 @@
+# Working state of the roles (see docs/agent-organization.md, "Versioning")
+.plans/in-progress/
+.plans/aborted/
+.reviews/
+
+# Client copies of the skills and roles
+.claude/
+.agents/
+.codex/
+.gemini/
+
+# Dependencies, caches, build output
+target/
+.mvn/wrapper/*.jar
+.idea/
+*.iml
+*.log
+.DS_Store
