@@ -21,5 +21,9 @@ public interface BookingStore {
 
     void save(Booking booking);
 
+    /**
+     * Runs the unit so that no other unit run on the same store instance in this process interleaves with it.
+     * Making that hold across processes (a shared database) is the adapter's job.
+     */
     <T> T atomically(Supplier<T> unit);
 }
