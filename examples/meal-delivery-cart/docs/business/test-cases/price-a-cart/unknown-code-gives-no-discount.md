@@ -10,5 +10,5 @@ status: covered
 # An unknown code gives no discount and says why
 
 - Given: rules with the promotion code WELCOME10, or rules with no promotion at all
-- When: the cart is priced with another code
+- When: the cart is priced with another code (a code that is empty or only blank is not another code: it is no code, see blank-code-is-no-code)
 - Then: the discount is zero, the reason is the unknown code, the fee line is kept and the total is the subtotal plus the fee; pricing succeeds

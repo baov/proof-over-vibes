@@ -270,3 +270,15 @@ Append only. `answered` = a person read and answered; `answered-by-delegate` = a
 - answer: option A
 - source: orchestrator relaying edge-amounts plan.md Q3; docs/product/prd/price-a-cart-edge-amounts.md; docs/technical/adr/0003-*
 - request: price-a-cart-edge-amounts
+
+### D-45 A code is 'blank' per Kotlin's isBlank: empty or only spaces, tabs, line breaks, no-break spaces (U+00A0, U+2007, U+202F), U+3000 and other Unicode space separators; U+001C..U+001F count as blank; U+0085, U+200B and U+FEFF do not; a code of invisible characters is an ordinary code (unknown on the cart side, accepted as a promotion code in the rules); same definition for the cart code and the rules' promotion code
+- status: answered-by-delegate
+- answer: option A (Kotlin's isBlank)
+- source: orchestrator relaying edge-codes-and-concurrency plan.md Q1; PRD C7-C8; architect note; D-40
+- request: price-a-cart-edge-codes-and-concurrency
+
+### D-46 Amendment: a blank code amends D-33 and D-34 for blank codes only (a blank cart code means no code, no reason; a blank promotion code in the rules is refused when built); D-40 already supersedes them for those points
+- status: answered-by-delegate
+- answer: amendment noted
+- source: orchestrator relaying the Planner's note; D-33, D-34, D-40
+- request: price-a-cart-edge-codes-and-concurrency
