@@ -19,6 +19,7 @@ Only the pricing is built; adding dishes, order handoff, tax and tip stay in the
 | The architecture | four ADRs, three turned into executable invariants | [`docs/technical`](docs/technical) |
 | The checks | a harness (layers, rounding in one place, no `Double`/`BigDecimal` for money, a pure core, final fields, test-case bridge, mutation with PIT) | [`tools/harness`](tools/harness) |
 | Each change | its plan, its notes, its metrics | [`.plans/done/`](.plans/done), [`.metrics/`](.metrics) |
+| Each review | the Reviewer's report: verdict, findings with their severity, the checks behind them | [`reviews/`](reviews) |
 
 ## What you would not have without the repository
 

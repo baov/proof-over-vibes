@@ -17,6 +17,7 @@ A small TypeScript module, `connections` (a member asks another to connect; the 
 | The architecture | two ADRs, turned into executable invariants | [`docs/technical`](docs/technical) |
 | The checks | a harness (layers, shape, test-case bridge, serialization, mutation) | [`tools/harness`](tools/harness) |
 | Each change | its plan, its notes, its metrics | [`.plans/done/`](.plans/done), [`.metrics/`](.metrics) |
+| Each review | the Reviewer's report: verdict, findings with their severity, the checks behind them | [`reviews/`](reviews) |
 | A bug | a diagnosis with a replayable proof, then a fix | [`.plans/done/bug-unrelated-members-connected`](.plans/done/bug-unrelated-members-connected) |
 
 ## What you would not have without the repository

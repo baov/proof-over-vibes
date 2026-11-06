@@ -19,6 +19,7 @@ Only the first verb (book) is built; cancelling and availability stay in the bac
 | The architecture | one ADR (hexagonal), turned into executable invariants | [`docs/technical`](docs/technical) |
 | The checks | a harness (layers, test-case bridge, mutation with PIT) | [`tools/harness`](tools/harness) |
 | Each change | its plan, its notes, its metrics | [`.plans/done/`](.plans/done), [`.metrics/`](.metrics) |
+| Each review | the Reviewer's report: verdict, findings with their severity, the checks behind them | [`reviews/`](reviews) |
 
 ## What you would not have without the repository
 

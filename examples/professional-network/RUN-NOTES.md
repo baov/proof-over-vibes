@@ -54,7 +54,7 @@ Where a role did not avoid an error:
 Frictions:
 - The Product Owner answered technical interface questions (ids supplied by the caller, async results, reason names) only because the Orchestrator relayed them; its role file says to escalate them. With a human delegating, "escalate" has no destination.
 - The Planner could not return a 21 KB plan in its final message: the Orchestrator read the file.
-- Review reports (`.reviews/`) are git-ignored, so the findings quoted here are the only versioned trace of them.
+- Review reports (`.reviews/`) are git-ignored by convention. The reports are kept in `reviews/` here, as an exception, so that a reader can see what a Reviewer writes. Two of them (the review of the first edge-case request and the review of the fix) were written in French by the Reviewer although the project is in English; they were translated afterwards.
 
 ## Edge cases (two requests, written by the Product Manager at the human's request, delegated)
 
