@@ -67,15 +67,17 @@ Ranked on machine time alone: the human's waiting is not counted.
 4. **Run independent requests in parallel.** The two edge-case requests do not depend on each other: their Architects and Planners can go ahead together, as long as the Developers do not touch the same files. Gain: about 10 to 15 % of agent time.
 5. **Group the questions put to the human.** Without the waiting time, the gain is limited to a few agent resumes: all resumes together weigh 34 minutes, only part of which would come from grouped questions. The main benefit is fewer interruptions for the human, which this measure does not count.
 
-Levers 1 to 4 would bring the Kotlin example from about 158 to about 80 agent minutes.
+Levers 1 to 4 would bring the Kotlin example from about 158 to about 80 agent minutes. Lever 4 was never measured, and it is the only part of that estimate that was not applied (see below).
 
 ## What was done
 
 | Lever | Where | Change |
 |---|---|---|
 | 1, 2, 3 | `agents/reviewer.md`, `agents/developer.md`: the Reviewer always runs the gauntlet itself (the judge's independence), with mutation on the diff; an experiment beyond the gauntlet starts from a named suspicion and stays short; the Developer targets its builds during the loop | "Developer and Reviewer: build time where it pays" |
-| 4, 5 | `agents/orchestrator.md`, `docs/agent-organization.md`: independent requests side by side, each in its own work folder and on its own branch; questions for the human asked in rounds | "Orchestrator: independent requests side by side, questions for the human in rounds" |
+| 5 | `agents/orchestrator.md`: questions for the human asked in rounds | "Orchestrator: independent requests side by side, questions for the human in rounds" (the side-by-side part was removed afterwards, see below) |
 | Other effects of a confirmed defect | `agents/reviewer.md`: once a defect is confirmed, the Reviewer looks for the other effects of the same cause before concluding (added after the blind test below) | "Reviewer: look for the other effects of a confirmed defect" |
+
+**Lever 4 (parallel requests) was written, then removed.** It changes how requests and branches are managed, and no run exercised it: the validation tests below do not cover it. It stays an idea until two independent requests are replayed side by side. The tests below cover levers 1 to 3 only.
 
 One idea was dropped on the way: having the Reviewer reuse the Developer's report for the same commit. It would have taken away the judge's own check; the time lost came from the experiments and the widened mutation anyway, not from the gauntlet itself.
 
@@ -102,7 +104,7 @@ What it does not show:
 
 - **A single attempt.** An agent's duration varies from one run to the next; this is not an average.
 - **The hint was in the inputs.** The brief already carried "the overflow reaches the caller as a raw `ArithmeticException`" since the review of story 1. A defect with no hint in the inputs still has to be tested, with the planted regression of example 1.
-- **Parallelism** (lever 4) is not tested here.
+- **Parallelism** (lever 4) is not tested here, and the rule was removed.
 
 ## Validation test: the planted regression, reviewed blind
 

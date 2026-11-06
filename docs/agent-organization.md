@@ -57,8 +57,6 @@ a ticket  Auditor (when the Orchestrator decides)
 
 A feature goes through the Product Owner, which cuts it into ordered stories, then once through the Architect, which exits at once when there is nothing to decide. Each story then goes through the Planner, the Developer and the Reviewer, one after the other, with its own brief and its own merge request. The Orchestrator stops at the first escalation. If the Planner finds that a story needs a structural decision, the Architect runs again for that story. A request that is a single story skips the Product Owner. On an empty project the Architect and the Harness Engineer lay the foundations first. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer and the Reviewer loop until a GO, and the merge gate takes over.
 
-Requests that do not build on each other may run side by side, each in its own work folder and on its own branch. The roles that write only their notes (Architect, Planner, Product Owner) then run at the same time; two Developers never work on the same files at once. Within a request, and from one story of a feature to the next, the order holds: a story's Planner needs the open majors of the story before it.
-
 ## Governance
 
 A person steps in on escalation, and to merge where the project has no CI. Otherwise the merge happens at the merge gate: quality rests on the Product Owner, the Reviewer and the harness.
