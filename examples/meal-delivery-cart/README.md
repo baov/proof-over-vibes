@@ -4,6 +4,8 @@ A small Kotlin module (price a cart: dishes, a percentage promotion, a delivery 
 
 > Idea: "A meal-delivery cart where customers add dishes, apply promotions and see the delivery fees before they order."
 
+> Built with the roles and skills of this repository as of the commit titled "Test cases name a source, and the bridge counts the ones that do not" (`agents/` and `skills/` at that commit). The Product Owner's INVEST check, added to `main` since, is not part of it. Later changes to the roles are not reflected here.
+
 Only the pricing is built; adding dishes, order handoff, tax and tip stay in the backlog.
 
 ## What you get

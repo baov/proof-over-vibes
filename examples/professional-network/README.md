@@ -4,6 +4,8 @@ A small TypeScript module, `connections` (a member asks another to connect; the 
 
 > Idea: "A professional network where people keep a profile, connect with colleagues, and publish short posts that their connections can read."
 
+> Built with the roles and skills of this repository as of the commit titled "Test cases name a source, and the bridge counts the ones that do not" (`agents/` and `skills/` at that commit). The Product Owner's INVEST check, added to `main` since, is not part of it. Later changes to the roles are not reflected here.
+
 ## What you get
 
 | From | You get | Where |

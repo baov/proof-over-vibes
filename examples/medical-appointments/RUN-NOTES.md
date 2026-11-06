@@ -68,3 +68,7 @@ If B and C race for slot S and C already holds slot X which overlaps S, C sees `
 ## What the Orchestrator did itself
 
 Wrote the idea, the briefs and the metrics; relayed every question; answered the cheap technical ones as delegate; asked the human the costly ones with `AskUserQuestion` (about 20 answers in total). No code, test, plan or review. Chose the order of the edge-case requests and asked the Product Manager for the two edge-case PRDs on the human's behalf.
+
+## Deviation of the Orchestrator
+
+- The Orchestrator's briefs (`brief.md`) do not open with the front-matter its role file asks for on every file it writes; the roles read them without it. A deviation of the Orchestrator, not corrected afterwards.

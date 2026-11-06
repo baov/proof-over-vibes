@@ -71,3 +71,7 @@ Frictions and observations:
 ## What the Orchestrator did itself
 
 Wrote the idea, the briefs and the metrics; relayed every question; answered the cheap technical ones as delegate and asked the human the others (about 24 answers); ran a throwaway Kotlin project to learn which test dependencies work offline. No code, test, plan or review.
+
+## Deviation of the Orchestrator
+
+- The Orchestrator's briefs (`brief.md`) do not open with the front-matter its role file asks for on every file it writes; the roles read them without it. A deviation of the Orchestrator, not corrected afterwards.

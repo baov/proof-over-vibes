@@ -9,7 +9,7 @@
 - Decision log: docs/business/decisions.md
 - PRD: docs/product/prd/book-a-slot.md
 - Architecture: docs/technical/adr/0001-*, architect note ../architect.md
-- Harness: docs/technical/invariants.md; tools/harness/run_all.sh before each commit; Maven at /Users/baovuong/.m2/wrapper/dists/apache-maven-3.9.11-bin/6mqf5t809d9geo83kj4ttckcbc/apache-maven-3.9.11/bin/mvn (see tools/harness/_maven.sh), run offline (-o) once dependencies are resolved
+- Harness: docs/technical/invariants.md; tools/harness/run_all.sh before each commit; Maven at ~/.m2/wrapper/dists/apache-maven-3.9.11-bin/6mqf5t809d9geo83kj4ttckcbc/apache-maven-3.9.11/bin/mvn (see tools/harness/_maven.sh), run offline (-o) once dependencies are resolved
 - Open and NOT decided (ask, do not choose): simultaneous booking of one slot, blank or empty identifiers; any other behavior a caller would see that neither the stories nor the decision log settle
 - Carried over: none
 

@@ -89,6 +89,7 @@ An agent that had read no role of the repository planted the bug in commit `3479
 
 ## Frictions and limits
 
+- The Orchestrator's briefs (`brief.md`) do not open with the front-matter its role file asks for on every file it writes; the roles read them without it. A deviation of the Orchestrator, not corrected afterwards.
 - Where a question goes when the human delegates and the role's file says "escalate": the Orchestrator took the recommended option every time, with the cost that nothing checked a recommendation.
 - Hand-off notes of the Product Manager (`.plans/in-progress/product/`) are git-ignored, like all in-progress files; only the files they produced (`docs/product/`) are versioned. Review reports (`.reviews/`) are ignored too, so the findings are quoted here, not archived.
 - Nobody owns the update of `docs/technical/invariants.md` after the Developer builds what an invariant was waiting for: INV-011 still says "pending" and its fix snippet says `queue.run(...)` while the code calls `queue(...)` (found by the Reviewer, left as is).

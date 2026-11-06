@@ -4,6 +4,8 @@ A small Java 21 module (a patient books a practitioner's free slot; taken, past,
 
 > Idea: "An online booking service for medical appointments where patients see a practitioner's free slots, book one, and cancel it."
 
+> Built with the roles and skills of this repository as of the commit titled "Test cases name a source, and the bridge counts the ones that do not" (`agents/` and `skills/` at that commit). The Product Owner's INVEST check, added to `main` since, is not part of it. Later changes to the roles are not reflected here.
+
 Only the first verb (book) is built; cancelling and availability stay in the backlog.
 
 ## What you get
