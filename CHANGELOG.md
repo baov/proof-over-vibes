@@ -4,8 +4,14 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-11-06
+
+The roles have now run end to end on three worked examples, as fresh agents that read their role files and their skills. They have not run in an installed client (`install.sh --with-agents`), and the rules added to the Developer and the Reviewer after the examples rest on two single replays, not on a measured average.
+
 ### Added
 
+- `examples/` — three worked examples, each built from a one-sentence idea by the roles and skills of this repository: a professional network (TypeScript, with a regression planted by a separate agent, then its diagnosis and fix), medical appointments (Java) and a meal-delivery cart (Kotlin). Each one goes from the Product Manager's market watch and PRD through the foundations (ADRs, harness) and two stories to two edge-case requests. Each README says what you get, what you would not have without the repository, where a role avoided an error and where it did not, and what the example does not show. In the first one the human delegated every decision; in the other two the human answered the product bets and the choices costly to reverse. No review was a NO-GO and no person reviewed the sensitive zones, which the READMEs say. The Reviewer's reports are kept in `reviews/`, as an exception to the convention that `.reviews/` stays out of git.
+- `docs/duration-analysis.md` — where the agents' time went on the three examples, the changes it led to in the Developer, the Reviewer and the Orchestrator, and two replays that check them.
 - A test case names where its behavior comes from: the `codebase-cartographer` template gets a `## Source` section (a PRD line, a glossary entry, an ADR, a decision; `none` when nobody states it), and the `codebase-harness` test-case bridge counts the cases that name no source. It is information only, never an error or a warning: most terse cases name none in practice, and a warning on every one would drown the ones that matter. The front-matter keys do not change.
 - A decision answered by the human's delegate is `answered-by-delegate` in the decision log, not `answered`, and the Orchestrator counts them in the metrics (`delegated-decisions:`), so that a decision nobody read is visible.
 
