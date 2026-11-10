@@ -1,6 +1,6 @@
 # Vocabulary
 
-One concept, one word. Eleven skills only read as one system if they name the same
+One concept, one word. The skills only read as one system if they name the same
 thing the same way — a reader who meets "block B" here and "module B" there has
 to stop and ask whether they are the same thing.
 

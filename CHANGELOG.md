@@ -4,6 +4,12 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Fixed
+
+- The count of skills was stale since 0.3.0 ("ten", when `product-strategy` made it eleven). `README.md`, `workflows.md`, `AGENTS.md`, `docs/glossary.md` and `docs/agent-organization.md` no longer state a count of skills or roles, so it cannot drift again.
+- `workflows.md` names the `premerge-review` report `.reviews/<branch>-<date>.md`, as the skill does (the roles add the iteration counter).
+- `setup-repo.sh` is executable, as the README runs it.
+
 ## [0.4.0] — 2026-11-06
 
 The roles have now run end to end on three worked examples, as fresh agents that read their role files and their skills. They have not run in an installed client (`install.sh --with-agents`), and the rules added to the Developer and the Reviewer after the examples rest on two single replays, not on a measured average.

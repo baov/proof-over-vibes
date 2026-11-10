@@ -4,7 +4,7 @@
 
 Software development skills for AI agents — a disciplined workflow, mechanical enforcement, defect-oriented review.
 
-Eleven skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review. An optional layer of roles chains them for you, calling on a person only where a decision is needed.
+Skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review. An optional layer of roles chains them for you, calling on a person only where a decision is needed.
 
 Conformant to the [Agent Skills specification](https://agentskills.io/specification), so they load natively — with their description-based triggering — in Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, Amp, OpenCode and every other conformant client.
 
@@ -44,7 +44,7 @@ The other cases (a production bug, a vibe-coded codebase, hollow tests…), how 
 
 ## Roles: an optional layer
 
-The skills work on their own, chained by you or by your agent as above. If you want the chain to run without a human in the loop, an optional layer of thirteen roles sits on top: one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — most of them loading the skills that fit their job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
+The skills work on their own, chained by you or by your agent as above. If you want the chain to run without a human in the loop, an optional layer of roles sits on top: one file each in [`agents/`](agents) — Orchestrator, Product Owner, Planner, Developer, Reviewer and the others — most of them loading the skills that fit their job. A request goes in, a ticket or a prompt, a merge request comes out, and a person is called on escalation, and to merge where the project has no CI.
 
 The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
 

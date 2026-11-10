@@ -22,7 +22,7 @@ The pre-commit hook already runs both (`pre-commit install`). What the validator
 ## Writing rules
 
 - **English.** Bodies, descriptions, error messages, script comments and identifiers.
-- **The vocabulary in [`docs/glossary.md`](docs/glossary.md) is binding.** It fixes one word per concept so that eleven skills read as one system; using a listed synonym is a defect, not a variation. `tools/check-glossary.sh` catches the mechanical half — leftover French — and leaves the synonyms to the reviewer, since they are ordinary English words elsewhere.
+- **The vocabulary in [`docs/glossary.md`](docs/glossary.md) is binding.** It fixes one word per concept so that the skills read as one system; using a listed synonym is a defect, not a variation. `tools/check-glossary.sh` catches the mechanical half — leftover French — and leaves the synonyms to the reviewer, since they are ordinary English words elsewhere.
 - **No hardcoded tool names.** No `mcp__*`, no named multiple-choice tool, no agent-specific path. A skill that names its tool breaks on every other agent. For multiple-choice questions, defer to `clarify-with-choices`.
 - **No tracker named in `agents/`.** A request is a prompt or a ticket, whatever the tool the project tracks it in. A role says "the tracker", never a product.
 - **No model name, anywhere in `agents/`.** A role carries neither a model nor a reasoning effort: it inherits the session's, so the organization works with any model. A role says whether it judges, in `docs/agent-organization.md`; the person who installs it decides what runs it. The validator rejects a model name written in a role.

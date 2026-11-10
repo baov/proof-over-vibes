@@ -21,7 +21,7 @@ Specific to the organization:
 
 ## The roles
 
-Thirteen roles. Five of them judge: a wrong call there costs more than anywhere else.
+Five of the roles judge: a wrong call there costs more than anywhere else.
 
 | Role | Skills loaded | Judges | Steps in |
 |---|---|---|---|
