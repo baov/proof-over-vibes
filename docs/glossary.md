@@ -21,6 +21,7 @@ used once, in one file, does not need an entry.
 | domain | business | The DDD side: domain logic, domain model, domain expert |
 | scope | perimeter, extent, coverage | What a piece of work covers |
 | framing | scoping | The phase-0 activity, so that "scope" stays free for the noun |
+| delivery stage | tier, level, milestone | A step a feature ships in (proof of concept, first version, next increment): named by the project, never a fixed list |
 | symptom | issue, smell, problem | The eight audit symptoms |
 | gauntlet | pipeline, CI run, pre-checks | The mechanical barrier a branch clears before review |
 | degraded mode | fallback, reduced mode, safe mode | A skill works without its reference material, and says so |

@@ -1,10 +1,11 @@
 ---
 name: product-strategy
 description: >
-  Product strategy from an idea or an existing product: market watch (competitors, blue or red
+  Product strategy from an idea, a brief or an existing product: framing of a brief (ambiguities,
+  ranked questions), market watch (competitors, blue or red
   ocean), vision, roadmap, story mapping, a backlog of epics and features prioritized, and a
   PRD for one chosen feature. Use as soon as the user wants to "define the product vision",
-  "build a roadmap", "do a story map", "fill or prioritize the backlog", "study the market or
+  "build a roadmap", "frame this brief", "what is unclear in this brief", "do a story map", "fill or prioritize the backlog", "study the market or
   the competition", "find a blue ocean", "write a PRD", or starts from an idea with no code yet
   and asks what to build first. Works at the level of epics and features, never of user
   stories. Writes under `docs/product/`, and its conclusions are hypotheses the user
@@ -23,6 +24,7 @@ Like `plan-driven-dev`, this skill **announces itself before applying**: state i
 
 | Signal in the request | Phase |
 |---|---|
+| A brief with gaps, "what is unclear", "what should we ask" | **0. Brief framing** |
 | An idea, a market, "what should we build" | **1. Market watch** |
 | The market is understood, "what is the product" | **2. Vision and roadmap** |
 | A vision exists, "what do we build first" | **3. Story map and backlog** |
@@ -37,6 +39,7 @@ Each phase has its reference. Read it **before** the phase, not all of them at o
 
 | # | Phase | Output | Reference |
 |---|---|---|---|
+| 0 | Brief framing | `docs/product/framing.md` | `references/brief-framing.md` |
 | 1 | Market watch | `docs/product/research.md` | `references/market-watch.md` |
 | 2 | Vision and roadmap | `docs/product/vision.md`, `docs/product/roadmap.md` | `references/vision-and-roadmap.md` |
 | 3 | Story map and backlog | `docs/product/story-map.md`, `docs/product/backlog.md` | `references/story-map-and-backlog.md` |
