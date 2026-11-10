@@ -1,6 +1,6 @@
 # Workflows — chaining the skills
 
-Ten skills, two families, and one rule: artifacts circulate, and skills are never called into a vacuum.
+Eleven skills, two families, and one rule: artifacts circulate, and skills are never called into a vacuum.
 
 Everything below is the chain run by hand. To run it with a team of agents — a Planner, a Developer, a Reviewer, and the roles around them — see [docs/agent-organization.md](docs/agent-organization.md).
 
@@ -132,7 +132,7 @@ This table is what makes the whole coherent: every file one skill produces is re
 | `docs/technical/invariants.md` | harness | plan-driven-dev (step 1), premerge-review (phase 1) |
 | `tools/harness/*` | harness | plan-driven-dev (step 5), premerge-review (phase 3) |
 | `.plans/FEEDBACK.md` | plan-driven-dev | plan-driven-dev (step 1, later tasks) |
-| `.reviews/<branch>.md` | premerge-review | plan-driven-dev (input to the fix) |
+| `.reviews/<branch>-<date>.md` | premerge-review | plan-driven-dev (input to the fix) |
 | `.audit/<project>.md` | ai-code-remediation | plan-driven-dev (one worksite per pass) |
 
 **Degraded mode**: every skill works without these files, but says so. In `premerge-review`, a missing reference **increases** the review depth instead of reducing it.

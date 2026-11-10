@@ -4,7 +4,7 @@
 
 Software development skills for AI agents — a disciplined workflow, mechanical enforcement, defect-oriented review.
 
-Ten skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review. An optional layer of roles chains them for you, calling on a person only where a decision is needed.
+Eleven skills that chain together: documentation feeds the invariants, the invariants constrain the implementation, the implementation clears the gauntlet before the review. An optional layer of roles chains them for you, calling on a person only where a decision is needed.
 
 Conformant to the [Agent Skills specification](https://agentskills.io/specification), so they load natively — with their description-based triggering — in Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, Amp, OpenCode and every other conformant client.
 
