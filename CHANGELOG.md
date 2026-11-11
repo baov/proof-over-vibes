@@ -4,6 +4,10 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-11-11
+
+The roles can now be watched at work. `tools/office/` is application code, a read-only local web page: it is not a skill or a role, and the roles themselves do not change. It has been checked on its scripted demo and on hand-made project folders, and its tests pass in CI; it has not yet been watched on a real run of the roles in an installed client.
+
 ### Added
 
 - `tools/office/` — a local web page that shows the roles of a run working, live, on an isometric office floor floating above Seoul, by day and by night. It reads the files the roles write (`.plans/`, `.reviews/`), is read-only, needs only Python 3 and a browser, and has a scripted `--demo`.
@@ -147,6 +151,8 @@ Supporting skills, loaded by another skill:
 - `docs/glossary.md` — the binding vocabulary, mechanically enforced
 - `AGENTS.md` — the contribution conventions
 
+[0.5.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.5.0
+[0.4.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.4.0
 [0.3.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.3.0
 [0.2.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.2.0
 [0.1.0]: https://github.com/baov/proof-over-vibes/releases/tag/v0.1.0
