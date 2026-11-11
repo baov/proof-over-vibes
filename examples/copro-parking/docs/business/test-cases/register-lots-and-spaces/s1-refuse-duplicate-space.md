@@ -2,7 +2,7 @@
 feature: register-lots-and-spaces
 type: functional
 priority: high
-automated_test: tests/test_use_cases.py::test_a_duplicate_space_is_refused_on_any_lot
+automated_test: tests/test_use_cases.py::test_a_number_or_identifier_already_used_is_refused_on_any_lot
 status: covered
 source: stories.md S1 AC5
 ---

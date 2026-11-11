@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_use_cases.py::test_a_blank_number_and_an_unknown_space_are_refused_before_the_offers_are_read
+automated_test: tests/test_use_cases.py::test_a_blank_value_is_refused_as_blank
 status: covered
 source: stories.md S4 AC1; architect.md ADR-0004
 ---

@@ -2,7 +2,7 @@
 feature: register-lots-and-spaces
 type: functional
 priority: high
-automated_test: tests/test_use_cases.py::test_any_other_role_is_refused_on_both_registrations
+automated_test: tests/test_use_cases.py::test_any_other_role_is_refused_first_whatever_the_request
 status: covered
 source: stories.md S1 AC8
 ---

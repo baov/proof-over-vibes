@@ -2,7 +2,7 @@
 feature: register-lots-and-spaces
 type: functional
 priority: high
-automated_test: tests/test_use_cases.py::test_a_blank_new_owner_or_number_is_refused
+automated_test: tests/test_use_cases.py::test_a_blank_value_is_refused_as_blank
 status: covered
 source: stories.md S2 AC3b
 ---

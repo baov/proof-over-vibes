@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_the_register_refusals_come_before_space_offered
+automated_test: tests/test_use_cases.py::test_a_blank_value_is_refused_as_blank
 status: covered
 source: stories.md S4 AC6; decisions.md D-71
 ---

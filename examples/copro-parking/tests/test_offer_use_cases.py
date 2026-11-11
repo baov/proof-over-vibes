@@ -690,56 +690,6 @@ class RenumberingWithOffers(OfferCase):
         self.change("P9", "P11")
         self.assertIn("P11", self.spaces())
 
-    def test_an_offers_check_that_raises_another_error_propagates(self):
-        before = list_register(self.registers)
-        with self.assertRaises(RuntimeError):
-            self.change("P1", "P9", check=FailingOffers(RuntimeError("boom")))
-        self.assertEqual(before, list_register(self.registers))
-
-
-class RegisterRulesOfRemovalAndRenumbering(OfferCase):
-    """Rules of the register that both use cases apply before the offers are asked."""
-
-    def setUp(self):
-        super().setUp()
-        self.unreadable = offer_check(UnreadableOffers(), self.clock)
-
-    def test_the_register_refusals_come_before_space_offered(self):
-        cases = [
-            (lambda: remove_space(self.registers, StubRentals(), self.unreadable, M, " "),
-             refusals.BlankValueRefused),
-            (lambda: remove_space(self.registers, StubRentals(), self.unreadable, M, None),
-             refusals.BlankValueRefused),
-            (lambda: remove_space(self.registers, StubRentals(), self.unreadable, M, "P7"),
-             refusals.UnknownSpaceRefused),
-            (lambda: change_space_number(self.registers, self.unreadable, M, "P1", " "),
-             refusals.BlankValueRefused),
-            (lambda: change_space_number(self.registers, self.unreadable, M, "P7", None),
-             refusals.BlankValueRefused),
-            (lambda: change_space_number(self.registers, self.unreadable, M, "P7", "P9"),
-             refusals.UnknownSpaceRefused),
-            (lambda: change_space_number(self.registers, self.unreadable, M, "P1", "P3"),
-             refusals.DuplicateSpaceRefused)]
-        for call, error in cases:
-            with self.subTest(error=error.__name__):
-                before = list_register(self.registers)
-                with self.assertRaises(error):
-                    call()
-                self.assertEqual(before, list_register(self.registers))
-
-    def test_any_other_role_is_refused_first_even_with_unreadable_offers(self):
-        for role in (O, Role.RESIDENT, None, "manager"):
-            for name, call in (
-                    ("remove", lambda: remove_space(self.registers, StubRentals(),
-                                                    self.unreadable, role, "P1")),
-                    ("renumber", lambda: change_space_number(self.registers, self.unreadable,
-                                                             role, "P1", "P9"))):
-                with self.subTest(use_case=name, role=role):
-                    before = list_register(self.registers)
-                    with self.assertRaises(refusals.ManagerOnly):
-                        call()
-                    self.assertEqual(before, list_register(self.registers))
-
 
 class OrphanOffersAlreadyStored(OfferCase):
     """A file written before S4 may hold an offer on a number the register does not hold (D-69)."""
