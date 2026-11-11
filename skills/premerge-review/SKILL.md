@@ -110,6 +110,7 @@ The question: *what is going to break?*
 - Contract changes: signature, return format, error behavior — check the existing callers.
 - Inverted logic, incomplete conditions, off-by-one, shared state mutated.
 - Tests: are the added or modified behaviors covered by tests that test the behavior (and not the structure)? A modified behavior with no modified test is suspicious.
+- Performance, only where a target is declared (an acceptance criterion, the plan, an ADR, an invariant) or where the diff plainly adds unbounded work: a query inside a loop, a read with no limit, a full scan where an index is recorded. Check a declared target against a test or a measurement; a target no check exercises is a finding. Do not speculate about speed nobody asked for.
 
 ### Angle 2 — Security
 The question: *what would an attacker, or hostile data, make of this?*
