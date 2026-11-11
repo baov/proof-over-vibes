@@ -4,13 +4,16 @@ from datetime import date, datetime
 
 from copro_parking.application import refusals
 from copro_parking.application.offer_use_cases import (OfferEntry, OfferRequest,
+                                                       WithdrawRequest,
                                                        _require_owner,
                                                        list_open_offers,
-                                                       offer_space)
+                                                       offer_space,
+                                                       withdraw_offer)
 from copro_parking.application.ports import OfferRepository, RegisterRepository
 from copro_parking.application.role import Role
+from copro_parking.domain import errors
 from copro_parking.domain.errors import OverlappingOffer
-from copro_parking.domain.offers import Offer, OfferBook, Period
+from copro_parking.domain.offers import Offer, OfferBook, Period, offer_number
 from copro_parking.application.use_cases import (change_lot_owner, list_register,
                                                  register_lot, register_space,
                                                  remove_space)
@@ -374,6 +377,326 @@ class UnreadableStores(OfferCase):
         with self.assertRaises(refusals.StoreUnreadable):
             list_open_offers(UnreadableRegister(), self.offers, self.clock)
         self.assertEqual(0, self.offers.saves)
+
+
+def withdrawal(offerer="Durand", number=1):
+    return WithdrawRequest(offerer, number)
+
+
+class WithdrawCase(OfferCase):
+    """Offer 1 of P1 by Durand (lot A12) from 20 to 25 is open."""
+
+    def setUp(self):
+        super().setUp()
+        self.offer()
+
+    def withdraw(self, role=O, **fields):
+        return withdraw_offer(self.registers, self.offers, self.clock, role, withdrawal(**fields))
+
+    def assert_withdraw_refused_and_unchanged(self, error, role=O, **fields):
+        register_before = list_register(self.registers)
+        listing_before = self.listing()
+        saves = self.offers.saves
+        with self.assertRaises(error):
+            self.withdraw(role, **fields)
+        self.assertEqual(register_before, list_register(self.registers))
+        self.assertEqual(listing_before, self.listing())
+        self.assertEqual(saves, self.offers.saves)
+
+
+class OfferBookWithdrawal(unittest.TestCase):
+    def book(self):
+        return OfferBook.restore(
+            [Offer(1, "P1", Period(date(2026, 11, 20), date(2026, 11, 25))),
+             Offer(2, "P1", Period(date(2026, 11, 1), date(2026, 11, 5))),
+             Offer(4, "P2", Period(date(2026, 11, 20), date(2026, 11, 25)))], 5)
+
+    def test_open_offer_finds_an_open_offer_by_its_number_only(self):
+        book = self.book()
+        self.assertEqual(1, book.open_offer(1, TODAY).number)
+        self.assertEqual("P2", book.open_offer(4, TODAY).space_number)
+        for number in (2, 3, 5, 99):
+            with self.subTest(number=number):
+                with self.assertRaises(errors.UnknownOffer):
+                    book.open_offer(number, TODAY)
+
+    def test_an_offer_is_open_on_its_end_day_and_not_the_day_after(self):
+        book = self.book()
+        self.assertEqual(1, book.open_offer(1, date(2026, 11, 25)).number)
+        with self.assertRaises(errors.UnknownOffer):
+            book.open_offer(1, date(2026, 11, 26))
+        with self.assertRaises(errors.UnknownOffer):
+            book.withdraw(1, date(2026, 11, 26))
+        self.assertEqual([1, 2, 4], [o.number for o in book.offers()])
+
+    def test_withdraw_deletes_only_that_offer_and_keeps_expired_ones_and_the_next_number(self):
+        book = self.book()
+        withdrawn = book.withdraw(1, TODAY)
+        self.assertEqual(1, withdrawn.number)
+        self.assertEqual([2, 4], [o.number for o in book.offers()])
+        self.assertEqual(5, book.next_number)
+        with self.assertRaises(errors.UnknownOffer):
+            book.withdraw(1, TODAY)
+
+    def test_offer_number_accepts_whole_numbers_from_one_only(self):
+        self.assertEqual(7, offer_number(7))
+        for bad in (None, "1", 1.0, 1.5, True, False, 0, -1, "", [1], (1,)):
+            with self.subTest(bad=bad):
+                with self.assertRaises(errors.InvalidOfferNumber):
+                    offer_number(bad)
+
+    def test_the_open_offers_of_a_stored_pair_with_the_same_start_are_ordered_by_number(self):
+        period = Period(date(2026, 11, 20), date(2026, 11, 25))
+        book = OfferBook.restore([Offer(2, "P1", period), Offer(1, "P1", period)], 3)
+        self.assertEqual([1, 2], [o.number for o in book.open_offers(TODAY)])
+
+
+class WithdrawRules(WithdrawCase):
+    def test_an_owner_withdraws_an_open_offer_by_its_number_and_it_leaves_the_list(self):
+        self.withdraw()
+        self.assertEqual([], self.listing())
+
+    def test_the_owner_name_is_compared_ignoring_case_and_surrounding_spaces(self):
+        self.withdraw(offerer="  dURAND ")
+        self.assertEqual([], self.listing())
+
+    def test_a_withdrawal_returns_the_entry_it_withdrew_as_the_listing_showed_it(self):
+        shown = self.listing()[0]
+        entry = self.withdraw()
+        self.assertEqual(shown, entry)
+        self.assertEqual(OfferEntry(1, "P1", "A12", "Durand", date(2026, 11, 20),
+                                    date(2026, 11, 25)), entry)
+
+    def test_withdrawing_one_of_three_offers_leaves_the_other_two_in_the_same_order(self):
+        self.offer(start="2026-12-01", end="2026-12-05")
+        self.offer(start="2026-12-10", end="2026-12-15")
+        before = self.listing()
+        self.withdraw(number=2)
+        self.assertEqual([before[0], before[2]], self.listing())
+        self.assertEqual([1, 3], [e.number for e in self.listing()])
+
+    def test_after_a_correction_the_new_owner_withdraws_and_the_old_name_does_not(self):
+        change_lot_owner(self.registers, M, "A12", "Moreau")
+        self.assert_withdraw_refused_and_unchanged(refusals.NotTheOwner, offerer="Durand")
+        self.assertEqual("Moreau", self.withdraw(offerer=" moreau ").owner)
+        self.assertEqual([], self.listing())
+
+    def test_a_withdrawn_offer_no_longer_blocks_its_days_and_the_new_offer_gets_the_next_number(self):
+        with self.assertRaises(refusals.OverlapRefused):
+            self.offer(start="2026-11-22", end="2026-11-30")
+        other = self.offer(space="P3", offerer="Martin")
+        self.withdraw()
+        self.assertEqual(3, self.offer(start="2026-11-22", end="2026-11-30").number)
+        self.assertEqual([other.number, 3], [e.number for e in self.listing()])
+        self.assertEqual(other, self.listing()[0])
+
+    def test_numbers_are_never_reused_after_a_withdrawal(self):
+        self.withdraw()
+        self.assertEqual(2, self.offer().number)
+        self.withdraw(number=2)
+        self.assertEqual(3, self.offer().number)
+
+    def test_withdrawing_does_not_touch_the_register(self):
+        before = list_register(self.registers)
+        self.withdraw()
+        self.assertEqual(before, list_register(self.registers))
+
+    def test_one_clock_read_per_call(self):
+        reads = self.clock.reads
+        self.withdraw()
+        self.assertEqual(reads + 1, self.clock.reads)
+
+    def test_a_withdrawal_is_one_save(self):
+        saves = self.offers.saves
+        self.withdraw()
+        self.assertEqual(saves + 1, self.offers.saves)
+
+
+class WithdrawUnknownOffer(WithdrawCase):
+    def test_a_number_that_never_existed_is_an_unknown_offer(self):
+        for number in (2, 99):
+            with self.subTest(number=number):
+                self.assert_withdraw_refused_and_unchanged(
+                    refusals.UnknownOfferRefused, number=number)
+
+    def test_an_offer_already_withdrawn_is_an_unknown_offer(self):
+        self.withdraw()
+        self.assert_withdraw_refused_and_unchanged(refusals.UnknownOfferRefused)
+
+    def test_an_offer_whose_end_date_has_passed_is_an_unknown_offer(self):
+        self.clock.day = date(2026, 11, 26)
+        self.assert_withdraw_refused_and_unchanged(refusals.UnknownOfferRefused)
+
+    def test_an_offer_ending_today_is_still_open_and_is_withdrawn(self):
+        self.clock.day = date(2026, 11, 25)
+        self.assertEqual(1, self.withdraw().number)
+
+    def test_an_offer_that_starts_in_the_future_is_withdrawn_like_any_other(self):
+        self.offer(start="2027-03-01", end="2027-03-10")
+        self.assertEqual(2, self.withdraw(number=2).number)
+        self.assertEqual([1], [e.number for e in self.listing()])
+
+    def test_an_offer_whose_space_left_the_register_is_an_unknown_offer_for_any_name(self):
+        remove_space(self.registers, StubRentals(), M, "P1")
+        for offerer in ("Durand", "Dupont"):
+            with self.subTest(offerer=offerer):
+                self.assert_withdraw_refused_and_unchanged(
+                    refusals.UnknownOfferRefused, offerer=offerer)
+
+    def test_an_unknown_offer_is_a_refusal_not_a_store_error(self):
+        self.assertTrue(issubclass(refusals.UnknownOfferRefused, refusals.Refusal))
+        self.assertTrue(issubclass(refusals.InvalidOfferNumberRefused, refusals.Refusal))
+        self.assertFalse(issubclass(refusals.UnknownOfferRefused, refusals.StoreUnreadable))
+
+
+class WithdrawInvalidInput(WithdrawCase):
+    def test_a_number_that_is_not_a_whole_number_from_one_is_refused_as_invalid_input(self):
+        for bad in (None, "1", 1.0, 1.5, True, 0, -1, "", [1]):
+            with self.subTest(bad=bad):
+                self.assert_withdraw_refused_and_unchanged(
+                    refusals.InvalidOfferNumberRefused, number=bad)
+
+    def test_a_blank_missing_or_non_text_offerer_is_refused_as_invalid_input(self):
+        for bad in ("", "   ", None, 5, ["Durand"]):
+            with self.subTest(bad=bad):
+                self.assert_withdraw_refused_and_unchanged(
+                    refusals.BlankValueRefused, offerer=bad)
+
+    def test_a_whole_number_matching_no_open_offer_is_an_unknown_offer_not_invalid_input(self):
+        self.assert_withdraw_refused_and_unchanged(refusals.UnknownOfferRefused, number=2)
+
+    def test_a_blank_offerer_is_reported_before_a_bad_number(self):
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.BlankValueRefused, offerer=" ", number=None)
+
+    def test_a_request_with_nothing_in_it_is_invalid_input(self):
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.BlankValueRefused, offerer=None, number=None)
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.InvalidOfferNumberRefused, number=None)
+
+
+class WithdrawNotTheOwner(WithdrawCase):
+    def test_a_name_that_is_not_the_owner_is_refused_and_the_offer_stays_listed(self):
+        self.offer(space="P3", offerer="Martin")
+        for offerer in ("Dupont", "Martin"):
+            with self.subTest(offerer=offerer):
+                self.assert_withdraw_refused_and_unchanged(
+                    refusals.NotTheOwner, offerer=offerer)
+        self.assert_withdraw_refused_and_unchanged(refusals.NotTheOwner, offerer="Durand", number=2)
+
+    def test_the_manager_name_cannot_withdraw_either(self):
+        self.assert_withdraw_refused_and_unchanged(refusals.NotTheOwner, offerer="manager")
+
+
+class WithdrawRoleRule(WithdrawCase):
+    def test_any_role_other_than_owner_is_refused_first_with_nothing_read_or_written(self):
+        reads, loads = self.clock.reads, self.offers.loads
+        for role in RoleRule.ROLES:
+            with self.subTest(role=role):
+                with self.assertRaises(refusals.NotAllowedToOffer):
+                    withdraw_offer(UnreadableRegister(), UnreadableOffers(), self.clock, role,
+                                   withdrawal(offerer=None, number="x"))
+        self.assertEqual(reads, self.clock.reads)
+        self.assertEqual(loads, self.offers.loads)
+
+    def test_a_non_owner_role_is_refused_even_when_everything_else_is_valid(self):
+        for role in RoleRule.ROLES:
+            with self.subTest(role=role):
+                self.assert_withdraw_refused_and_unchanged(refusals.NotAllowedToOffer, role=role)
+
+
+class WithdrawRefusalOrder(WithdrawCase):
+    def test_the_role_comes_before_invalid_input_unknown_offer_and_not_the_owner(self):
+        for role in (M, None):
+            self.assert_withdraw_refused_and_unchanged(
+                refusals.NotAllowedToOffer, role=role, number=None)
+            self.assert_withdraw_refused_and_unchanged(
+                refusals.NotAllowedToOffer, role=role, offerer=" ")
+            self.assert_withdraw_refused_and_unchanged(
+                refusals.NotAllowedToOffer, role=role, number=99)
+            self.assert_withdraw_refused_and_unchanged(
+                refusals.NotAllowedToOffer, role=role, offerer="Dupont")
+
+    def test_invalid_input_comes_before_unknown_offer_and_not_the_owner(self):
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.InvalidOfferNumberRefused, offerer="Dupont", number=0)
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.BlankValueRefused, offerer=" ", number=99)
+        self.clock.day = date(2026, 11, 26)
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.BlankValueRefused, offerer=" ", number=1)
+
+    def test_unknown_offer_comes_before_not_the_owner(self):
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.UnknownOfferRefused, offerer="Dupont", number=99)
+        self.withdraw()
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.UnknownOfferRefused, offerer="Dupont")
+
+    def test_a_non_owner_naming_a_closed_offer_gets_unknown_offer_not_the_owner(self):
+        self.clock.day = date(2026, 11, 26)
+        self.assert_withdraw_refused_and_unchanged(
+            refusals.UnknownOfferRefused, offerer="Dupont")
+
+    def test_not_the_owner_is_the_last_refusal(self):
+        self.assert_withdraw_refused_and_unchanged(refusals.NotTheOwner, offerer="Dupont")
+
+
+class WithdrawStores(WithdrawCase):
+    def test_invalid_input_comes_before_any_store_is_read(self):
+        for fields, error in ((dict(offerer=" "), refusals.BlankValueRefused),
+                              (dict(number=0), refusals.InvalidOfferNumberRefused)):
+            with self.assertRaises(error):
+                withdraw_offer(UnreadableRegister(), UnreadableOffers(), self.clock, O,
+                               withdrawal(**fields))
+
+    def test_unreadable_offers_end_a_valid_withdrawal_with_a_store_error_not_a_refusal(self):
+        with self.assertRaises(refusals.OffersUnreadable) as caught:
+            withdraw_offer(self.registers, UnreadableOffers(), self.clock, O, withdrawal())
+        self.assertIsInstance(caught.exception, refusals.StoreUnreadable)
+        self.assertNotIsInstance(caught.exception, refusals.Refusal)
+
+    def test_an_unreadable_register_ends_a_valid_withdrawal_and_nothing_is_saved(self):
+        saves = self.offers.saves
+        with self.assertRaises(refusals.StoreUnreadable):
+            withdraw_offer(UnreadableRegister(), self.offers, self.clock, O, withdrawal())
+        self.assertEqual(saves, self.offers.saves)
+        self.assertEqual(1, len(self.listing()))
+
+
+class WithdrawEdges(WithdrawCase):
+    def test_withdrawing_the_same_offer_twice_refuses_the_second_call(self):
+        self.withdraw()
+        with self.assertRaises(refusals.UnknownOfferRefused):
+            self.withdraw()
+
+    def test_the_highest_number_is_withdrawn_and_the_lowest_too(self):
+        self.offer(start="2026-12-01", end="2026-12-05")
+        self.assertEqual(2, self.withdraw(number=2).number)
+        self.assertEqual(1, self.withdraw(number=1).number)
+        self.assertEqual([], self.listing())
+
+    def test_withdrawing_in_either_order_gives_the_same_final_list(self):
+        self.offer(start="2026-12-01", end="2026-12-05")
+        self.offer(start="2026-12-10", end="2026-12-15")
+        kept = self.listing()[2]
+        self.withdraw(number=1)
+        self.withdraw(number=2)
+        self.assertEqual([kept], self.listing())
+
+    def test_withdrawing_the_same_pair_in_the_other_order_gives_the_same_final_list(self):
+        self.offer(start="2026-12-01", end="2026-12-05")
+        self.offer(start="2026-12-10", end="2026-12-15")
+        kept = self.listing()[2]
+        self.withdraw(number=2)
+        self.withdraw(number=1)
+        self.assertEqual([kept], self.listing())
+
+    def test_withdrawing_then_offering_again_on_the_same_days_works_repeatedly(self):
+        for expected in (2, 3):
+            self.withdraw(number=expected - 1)
+            self.assertEqual(expected, self.offer().number)
 
 
 if __name__ == "__main__":

@@ -5,12 +5,12 @@ from ..domain import errors
 from .ports import RegisterRepository, RentalCheck
 from .refusals import (BlankValueRefused, DuplicateLotRefused,
                        DuplicateRuleRefused, DuplicateSpaceRefused,
-                       InvalidDaysRefused, InvalidParameterRefused,
-                       InvalidPeriodRefused,
+                       InvalidDaysRefused, InvalidOfferNumberRefused,
+                       InvalidParameterRefused, InvalidPeriodRefused,
                        ManagerOnly, MinimumAboveMaximumRefused,
                        NoBoundRefused, SpaceRentedRefused, UnknownKindRefused,
-                       UnknownLotRefused, UnknownRuleRefused,
-                       UnknownSpaceRefused)
+                       UnknownLotRefused, UnknownOfferRefused,
+                       UnknownRuleRefused, UnknownSpaceRefused)
 from .role import Role
 
 _REFUSALS = {
@@ -27,6 +27,8 @@ _REFUSALS = {
     errors.DuplicateRule: DuplicateRuleRefused,
     errors.UnknownRule: UnknownRuleRefused,
     errors.InvalidPeriod: InvalidPeriodRefused,
+    errors.UnknownOffer: UnknownOfferRefused,
+    errors.InvalidOfferNumber: InvalidOfferNumberRefused,
 }
 
 

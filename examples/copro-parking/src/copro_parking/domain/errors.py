@@ -67,3 +67,11 @@ class OverlappingOffer(DomainError):
     def __init__(self, offer_number: int) -> None:
         super().__init__(f"offer {offer_number} of the same space shares a day with this period")
         self.offer_number = offer_number
+
+
+class UnknownOffer(DomainError):
+    """The number designates no open offer: never made, withdrawn, or ended."""
+
+
+class InvalidOfferNumber(DomainError):
+    """An offer number is not a whole number from 1."""

@@ -95,3 +95,11 @@ class OverlapRefused(Refusal):
     def __init__(self, message: str, offer_number: int) -> None:
         super().__init__(message)
         self.offer_number = offer_number
+
+
+class UnknownOfferRefused(Refusal):
+    """The number designates no open offer: never made, withdrawn, ended, or without a space."""
+
+
+class InvalidOfferNumberRefused(Refusal):
+    """The offer number is not a whole number from 1."""

@@ -9,8 +9,10 @@ from unittest import mock
 
 from copro_parking.application import refusals
 from copro_parking.application.offer_use_cases import (OfferRequest,
+                                                       WithdrawRequest,
                                                        list_open_offers,
-                                                       offer_space)
+                                                       offer_space,
+                                                       withdraw_offer)
 from copro_parking.application.role import Role
 from copro_parking.application.rule_use_cases import RuleSpec, add_rule
 from copro_parking.application.use_cases import register_lot, register_space
@@ -135,6 +137,107 @@ class JsonOffers(unittest.TestCase):
         with self.assertRaises(refusals.OverlapRefused) as caught:
             self.offer(start="2026-11-23", end="2026-11-24")
         self.assertEqual(1, caught.exception.offer_number)
+
+    def withdraw(self, offers=None, role=O, offerer="Durand", number=1):
+        return withdraw_offer(self.registers, offers or self.offers, self.clock, role,
+                              WithdrawRequest(offerer, number))
+
+    def test_a_withdrawal_survives_a_re_read_and_the_next_number_is_kept(self):
+        self.offer()
+        self.offer(space="P2", start="2026-11-12")
+        self.withdraw(number=1)
+        again = json_offer_repository(self.path)
+        self.assertEqual([2], [e.number for e in self.listing(again)])
+        document = json.loads(self.path.read_text(encoding="utf-8"))
+        self.assertEqual(3, document["next_number"])
+        self.assertEqual([2], [o["number"] for o in document["offers"]])
+        self.assertEqual(3, self.offer(again, start="2026-12-01", end="2026-12-02").number)
+
+    def test_a_withdrawal_keeps_the_expired_offers_and_the_other_open_ones_in_the_file(self):
+        self.offer(space="P2", start="2026-11-12", end="2026-11-13")
+        self.offer()
+        self.offer(start="2026-12-01", end="2026-12-02")
+        self.clock.day = date(2026, 11, 14)
+        self.withdraw(number=2)
+        document = json.loads(self.path.read_text(encoding="utf-8"))
+        self.assertEqual([1, 3], [o["number"] for o in document["offers"]])
+        self.assertEqual(4, document["next_number"])
+        self.assertEqual([3], [e.number for e in self.listing()])
+
+    def test_the_last_offer_withdrawn_leaves_a_valid_file_with_the_next_number(self):
+        self.offer()
+        self.withdraw()
+        self.assertEqual({"next_number": 2, "offers": []},
+                         json.loads(self.path.read_text(encoding="utf-8")))
+        self.assertEqual([], self.listing(json_offer_repository(self.path)))
+
+    def test_withdrawing_leaves_the_register_file_and_the_rules_file_bytes_unchanged(self):
+        rules = json_rule_repository(self.folder / "rules.json")
+        add_rule(rules, M, "Short stay", RuleSpec("duration_bounds", {"minimum": 3}))
+        self.offer()
+        register_path, rules_path = self.folder / "register.json", self.folder / "rules.json"
+        before = (register_path.read_bytes(), rules_path.read_bytes())
+        self.withdraw()
+        self.assertEqual(before, (register_path.read_bytes(), rules_path.read_bytes()))
+
+    def test_a_refused_withdrawal_leaves_the_file_identical(self):
+        self.offer()
+        before = self.path.read_bytes()
+        for call in (lambda: self.withdraw(role=Role.RESIDENT),
+                     lambda: self.withdraw(role=None),
+                     lambda: self.withdraw(number=0),
+                     lambda: self.withdraw(offerer=" "),
+                     lambda: self.withdraw(number=2),
+                     lambda: self.withdraw(offerer="Dupont")):
+            with self.assertRaises(refusals.Refusal):
+                call()
+            self.assertEqual(before, self.path.read_bytes())
+
+    def test_a_refused_withdrawal_on_a_first_use_creates_no_file(self):
+        for call in (lambda: self.withdraw(role=O, number=1),
+                     lambda: self.withdraw(role=None)):
+            with self.assertRaises(refusals.Refusal):
+                call()
+        self.assertFalse(self.path.exists())
+
+    def test_a_failed_write_keeps_the_previous_file_when_withdrawing(self):
+        self.offer()
+        before = self.path.read_bytes()
+        with mock.patch("os.replace", side_effect=OSError("disk")):
+            with self.assertRaises(OSError):
+                self.withdraw()
+        self.assertEqual(before, self.path.read_bytes())
+        self.assertEqual(1, len(self.listing()))
+
+    def test_an_unreadable_offers_file_ends_a_withdrawal_and_is_never_overwritten(self):
+        for text in ("not json {", '{"next_number": 1, "offers": [{"number": 1}]}'):
+            self.path.write_text(text, encoding="utf-8")
+            with self.assertRaises(refusals.OffersUnreadable):
+                self.withdraw()
+            self.assertEqual(text, self.path.read_text(encoding="utf-8"))
+
+    def test_a_stored_pair_is_listed_by_number_and_a_withdrawal_repairs_it(self):
+        pair = [dict(GOOD, number=2, end="2026-11-24"), dict(GOOD, end="2026-11-22")]
+        self.path.write_text(json.dumps({"next_number": 3, "offers": pair}), encoding="utf-8")
+        self.assertEqual([1, 2], [e.number for e in self.listing()])
+        self.withdraw(number=2)
+        self.assertEqual([1], [e.number for e in self.listing()])
+        with self.assertRaises(refusals.OverlapRefused) as caught:
+            self.offer(start="2026-11-21", end="2026-11-22")
+        self.assertEqual(1, caught.exception.offer_number)
+        self.assertEqual(3, self.offer(start="2026-11-23", end="2026-11-24").number)
+        self.withdraw(number=1)
+        self.assertEqual([3], [e.number for e in self.listing()])
+        self.assertEqual(4, self.offer(start="2026-11-20", end="2026-11-22").number)
+
+    def test_withdrawing_one_of_a_stored_pair_leaves_the_other_listed(self):
+        pair = [dict(GOOD, end="2026-11-22"), dict(GOOD, number=2, end="2026-11-24")]
+        self.path.write_text(json.dumps({"next_number": 3, "offers": pair}), encoding="utf-8")
+        self.withdraw(number=1)
+        self.assertEqual([2], [e.number for e in self.listing()])
+        with self.assertRaises(refusals.OverlapRefused) as caught:
+            self.offer(start="2026-11-21", end="2026-11-22")
+        self.assertEqual(2, caught.exception.offer_number)
 
     def test_the_system_clock_answers_a_date(self):
         today = system_clock().today()

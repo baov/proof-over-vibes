@@ -391,3 +391,27 @@
 - answer: the one with the earliest start, ties by lowest offer number
 - source: delegate, planner.md question Q2 (S2)
 - request: offer-a-space
+
+### D-65 Withdrawing an offer: which refusal wins when several fit, and an offer whose space left the register?
+- status: answered-by-delegate
+- answer: role first, then invalid input, then unknown offer, then not the owner; an offer that is not open, or whose space left the register, is an unknown offer for everyone
+- source: delegate, planner.md question Q1 (S3)
+- request: offer-a-space
+
+### D-66 Withdrawing with an offer number or an offerer that is not a usable value?
+- status: answered-by-delegate
+- answer: a number that is not a whole number from 1 (nothing, text, decimal, true, zero, negative), or a blank or non-text offerer, is refused as invalid input; a whole number matching no open offer is an unknown offer
+- source: delegate, planner.md question Q2 (S3)
+- request: offer-a-space
+
+### D-67 What does a successful withdrawal return?
+- status: answered-by-delegate
+- answer: the entry of the withdrawn offer (number, space, lot, owner, start, end), as the listing showed it
+- source: delegate, planner.md question Q3 (S3)
+- request: offer-a-space
+
+### D-68 Wording of the offer refusal messages (overlap, and the other offer refusals such as S3's)
+- status: answered-by-delegate
+- answer: consumers rely on the refusal type and on its `offer_number` attribute, never on the message text, which may change
+- source: delegate
+- request: offer-a-space

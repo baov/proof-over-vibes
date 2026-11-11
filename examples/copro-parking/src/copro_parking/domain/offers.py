@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from datetime import date
 
 from .dates import parse_date
-from .errors import InconsistentOffers, InvalidPeriod, OverlappingOffer
+from .errors import (InconsistentOffers, InvalidOfferNumber, InvalidPeriod,
+                     OverlappingOffer, UnknownOffer)
 from .text import clean, natural_key
 
 
@@ -42,6 +43,13 @@ class Offer:
 
 def _is_number(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def offer_number(value: object) -> int:
+    """An offer number as given by a caller: a whole number from 1, nothing else (D-66)."""
+    if not _is_number(value):
+        raise InvalidOfferNumber(f"{value!r} is not an offer number")
+    return value
 
 
 class OfferBook:
@@ -86,6 +94,22 @@ class OfferBook:
         self._next_number += 1
         return offer
 
+    def open_offer(self, number: int, today: date) -> Offer:
+        """The open offer with this number; any other number is an unknown offer."""
+        for offer in self.open_offers(today):
+            if offer.number == number:
+                return offer
+        raise UnknownOffer(f"offer {number} is not open")
+
+    def withdraw(self, number: int, today: date) -> Offer:
+        """Delete the open offer with this number (D-61: its number is never reused).
+
+        The other offers, the expired ones included, and the next number are kept.
+        """
+        offer = self.open_offer(number, today)
+        self._offers.remove(offer)
+        return offer
+
     def offers(self) -> list[Offer]:
         """Every stored offer, in number order, open or not."""
         return list(self._offers)
@@ -94,4 +118,4 @@ class OfferBook:
         """Offers whose end is not before `today`, by start then natural space order."""
         open_ones = [o for o in self._offers if today <= o.period.end]
         return sorted(open_ones,
-                      key=lambda o: (o.period.start, natural_key(o.space_number)))
+                      key=lambda o: (o.period.start, natural_key(o.space_number), o.number))
