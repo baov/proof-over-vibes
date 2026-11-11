@@ -3,11 +3,12 @@ import * as THREE from "three";
 import { TEAM_COLORS } from "./layout.js";
 import { STATE_COLORS, STATE_GLYPHS, roleTitle } from "./roles.js";
 
-const SPEED = 4.5; // world units per second while walking a handoff
+const SPEED = 3; // world units per second while walking a handoff: slow enough to follow with the eye
+const TRAIL_STEP = 0.45; // distance between the dots that show where the handoff is going
 const DIM_SPEED = 5; // how fast a role outside the run fades to grey, and back
 const DIM_TARGET = 0.8; // how much of its color is lost, 1 being a flat grey
 const HANDOVER_PAUSE = 0.6;
-const DEFER_MAX = 4; // the receiver starts working when the walker arrives, or after this
+const DEFER_MAX = 9; // the receiver starts working when the walker arrives, or after this
 const CHECK_SECONDS = 3;
 const IDLE_CYCLE = 18; // seconds of one resting routine: look around, stretch, sip, daydream
 const SKIN = 0xf1c7a0;
@@ -26,7 +27,13 @@ function textSprite(text, { fg, bg, size, w, h, scale }) {
     g.roundRect(2, 2, w - 4, h - 4, h / 2.4);
     g.fill();
     g.fillStyle = fg;
-    g.font = `bold ${size}px system-ui, sans-serif`;
+    // A long label ("Product Owner → Architect") shrinks to fit the pill instead of being cut.
+    let fontSize = size;
+    g.font = `bold ${fontSize}px system-ui, sans-serif`;
+    while (g.measureText(label).width > w - h * 0.6 && fontSize > 18) {
+      fontSize -= 2;
+      g.font = `bold ${fontSize}px system-ui, sans-serif`;
+    }
     g.textAlign = "center";
     g.textBaseline = "middle";
     g.fillText(label, w / 2, h / 2 + 2);
@@ -207,7 +214,37 @@ export function createAgents(scene, layout, stations) {
     agent.label.userData.set(roleTitle(agent.role));
   }
 
+  // The route of a handoff, drawn on the floor as dots in the color of the receiver (red after a NO-GO),
+  // so that a handoff missed by the eye still shows where it went.
+  function makeTrail(path, color) {
+    const trail = new THREE.Group();
+    const dot = new THREE.CircleGeometry(0.11, 12);
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthTest: false, toneMapped: false });
+    for (let i = 1; i < path.length; i++) {
+      const a = path[i - 1];
+      const b = path[i];
+      const length = Math.hypot(b.x - a.x, b.z - a.z);
+      const count = Math.max(1, Math.round(length / TRAIL_STEP));
+      for (let k = 0; k < count; k++) {
+        const mesh = new THREE.Mesh(dot, material);
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.set(a.x + ((b.x - a.x) * k) / count, 0.06, a.z + ((b.z - a.z) * k) / count);
+        mesh.renderOrder = 4;
+        trail.add(mesh);
+      }
+    }
+    scene.add(trail);
+    return { trail, material };
+  }
+
+  function clearTrail() {
+    if (!walk?.trail) return;
+    scene.remove(walk.trail.trail);
+    walk.trail.material.dispose();
+  }
+
   function cancelWalk() {
+    clearTrail();
     if (walk) sit(walk.agent);
     walk = null;
     deferred.clear();
@@ -222,7 +259,8 @@ export function createAgents(scene, layout, stations) {
     agent.folder.visible = true;
     agent.mode = "walking";
     agent.label.userData.set(`${roleTitle(from)} → ${roleTitle(to)}`);
-    walk = { agent, path, back: [...path].reverse(), idx: 1, phase: "out", pause: 0, to };
+    const trail = makeTrail(path, red ? 0xef4444 : TEAM_COLORS[layout.seats.get(to).team]);
+    walk = { agent, path, back: [...path].reverse(), idx: 1, phase: "out", pause: 0, to, trail };
     deferred.set(to, DEFER_MAX);
   }
 
@@ -276,6 +314,7 @@ export function createAgents(scene, layout, stations) {
           walk.pause = HANDOVER_PAUSE;
           deferred.delete(walk.to);
         } else {
+          clearTrail();
           sit(agent);
           walk = null;
         }
