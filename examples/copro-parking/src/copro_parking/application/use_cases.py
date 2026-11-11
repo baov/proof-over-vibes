@@ -6,6 +6,7 @@ from .ports import RegisterRepository, RentalCheck
 from .refusals import (BlankValueRefused, DuplicateLotRefused,
                        DuplicateRuleRefused, DuplicateSpaceRefused,
                        InvalidDaysRefused, InvalidParameterRefused,
+                       InvalidPeriodRefused,
                        ManagerOnly, MinimumAboveMaximumRefused,
                        NoBoundRefused, SpaceRentedRefused, UnknownKindRefused,
                        UnknownLotRefused, UnknownRuleRefused,
@@ -25,6 +26,7 @@ _REFUSALS = {
     errors.InvalidParameter: InvalidParameterRefused,
     errors.DuplicateRule: DuplicateRuleRefused,
     errors.UnknownRule: UnknownRuleRefused,
+    errors.InvalidPeriod: InvalidPeriodRefused,
 }
 
 

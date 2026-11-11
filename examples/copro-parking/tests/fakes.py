@@ -1,6 +1,10 @@
 import bootstrap  # noqa: F401  (must come first)
-from copro_parking.application.ports import (RegisterRepository, RentalCheck,
+from datetime import date
+
+from copro_parking.application.ports import (Clock, OfferRepository,
+                                             RegisterRepository, RentalCheck,
                                              RuleRepository)
+from copro_parking.domain.offers import Offer, OfferBook, Period
 from copro_parking.domain.register import Register
 from copro_parking.domain.rules import RuleSet
 
@@ -58,3 +62,37 @@ class InMemoryRuleRepository(RuleRepository):
         self.saves += 1
         self._entries = [(r.name, r.kind, r.condition.parameter(), r.note)
                          for r in rules.in_registration_order()]
+
+
+class FixedClock(Clock):
+    """Always answers the same day; a test moves it by assigning `day`."""
+
+    def __init__(self, day: date) -> None:
+        self.day = day
+        self.reads = 0
+
+    def today(self) -> date:
+        self.reads += 1
+        return self.day
+
+
+class InMemoryOfferRepository(OfferRepository):
+    """Keeps the offers in memory; stores a copy of the entries, like a file."""
+
+    def __init__(self) -> None:
+        self._next_number = 1
+        self._entries: list[tuple] = []
+        self.loads = 0
+        self.saves = 0
+
+    def load(self) -> OfferBook:
+        self.loads += 1
+        return OfferBook.restore(
+            [Offer(n, space, Period(start, end)) for n, space, start, end in self._entries],
+            self._next_number)
+
+    def save(self, book: OfferBook) -> None:
+        self.saves += 1
+        self._next_number = book.next_number
+        self._entries = [(o.number, o.space_number, o.period.start, o.period.end)
+                         for o in book.offers()]

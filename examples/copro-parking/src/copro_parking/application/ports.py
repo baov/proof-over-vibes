@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from datetime import date
 
+from ..domain.offers import OfferBook
 from ..domain.register import Register
 from ..domain.rules import RuleSet
 
@@ -34,3 +36,23 @@ class RuleRepository(ABC):
     @abstractmethod
     def save(self, rules: RuleSet) -> None:
         """Replace the stored rules."""
+
+
+class OfferRepository(ABC):
+    """Stores the whole offer book; it enforces no rule itself (ADR-0004)."""
+
+    @abstractmethod
+    def load(self) -> OfferBook:
+        """The stored offers; an empty book when nothing is stored yet."""
+
+    @abstractmethod
+    def save(self, book: OfferBook) -> None:
+        """Replace the stored offers."""
+
+
+class Clock(ABC):
+    """Tells today's date; the domain and the use cases never read the system date."""
+
+    @abstractmethod
+    def today(self) -> date:
+        """The current calendar day."""

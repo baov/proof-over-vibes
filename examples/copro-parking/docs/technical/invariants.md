@@ -11,6 +11,7 @@ Rules made mechanically verifiable. Run everything: `bash tools/harness/run_all.
 | INV-005 | A function nests at most 4 levels deep | warn | active |
 | INV-006 | A function has at most 5 parameters | warn | active |
 | INV-007 | The mutation score of the critical scope does not regress | 90 (warn) | active |
+| INV-008 | `domain` and `application` never read the system date (the `Clock` port does) | warn | active |
 
 All start in `warn`: they move to `error` only when the humans decide.
 
@@ -56,6 +57,16 @@ All start in `warn`: they move to `error` only when the humans decide.
 - **Baseline**: 90.6% after S3 (critical scope, 5 equivalent survivors). Threshold set to 90, as `warn`, by the human.
 - **Remediation**: for each survivor, add a test expressing the unprotected behavior; never a test written only to kill it, never a lowered threshold.
 
+## INV-008 — No system date in domain or application
+
+- **Status**: active
+- **Statement**: `domain` and `application` never call or reference `date.today()`, `datetime.now()`/`today()`/`utcnow()`, `time.time()`/`time_ns()`/`localtime()`/`gmtime()`/`ctime()`, through any import alias. Today comes from the `Clock` port.
+- **Source**: ADR-0004
+- **Script**: `tools/harness/check_clock.py` (`--explain`)
+- **Severity**: warn
+- **Remediation**: take `clock.today()` from the injected `Clock`; only the adapter in `infrastructure` (`SystemClock`) reads the host clock.
+- **Limit**: dynamic access (`getattr`, `importlib`) is not seen; files that do not exist yet are skipped, not failed.
+
 ## Sensitive zones
 
 - `application` role check on every write use case (manager only, ADR-0003): security, a missed check lets any role edit the register.
@@ -63,3 +74,6 @@ All start in `warn`: they move to `error` only when the humans decide.
 - `application` role check on the rule write use cases (`application/rule_use_cases.py`, manager only, ADR-0003, D-38): security, a missed check lets any role edit the rules.
 - `infrastructure` rule store write path (`infrastructure/json_rule_repository.py` and the shared atomic write `infrastructure/atomic_file.py`, extracted from `json_repository.py`, D-38): data, a non-atomic write corrupts the only copy of the rules.
 - `application` fail-closed path of the proposal check (`application/check.py`, `check_proposal`, D-38): security, it must never return `Allowed` on an unreadable rule store or an evaluation error. Not written yet.
+- `application` role check of the offer use cases (`application/offer_use_cases.py`, `_require_owner`, owner only, ADR-0004): security, a missed or weakened check lets any role write offers. The owner is identified only by a declared name (stated limit).
+- `infrastructure` offers write path (the JSON offers adapter, `infrastructure/json_offer_repository.py`, atomic write through `atomic_file.py`, ADR-0004): data, a non-atomic write corrupts the only copy of the offers, and an unreadable file must never be overwritten.
+- `application` fail-closed `OfferCheck` call in `remove_space` and `change_space_number` (`application/use_cases.py`, ADR-0004, D-51): data, no `except` around it; an unreadable offers file must stop the removal or renumbering, never let it through. Not written yet.

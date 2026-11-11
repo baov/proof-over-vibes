@@ -71,3 +71,19 @@ class UnknownRuleRefused(Refusal):
 
 class RulesUnreadable(StoreUnreadable):
     """The stored rules are corrupt or malformed (D-19, D-35)."""
+
+
+class NotAllowedToOffer(Refusal):
+    """Only an owner may offer a space."""
+
+
+class NotTheOwner(Refusal):
+    """The offerer is not the owner of the space's lot."""
+
+
+class InvalidPeriodRefused(Refusal):
+    """A date is missing or unreadable, the end is before the start, or the start is past."""
+
+
+class OffersUnreadable(StoreUnreadable):
+    """The stored offers are corrupt or malformed (D-19, ADR-0004)."""

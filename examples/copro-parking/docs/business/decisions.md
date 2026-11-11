@@ -271,3 +271,111 @@
 - answer: parameter={} is refused as "no bound"; None keeps the old parameter
 - source: human
 - request: legal-rules-skeleton
+
+### D-45 Who may offer a space?
+- status: answered
+- answer: only the owner of the space's lot; any other owner is refused, and a role other than owner (manager included) is refused as not allowed to offer
+- source: human, PRD offer-a-space, answered question Q1
+- request: offer-a-space
+
+### D-46 How is the offering owner identified?
+- status: answered
+- answer: the offerer gives a name, compared with the lot owner ignoring case and surrounding spaces (D-11); limit: without accounts this proves nothing about who is typing
+- source: human, PRD offer-a-space, answered question Q2
+- request: offer-a-space
+
+### D-47 May an offer start in the past?
+- status: answered
+- answer: no; a start date in the past is refused
+- source: human, PRD offer-a-space, answered question Q3
+- request: offer-a-space
+
+### D-48 May two offers of the same space share a day?
+- status: answered
+- answer: no; a second offer sharing a day with an existing offer of the same space is refused
+- source: human, PRD offer-a-space, answered question Q4
+- request: offer-a-space
+
+### D-49 Does an offer carry a price?
+- status: answered
+- answer: no; no price in this feature (the amount due comes with E4)
+- source: human, PRD offer-a-space, answered question Q5
+- request: offer-a-space
+
+### D-50 Does an offer change the "no rental" answer of the rental check, and are the E5 rules applied at offer time?
+- status: answered
+- answer: no to both; the answer "no rental" is untouched and the rules are not applied at offer time
+- source: human, PRD offer-a-space, answered question Q6
+- request: offer-a-space
+
+### D-51 May an owner withdraw an offer, and may a space with an open offer be removed?
+- status: answered
+- answer: the owner can withdraw an offer; a space with an open offer cannot be removed from the register
+- source: human, PRD offer-a-space, answered question Q7
+- request: offer-a-space
+
+### D-52 Does an offer whose end date has passed stay open?
+- status: answered
+- answer: no; it stops being open the day after its end date: it leaves the list and blocks neither another offer nor the removal of the space
+- source: human, stories.md open point 1
+- request: offer-a-space
+
+### D-53 Is a start date equal to today accepted?
+- status: answered
+- answer: yes; only dates strictly before today are refused (refines D-47)
+- source: human, stories.md open point 2
+- request: offer-a-space
+
+### D-54 Who may withdraw an offer, and how is it designated?
+- status: answered
+- answer: only the owner, by the same name check as offering (D-46); the offer is designated by an offer number added to the listing (completes D-45..D-51 and the listing of the PRD)
+- source: human, stories.md open point 3
+- request: offer-a-space
+
+### D-55 Withdrawing an offer already withdrawn?
+- status: answered
+- answer: refused as an unknown offer
+- source: human, stories.md open point 4
+- request: offer-a-space
+
+### D-56 When the lot's owner is corrected, which owner does an open offer show?
+- status: answered
+- answer: the current owner, read from the register
+- source: human, stories.md open point 5
+- request: offer-a-space
+
+### D-57 Changing the number of a space that has an open offer?
+- status: answered
+- answer: refused as "space offered", as for removal
+- source: human, architect.md question Q2
+- request: offer-a-space
+
+### D-58 Withdrawing an offer whose end date has passed?
+- status: answered
+- answer: refused as an unknown offer, since it is no longer open (D-52), like an offer already withdrawn (D-55)
+- source: human, architect.md question Q3
+- request: offer-a-space
+
+### D-59 Blank, missing or non-text offerer name or space number in an offer?
+- status: answered-by-delegate
+- answer: refused as invalid input (`BlankValueRefused`, D-12), at the rank of a bad period: after the role check, before unknown space and owner
+- source: delegate, planner.md question Q1
+- request: offer-a-space
+
+### D-60 Which date forms does an offer accept?
+- status: answered-by-delegate
+- answer: a date object (a datetime is refused) or text `YYYY-MM-DD` with surrounding spaces ignored; anything else is an invalid date
+- source: delegate, planner.md question Q2
+- request: offer-a-space
+
+### D-61 Number of the first offer?
+- status: answered-by-delegate
+- answer: 1, then 2, 3; numbers are never reused
+- source: delegate, planner.md question Q3
+- request: offer-a-space
+
+### D-62 Listing open offers when an offered space is no longer in the register (until S4 blocks the removal)
+- status: answered
+- answer: the listing skips that offer; it does not fail with "offers unreadable"
+- source: human, developer-1.md "Behaviors added" 1
+- request: offer-a-space

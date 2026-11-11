@@ -79,6 +79,33 @@ class ShapeTests(unittest.TestCase):
         self.assertEqual(run("check_shape.py", root)[0], 0)
 
 
+class ClockTests(unittest.TestCase):
+    def test_flags_every_way_to_read_the_system_date(self):
+        root = project({SRC + "domain/a.py": "from datetime import date, datetime as dt\nimport time\nimport datetime as d2\n"
+                                              "def f():\n    return date.today(), dt.now(), time.time(), d2.date.today()\n",
+                        SRC + "application/b.py": "import datetime\ndef g(clock=datetime.datetime.utcnow):\n    return 1\n"})
+        code, out = run("check_clock.py", root)
+        self.assertEqual(code, 2)
+        self.assertEqual(out.count("[INV-008]"), 5)
+        self.assertIn("domain/a.py:5:", out)
+        self.assertIn("application/b.py:2:", out)  # referenced, not only called
+
+    def test_clock_port_infrastructure_and_dates_are_fine(self):
+        root = project({SRC + "domain/a.py": "from datetime import date\ndef f(d: date, clock):\n    return clock.today() > d, date(2026, 1, 1)\n",
+                        SRC + "infrastructure/c.py": "from datetime import date\nclass SystemClock:\n    def today(self):\n        return date.today()\n",
+                        "tests/test_x.py": "import time\nt = time.time()\n"})
+        self.assertEqual(run("check_clock.py", root)[0], 0)
+
+    def test_missing_rings_or_no_code_are_ok(self):
+        self.assertEqual(run("check_clock.py", project({}))[0], 0)
+        self.assertEqual(run("check_clock.py", project({SRC + "infrastructure/c.py": "import time\n"}))[0], 0)
+
+    def test_explain(self):
+        code, out = run("check_clock.py", project({}), "--explain")
+        self.assertEqual(code, 0)
+        self.assertIn("INV-008", out)
+
+
 class MutationTests(unittest.TestCase):
     PROJ = {SRC + "__init__.py": "", SRC + "domain/__init__.py": "",
             SRC + "domain/rule.py": "def is_manager(role):\n    return role == 'manager'\n"}

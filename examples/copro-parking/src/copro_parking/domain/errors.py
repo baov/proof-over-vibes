@@ -51,3 +51,11 @@ class DuplicateRule(DomainError):
 
 class UnknownRule(DomainError):
     """The rule to change or remove is not registered."""
+
+
+class InvalidPeriod(DomainError):
+    """A date is missing or unreadable, the end is before the start, or the start is past."""
+
+
+class InconsistentOffers(DomainError):
+    """Stored offers break a rule of the book: duplicate number, number not below the next one."""

@@ -57,6 +57,10 @@ class Register:
             raise UnknownSpace(number)
         return found
 
+    def lot_of(self, number: object) -> Lot:
+        """The lot a space belongs to, with its current owner (D-56)."""
+        return self._lots[key(self.space(number).lot_identifier)]
+
     def remove_space(self, number: object) -> None:
         """Forget a space: its number is free again, its lot stays (D-10)."""
         del self._spaces[key(self.space(number).number)]

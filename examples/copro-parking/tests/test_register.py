@@ -202,3 +202,24 @@ class NaturalOrder(unittest.TestCase):
             register.add_lot(identifier, "X")
         self.assertEqual(["A", "A3", "A20", "B1"],
                          [l.identifier for l in register.lots()])
+
+    def test_the_lot_of_a_space_is_found_ignoring_case_and_spaces(self):
+        register = Register()
+        register.add_lot("A12", "Durand")
+        register.add_space("P1", "a12")
+        self.assertEqual(("A12", "Durand"),
+                         (register.lot_of(" p1 ").identifier, register.lot_of("P1").owner.name))
+
+    def test_the_lot_of_an_unknown_or_blank_space_is_refused(self):
+        register = Register()
+        with self.assertRaises(UnknownSpace):
+            register.lot_of("P1")
+        with self.assertRaises(BlankValue):
+            register.lot_of(" ")
+
+    def test_the_lot_of_a_space_shows_the_owner_after_a_correction(self):
+        register = Register()
+        register.add_lot("A12", "Durand")
+        register.add_space("P1", "A12")
+        register.change_owner("A12", "Martin")
+        self.assertEqual("Martin", register.lot_of("P1").owner.name)
