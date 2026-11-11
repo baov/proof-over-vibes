@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from ..application.ports import Clock, RentalCheck
+from ..application.ports import Clock, OfferCheck, OfferRepository, RentalCheck
 from .json_offer_repository import JsonOfferRepository
 from .json_repository import JsonRegisterRepository
 from .json_rule_repository import JsonRuleRepository
@@ -44,3 +44,19 @@ class SystemClock(Clock):
 def system_clock() -> Clock:
     """The clock the offers use in production."""
     return SystemClock()
+
+
+class StoredOfferCheck(OfferCheck):
+    """Asks the stored offers, as of the clock's day; unreadable offers raise (fail closed)."""
+
+    def __init__(self, repository: OfferRepository, clock: Clock) -> None:
+        self._repository = repository
+        self._clock = clock
+
+    def has_open_offer(self, space_number: str) -> bool:
+        return self._repository.load().has_open_offer(space_number, self._clock.today())
+
+
+def offer_check(repository: OfferRepository, clock: Clock) -> OfferCheck:
+    """The offer check the register uses in production."""
+    return StoredOfferCheck(repository, clock)

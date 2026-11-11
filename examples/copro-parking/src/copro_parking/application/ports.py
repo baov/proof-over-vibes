@@ -26,6 +26,18 @@ class RentalCheck(ABC):
         """True when the space, given by its registered number, is rented."""
 
 
+class OfferCheck(ABC):
+    """Tells whether a space has an open offer (offers arrive with F2.1)."""
+
+    @abstractmethod
+    def has_open_offer(self, space_number: str) -> bool:
+        """True when an offer of the space ends today or later.
+
+        Unreadable offers raise their error; they never answer False, which
+        would let a removal or a renumbering through (fail closed).
+        """
+
+
 class RuleRepository(ABC):
     """Stores the whole rule set; it enforces no rule itself (ADR-0002)."""
 

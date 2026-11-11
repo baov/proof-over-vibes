@@ -1,7 +1,7 @@
 import bootstrap  # noqa: F401  (must come first)
 from datetime import date
 
-from copro_parking.application.ports import (Clock, OfferRepository,
+from copro_parking.application.ports import (Clock, OfferCheck, OfferRepository,
                                              RegisterRepository, RentalCheck,
                                              RuleRepository)
 from copro_parking.domain.offers import Offer, OfferBook, Period
@@ -41,6 +41,30 @@ class StubRentals(RentalCheck):
     def has_rental(self, space_number: str) -> bool:
         self.asked.append(space_number)
         return space_number in self._rented
+
+
+class StubOffers(OfferCheck):
+    """Answers "has an open offer" for the given numbers and records every question asked."""
+
+    def __init__(self, *offered: str) -> None:
+        self._offered = set(offered)
+        self.asked: list[str] = []
+
+    def has_open_offer(self, space_number: str) -> bool:
+        self.asked.append(space_number)
+        return space_number in self._offered
+
+
+class FailingOffers(OfferCheck):
+    """Raises the given error when asked: an offers store that cannot answer."""
+
+    def __init__(self, error: Exception) -> None:
+        self._error = error
+        self.asked: list[str] = []
+
+    def has_open_offer(self, space_number: str) -> bool:
+        self.asked.append(space_number)
+        raise self._error
 
 
 class InMemoryRuleRepository(RuleRepository):

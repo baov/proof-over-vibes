@@ -2,11 +2,11 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_an_offer_whose_space_left_the_register_is_an_unknown_offer_for_any_name
+automated_test: tests/test_offer_use_cases.py::test_an_offer_whose_space_is_not_registered_is_an_unknown_offer_for_any_name
 status: covered
-source: decisions.md D-65
+source: decisions.md D-65, D-69
 ---
 
-# An offer whose space left the register is an unknown offer
+# An offer whose space is not registered is an unknown offer
 
-Given an open offer whose space was removed from the register, withdrawing it is refused as unknown offer, for any name.
+Given a stored offer whose space is not registered, withdrawing it is refused as unknown offer, for any name.

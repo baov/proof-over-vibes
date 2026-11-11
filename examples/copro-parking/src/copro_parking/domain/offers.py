@@ -5,7 +5,7 @@ from datetime import date
 from .dates import parse_date
 from .errors import (InconsistentOffers, InvalidOfferNumber, InvalidPeriod,
                      OverlappingOffer, UnknownOffer)
-from .text import clean, natural_key
+from .text import clean, key, natural_key
 
 
 @dataclass(frozen=True)
@@ -109,6 +109,15 @@ class OfferBook:
         offer = self.open_offer(number, today)
         self._offers.remove(offer)
         return offer
+
+    def has_open_offer(self, space_number: object, today: date) -> bool:
+        """True when an offer of the space ends today or later (D-52).
+
+        The numbers are compared by key: a file written before S4 may hold
+        "P1" for a space now registered as "p1".
+        """
+        space = key(clean(space_number))
+        return any(key(o.space_number) == space for o in self.open_offers(today))
 
     def offers(self) -> list[Offer]:
         """Every stored offer, in number order, open or not."""

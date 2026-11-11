@@ -6,18 +6,18 @@ A small Python module (register the lots and parking spaces of a co-ownership, t
 
 > Built with the roles and skills of this repository as of the commit titled "Add TL;DR and diagrams to generated docs; durations, document reader and resting agents on the floor". The security and performance targets (PRD, Architect, review), added to `main` since, are not part of it.
 
-Two pieces of the backlog are built: the register (F1.2) and the first story of the legal-rules skeleton (E5 S1, a manager configures duration-bounds rules; no legal text is encoded). The rentals, the checking of a proposal against the rules, the owner's consent and the multi-co-ownership are in the backlog, not in the code.
+Three pieces of the backlog are built: the register (F1.2), the first story of the legal-rules skeleton (E5 S1, a manager configures duration-bounds rules; no legal text is encoded) and the offers of a space (F2.1, four stories: offer, no overlap, withdraw, no removal or renumbering while an offer is open). The rentals, the checking of a proposal against the rules, the owner's consent and the multi-co-ownership are in the backlog, not in the code.
 
 ## What you get
 
 | From | You get | Where |
 |---|---|---|
 | The idea | framing, market watch (every claim marked *unverified*), vision, roadmap, story map, backlog, the PRD of the picked feature | [`docs/product/`](docs/product) |
-| The questions | 44 numbered decisions with their source, every one answered by a person | [`docs/business/decisions.md`](docs/business/decisions.md) |
+| The questions | 71 numbered decisions with their source, every one answered by a person | [`docs/business/decisions.md`](docs/business/decisions.md) |
 | The code | the module and its tests (stdlib `unittest`) | [`src`](src), [`tests`](tests) |
-| The tests | 47 business test-cases, each naming its source and its automated test, checked by a bridge | [`docs/business/test-cases`](docs/business/test-cases) |
+| The tests | 109 business test-cases, each naming its source and its automated test, checked by a bridge | [`docs/business/test-cases`](docs/business/test-cases) |
 | The architecture | three ADRs (clean architecture, a JSON file, an application API with an explicit role), the first made executable | [`docs/technical`](docs/technical) |
-| The checks | a harness: layers rule, shape limits, test-case bridge, and a stdlib mutation script (90.9% on the critical scope) | [`tools/harness`](tools/harness) |
+| The checks | a harness: layers rule, shape limits, test-case bridge, and a stdlib mutation script (91.3% on the critical scope) | [`tools/harness`](tools/harness) |
 | Each review | the Reviewer's report: verdict, findings with their severity, the probes behind them | [`reviews/`](reviews) |
 
 ## Where the loop did something
@@ -30,7 +30,7 @@ Two pieces of the backlog are built: the register (F1.2) and the first story of 
 - **No NO-GO, no Failure Analyst.**
 - **No review of the sensitive zones by a person:** every review escalated, the human accepted each in chat, nobody read the diffs.
 - **No security or performance target:** the roles predate them.
-- **No rentals, no legal rules, no UI:** the rental check is a port that always answers "no rental"; the French rules were never supplied.
+- **No rentals, no legal rules, no UI:** an offer is not a rental: the rental check is still a port that always answers "no rental"; the French rules were never supplied.
 - **Roles not installed in a client:** each was started as a fresh agent that read its role file.
 - **Mutation is a home-made script:** it cannot see removed statements, changed messages or exception types, nor crash-mid-write atomicity; five equivalent survivors remain.
 - **`unittest`, not pytest:** nothing could be installed on the machine.

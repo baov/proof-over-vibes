@@ -87,8 +87,10 @@ def withdraw_offer(registers: RegisterRepository, offers: OfferRepository,
                    clock: Clock, role: Role, request: WithdrawRequest) -> OfferEntry:
     """The owner of an offer takes it back, designating it by its number.
 
-    Role first, then invalid input, unknown offer (never made, withdrawn,
-    ended, or whose space left the register, D-65), and last not the owner.
+    Role first, then invalid input (a blank offerer before a bad number,
+    D-70), then both stores are read (a store error wins over an unknown
+    offer, D-70), then unknown offer (never made, withdrawn, ended, or
+    whose space is not registered, D-65), and last not the owner.
     The name is compared with the current owner of the lot; this is not an
     authentication (D-46): it proves nothing about who is typing.
     """
@@ -99,11 +101,12 @@ def withdraw_offer(registers: RegisterRepository, offers: OfferRepository,
         raise _refuse(error) from error
     today = clock.today()
     book = offers.load()
+    register = registers.load()
     try:
         space = book.open_offer(number, today).space_number
-        lot = registers.load().lot_of(space)
-    except (errors.UnknownOffer, errors.UnknownSpace) as error:
-        raise UnknownOfferRefused(f"offer {number} is not open") from error
+        lot = register.lot_of(space)
+    except (errors.UnknownOffer, errors.UnknownSpace):
+        raise UnknownOfferRefused(f"offer {number} is not open") from None
     if key(lot.owner.name) != key(offerer):
         raise NotTheOwner(f"{offerer} is not the owner of offer {number}")
     offer = book.withdraw(number, today)

@@ -2,13 +2,15 @@
 from dataclasses import dataclass
 
 from ..domain import errors
-from .ports import RegisterRepository, RentalCheck
+from ..domain.register import Register
+from .ports import OfferCheck, RegisterRepository, RentalCheck
 from .refusals import (BlankValueRefused, DuplicateLotRefused,
                        DuplicateRuleRefused, DuplicateSpaceRefused,
                        InvalidDaysRefused, InvalidOfferNumberRefused,
                        InvalidParameterRefused, InvalidPeriodRefused,
                        ManagerOnly, MinimumAboveMaximumRefused,
-                       NoBoundRefused, SpaceRentedRefused, UnknownKindRefused,
+                       NoBoundRefused, SpaceOfferedRefused,
+                       SpaceRentedRefused, UnknownKindRefused,
                        UnknownLotRefused, UnknownOfferRefused,
                        UnknownRuleRefused, UnknownSpaceRefused)
 from .role import Role
@@ -81,19 +83,30 @@ def change_lot_owner(repository: RegisterRepository, role: Role,
     repository.save(register)
 
 
-def change_space_number(repository: RegisterRepository, role: Role,
-                        number: object, new_number: object) -> None:
+def _registered_number(register: Register, number: object) -> str | None:
+    """The number a space is registered under; None when the register has no such space."""
+    try:
+        return register.space(number).number
+    except errors.DomainError:
+        return None  # the register's own change gives the refusal, in its own order
+
+
+def change_space_number(repository: RegisterRepository, offers: OfferCheck,
+                        role: Role, number: object, new_number: object) -> None:
     _require_manager(role)
     register = repository.load()
+    old_number = _registered_number(register, number)
     try:
         register.change_space_number(number, new_number)
     except errors.DomainError as error:
         raise _refuse(error) from error
+    if offers.has_open_offer(old_number):
+        raise SpaceOfferedRefused(f"space {old_number} has an open offer")
     repository.save(register)
 
 
 def remove_space(repository: RegisterRepository, rentals: RentalCheck,
-                 role: Role, number: object) -> None:
+                 offers: OfferCheck, role: Role, number: object) -> None:
     _require_manager(role)
     register = repository.load()
     try:
@@ -102,6 +115,8 @@ def remove_space(repository: RegisterRepository, rentals: RentalCheck,
         raise _refuse(error) from error
     if rentals.has_rental(space.number):
         raise SpaceRentedRefused(f"space {space.number} has a rental")
+    if offers.has_open_offer(space.number):
+        raise SpaceOfferedRefused(f"space {space.number} has an open offer")
     register.remove_space(space.number)
     repository.save(register)
 

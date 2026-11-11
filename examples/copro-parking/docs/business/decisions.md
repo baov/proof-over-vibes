@@ -415,3 +415,21 @@
 - answer: consumers rely on the refusal type and on its `offer_number` attribute, never on the message text, which may change
 - source: delegate
 - request: offer-a-space
+
+### D-69 Orphan offers already in a stored file (space no longer registered), after S4 blocks removal and renumbering?
+- status: answered-by-delegate
+- answer: the data is left as it is: such an offer is skipped by the listing and unknown for withdrawal (D-62, D-65); if its number is registered again it counts as an open offer (removal and renumbering are refused) until its new owner withdraws it; the same holds when a space is renumbered into its number: the offer is then listed under that space's owner and their own overlapping offer is refused; only data stored before S4 can trigger this, and no use case can create such an offer any more; the human accepted this limit after review 09
+- source: delegate, planner.md question Q1 (S4); limit accepted by the human after review 09 (reviews/09, M1)
+- request: offer-a-space
+
+### D-70 Withdrawing with an unreadable register: which error for a number that is not an open offer? Which invalid input first?
+- status: answered-by-delegate
+- answer: a store error always wins over unknown offer: an unreadable register ends a valid withdrawal with the store unreadable error whatever the number, both stores unreadable gives the offers unreadable error; a blank offerer is reported before a bad offer number (both invalid input)
+- source: delegate, planner.md question Q2 (S4)
+- request: offer-a-space
+
+### D-71 Renumbering a space with an open offer: same-value change and rank of the refusal?
+- status: answered-by-delegate
+- answer: every change of number is refused as "space offered", a same-value or case-only change included; it ranks after the role, a blank new number, an unknown space and a duplicate number
+- source: delegate, planner.md question Q3 (S4)
+- request: offer-a-space

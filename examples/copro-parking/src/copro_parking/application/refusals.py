@@ -33,6 +33,10 @@ class SpaceRentedRefused(Refusal):
     """The space has a rental, existing or planned, and cannot be removed."""
 
 
+class SpaceOfferedRefused(Refusal):
+    """The space has an open offer and can be neither removed nor given another number."""
+
+
 class StoreUnreadable(Exception):
     """The stored register is corrupt or malformed (D-19).
 
