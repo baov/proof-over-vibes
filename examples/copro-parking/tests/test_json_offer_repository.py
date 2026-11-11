@@ -56,7 +56,7 @@ class JsonOffers(unittest.TestCase):
         again = json_offer_repository(self.path)
         self.assertEqual(self.listing(), self.listing(again))
         self.assertEqual([2, 1], [e.number for e in self.listing(again)])
-        self.assertEqual(3, self.offer(again).number)
+        self.assertEqual(3, self.offer(again, start="2026-12-01", end="2026-12-02").number)
 
     def test_the_first_successful_offer_creates_the_file_with_the_agreed_format(self):
         self.offer(space=" p1 ")
@@ -118,6 +118,23 @@ class JsonOffers(unittest.TestCase):
         self.assertEqual(before, self.path.read_bytes())
         self.assertEqual(["offers.json", "register.json"], sorted(os.listdir(self.folder)))
         self.assertEqual(1, len(self.listing()))
+
+    def test_an_overlap_refusal_leaves_the_file_bytes_identical(self):
+        self.offer()
+        before = self.path.read_bytes()
+        with self.assertRaises(refusals.OverlapRefused):
+            self.offer(start="2026-11-22", end="2026-11-23")
+        self.assertEqual(before, self.path.read_bytes())
+        self.assertEqual(2, self.offer(space="P2").number)
+
+    def test_a_stored_pair_of_overlapping_offers_loads_and_only_new_offers_are_checked(self):
+        pair = [dict(GOOD), dict(GOOD, number=2, start="2026-11-22", end="2026-11-28")]
+        self.path.write_text(json.dumps({"next_number": 3, "offers": pair}), encoding="utf-8")
+        self.assertEqual([1, 2], [e.number for e in self.listing()])
+        self.assertEqual(3, self.offer(start="2026-12-01", end="2026-12-02").number)
+        with self.assertRaises(refusals.OverlapRefused) as caught:
+            self.offer(start="2026-11-23", end="2026-11-24")
+        self.assertEqual(1, caught.exception.offer_number)
 
     def test_the_system_clock_answers_a_date(self):
         today = system_clock().today()

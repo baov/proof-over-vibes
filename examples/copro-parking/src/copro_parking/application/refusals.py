@@ -87,3 +87,11 @@ class InvalidPeriodRefused(Refusal):
 
 class OffersUnreadable(StoreUnreadable):
     """The stored offers are corrupt or malformed (D-19, ADR-0004)."""
+
+
+class OverlapRefused(Refusal):
+    """The period shares a day with an open offer of the same space."""
+
+    def __init__(self, message: str, offer_number: int) -> None:
+        super().__init__(message)
+        self.offer_number = offer_number

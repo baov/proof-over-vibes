@@ -9,6 +9,8 @@ from copro_parking.application.offer_use_cases import (OfferEntry, OfferRequest,
                                                        offer_space)
 from copro_parking.application.ports import OfferRepository, RegisterRepository
 from copro_parking.application.role import Role
+from copro_parking.domain.errors import OverlappingOffer
+from copro_parking.domain.offers import Offer, OfferBook, Period
 from copro_parking.application.use_cases import (change_lot_owner, list_register,
                                                  register_lot, register_space,
                                                  remove_space)
@@ -80,9 +82,9 @@ class OfferAndList(OfferCase):
         self.assertEqual("p2", entry.space)
         self.assertEqual("p2", self.listing()[0].space)
 
-    def test_the_same_request_twice_makes_two_offers_numbered_one_and_two(self):
+    def test_two_offers_of_distinct_periods_are_numbered_one_and_two(self):
         self.assertEqual(1, self.offer().number)
-        self.assertEqual(2, self.offer().number)
+        self.assertEqual(2, self.offer(start="2026-12-01", end="2026-12-05").number)
         self.assertEqual([1, 2], [e.number for e in self.listing()])
 
     def test_an_offer_and_its_entry_carry_no_price(self):
@@ -104,11 +106,11 @@ class ListOrder(OfferCase):
         self.offer()
         self.assertEqual(self.listing(), self.listing())
 
-    def test_the_list_is_sorted_by_start_then_natural_space_order_keeping_creation_order_on_ties(self):
+    def test_the_list_is_sorted_by_start_then_natural_space_order(self):
         self.offer(space="P10", start="2026-11-20")
         self.offer(space="p2", start="2026-11-20")
         self.offer(space="P1", start="2026-11-15")
-        self.offer(space="P2", start="2026-11-20", end="2026-11-30")
+        self.offer(space="P3", offerer="Martin", start="2026-11-20")
         self.assertEqual([3, 2, 4, 1], [e.number for e in self.listing()])
 
     def test_listing_needs_no_role_and_does_not_write(self):
@@ -265,6 +267,95 @@ class RefusalOrder(OfferCase):
                               (dict(offerer="Dupont"), refusals.NotTheOwner)):
             with self.assertRaises(error):
                 offer_space(*stores, O, request(**fields))
+
+
+class OverlapRule(OfferCase):
+    def offer_p1(self, start, end, **fields):
+        return self.offer(space="P1", start=start, end=end, **fields)
+
+    def test_an_offer_sharing_a_day_with_an_open_offer_of_the_space_is_refused_naming_it(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        for start, end in (("2026-11-24", "2026-11-30"), ("2026-11-18", "2026-11-20"),
+                           ("2026-11-21", "2026-11-22"), ("2026-11-15", "2026-12-30"),
+                           ("2026-11-20", "2026-11-24")):
+            with self.subTest(start=start, end=end):
+                with self.assertRaises(refusals.OverlapRefused) as caught:
+                    self.offer_p1(start, end)
+                self.assertEqual(1, caught.exception.offer_number)
+                self.assertIsInstance(caught.exception, refusals.Refusal)
+                self.assertIn("1", str(caught.exception))
+
+    def test_the_later_period_offered_first_gives_the_same_refusal(self):
+        self.offer_p1("2026-11-24", "2026-11-30")
+        with self.assertRaises(refusals.OverlapRefused) as caught:
+            self.offer_p1("2026-11-20", "2026-11-24")
+        self.assertEqual(1, caught.exception.offer_number)
+
+    def test_the_refusal_names_the_earliest_start_offer_and_the_lowest_number_on_ties(self):
+        self.offer_p1("2026-11-24", "2026-11-26")
+        self.offer_p1("2026-11-20", "2026-11-22")
+        with self.assertRaises(refusals.OverlapRefused) as caught:
+            self.offer_p1("2026-11-21", "2026-11-25")
+        self.assertEqual(2, caught.exception.offer_number)
+        stored = OfferBook.restore(
+            [Offer(1, "P1", Period(date(2026, 11, 20), date(2026, 11, 22))),
+             Offer(2, "P1", Period(date(2026, 11, 20), date(2026, 11, 23)))], 3)
+        with self.assertRaises(OverlappingOffer) as tie:
+            stored.add("P1", Period(date(2026, 11, 21), date(2026, 11, 21)), TODAY)
+        self.assertEqual(1, tie.exception.offer_number)
+
+    def test_an_offer_of_another_space_on_the_same_days_is_accepted(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        self.assertEqual(2, self.offer(space="p2", start="2026-11-20", end="2026-11-24").number)
+        self.assertEqual("P1", self.listing()[0].space)
+
+    def test_the_space_is_compared_as_registered_ignoring_case_and_spaces(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        with self.assertRaises(refusals.OverlapRefused):
+            self.offer(space=" p1 ", start="2026-11-22", end="2026-11-23")
+
+    def test_offers_on_the_days_next_to_an_offer_are_accepted_and_a_one_day_offer_inside_is_refused(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        self.offer_p1("2026-11-25", "2026-11-30")
+        self.offer_p1("2026-11-15", "2026-11-19")
+        for day in ("2026-11-24", "2026-11-22"):
+            with self.assertRaises(refusals.OverlapRefused):
+                self.offer_p1(day, day)
+
+    def test_an_offer_whose_end_has_passed_no_longer_blocks_and_one_ending_today_still_does(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        self.clock.day = date(2026, 11, 24)
+        with self.assertRaises(refusals.OverlapRefused):
+            self.offer_p1("2026-11-24", "2026-11-26")
+        self.clock.day = date(2026, 11, 25)
+        self.assertEqual(2, self.offer_p1("2026-11-25", "2026-11-26").number)
+        stored = OfferBook.restore(
+            [Offer(1, "P1", Period(date(2026, 11, 1), date(2026, 11, 24)))], 2)
+        stored.add("P1", Period(date(2026, 11, 20), date(2026, 11, 28)), date(2026, 11, 25))
+
+    def test_the_overlap_is_the_last_refusal(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        bad_period = dict(start="2026-11-22", end="2026-11-21")
+        self.assert_refused_and_unchanged(refusals.NotAllowedToOffer, role=M,
+                                          start="2026-11-22", end="2026-11-23")
+        self.assert_refused_and_unchanged(refusals.InvalidPeriodRefused, **bad_period)
+        self.assert_refused_and_unchanged(refusals.BlankValueRefused, offerer=" ",
+                                          start="2026-11-22", end="2026-11-23")
+        self.assert_refused_and_unchanged(refusals.UnknownSpaceRefused, space="P99",
+                                          start="2026-11-22", end="2026-11-23")
+        self.assert_refused_and_unchanged(refusals.NotTheOwner, offerer="Dupont",
+                                          start="2026-11-22", end="2026-11-23")
+        self.assert_refused_and_unchanged(refusals.OverlapRefused,
+                                          start="2026-11-22", end="2026-11-23")
+
+    def test_an_overlap_refusal_changes_nothing_and_the_next_offer_gets_the_number_it_would_have_had(self):
+        self.offer_p1("2026-11-20", "2026-11-24")
+        saves = self.offers.saves
+        self.assert_refused_and_unchanged(refusals.OverlapRefused,
+                                          start="2026-11-22", end="2026-11-23")
+        self.assertEqual(saves, self.offers.saves)
+        self.assertEqual(2, self.offer_p1("2026-12-01", "2026-12-02").number)
+        self.assertEqual([1, 2], [e.number for e in self.listing()])
 
 
 class UnreadableStores(OfferCase):

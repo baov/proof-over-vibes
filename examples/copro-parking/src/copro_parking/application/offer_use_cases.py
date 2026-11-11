@@ -6,7 +6,7 @@ from ..domain import errors
 from ..domain.offers import Offer, Period
 from ..domain.text import clean, key
 from .ports import Clock, OfferRepository, RegisterRepository
-from .refusals import NotAllowedToOffer, NotTheOwner
+from .refusals import NotAllowedToOffer, NotTheOwner, OverlapRefused
 from .role import Role
 from .use_cases import _refuse
 
@@ -49,13 +49,15 @@ def offer_space(registers: RegisterRepository, offers: OfferRepository,
                 clock: Clock, role: Role, request: OfferRequest) -> OfferEntry:
     """An owner offers a registered space of their lot for a period.
 
-    Role first, then invalid input, unknown space, not the owner. The name of
+    Role first, then invalid input, unknown space, not the owner, and last an
+    overlap with an open offer of the same space. The name of
     the offerer is compared with the lot owner; this is not an authentication
     (D-46): it proves nothing about who is typing.
     """
     _require_owner(role)
     try:
-        period = Period.starting_from(clock.today(), request.start, request.end)
+        today = clock.today()
+        period = Period.starting_from(today, request.start, request.end)
         space, offerer = clean(request.space), clean(request.offerer)
         register = registers.load()
         registered = register.space(space).number
@@ -65,7 +67,10 @@ def offer_space(registers: RegisterRepository, offers: OfferRepository,
     if key(lot.owner.name) != key(offerer):
         raise NotTheOwner(f"{offerer} is not the owner of {registered}")
     book = offers.load()
-    offer = book.add(registered, period)
+    try:
+        offer = book.add(registered, period, today)
+    except errors.OverlappingOffer as error:
+        raise OverlapRefused(str(error), error.offer_number) from error
     offers.save(book)
     return _entry(offer, lot.identifier, lot.owner.name)
 

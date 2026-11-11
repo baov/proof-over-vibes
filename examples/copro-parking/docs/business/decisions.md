@@ -379,3 +379,15 @@
 - answer: the listing skips that offer; it does not fail with "offers unreadable"
 - source: human, developer-1.md "Behaviors added" 1
 - request: offer-a-space
+
+### D-63 A stored offers file that already holds two offers of one space sharing a day?
+- status: answered-by-delegate
+- answer: tolerated; the file loads and the pair stays listed; only new offers are checked for overlap (replaces the "unreadable on load" line of the architect's note)
+- source: delegate, planner.md question Q1 (S2)
+- request: offer-a-space
+
+### D-64 A new offer overlaps several open offers of the space: which does the refusal name?
+- status: answered-by-delegate
+- answer: the one with the earliest start, ties by lowest offer number
+- source: delegate, planner.md question Q2 (S2)
+- request: offer-a-space

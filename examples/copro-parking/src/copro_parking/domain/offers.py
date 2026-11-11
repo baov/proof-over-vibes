@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from .dates import parse_date
-from .errors import InconsistentOffers, InvalidPeriod
+from .errors import InconsistentOffers, InvalidPeriod, OverlappingOffer
 from .text import clean, natural_key
 
 
@@ -28,6 +28,9 @@ class Period:
         if period.start < today:
             raise InvalidPeriod(f"{period.start} is before today")
         return period
+
+    def shares_a_day_with(self, other: "Period") -> bool:
+        return self.start <= other.end and other.start <= self.end
 
 
 @dataclass(frozen=True)
@@ -66,8 +69,19 @@ class OfferBook:
     def next_number(self) -> int:
         return self._next_number
 
-    def add(self, space_number: object, period: Period) -> Offer:
-        offer = Offer(self._next_number, clean(space_number), period)
+    def add(self, space_number: object, period: Period, today: date) -> Offer:
+        """Add an offer; refused when it shares a day with an open offer of the space.
+
+        The refusal names the open offer with the earliest start, then the
+        lowest number (D-64). Stored overlapping pairs are tolerated (D-63).
+        """
+        space = clean(space_number)
+        blocking = [o for o in self.open_offers(today)
+                    if o.space_number == space and o.period.shares_a_day_with(period)]
+        if blocking:
+            raise OverlappingOffer(
+                min(blocking, key=lambda o: (o.period.start, o.number)).number)
+        offer = Offer(self._next_number, space, period)
         self._offers.append(offer)
         self._next_number += 1
         return offer

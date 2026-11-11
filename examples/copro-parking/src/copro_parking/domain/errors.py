@@ -59,3 +59,11 @@ class InvalidPeriod(DomainError):
 
 class InconsistentOffers(DomainError):
     """Stored offers break a rule of the book: duplicate number, number not below the next one."""
+
+
+class OverlappingOffer(DomainError):
+    """A new offer shares a day with an open offer of the same space."""
+
+    def __init__(self, offer_number: int) -> None:
+        super().__init__(f"offer {offer_number} of the same space shares a day with this period")
+        self.offer_number = offer_number

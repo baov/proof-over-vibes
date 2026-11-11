@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_the_list_is_sorted_by_start_then_natural_space_order_keeping_creation_order_on_ties
+automated_test: tests/test_offer_use_cases.py::test_the_list_is_sorted_by_start_then_natural_space_order
 status: covered
 source: stories.md S1 AC8
 ---
