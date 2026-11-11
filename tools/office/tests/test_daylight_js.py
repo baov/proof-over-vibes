@@ -15,6 +15,13 @@ class DaylightJsTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_layout_passes_its_node_tests(self):
+        result = subprocess.run(
+            ["node", "--test", str(TESTS / "layout.test.mjs")],
+            capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,9 @@
 // Names and colors shared by the HUD, the tooltip and the panel.
 export const STATE_COLORS = { working: "#3b82f6", done: "#16a34a", blocked: "#d97706", escalate: "#dc2626", idle: "#64748b" };
 
+// A glyph per state, so that the state never rests on color alone.
+export const STATE_GLYPHS = { working: "…", done: "✓", blocked: "?", escalate: "!", idle: "" };
+
 const SHORT = {
   orchestrator: "Orch", "product-owner": "PO", "product-manager": "PM", architect: "Arch", planner: "Plan",
   developer: "Dev", diagnostician: "Diag", reviewer: "Review", auditor: "Audit", "failure-analyst": "Fail",

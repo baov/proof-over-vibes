@@ -38,19 +38,34 @@ export function createLayout(roleTeams) {
   const byTeam = {};
   for (const [role, team] of Object.entries(roleTeams)) (byTeam[team] ||= []).push(role);
 
+  // A desk is 1.9 wide: a row holds as many as fit side by side. The hub is only 4 wide, so it seats two a row.
+  const PER_ROW = { common: 2 };
+  const ROW_STEP = 2.8; // the depth of a row: desk, chair and the room to walk past
+  const DESK_W = 1.95; // a desk and a hand of room
   const seats = new Map();
   for (const [team, roles] of Object.entries(byTeam)) {
     const room = ROOMS[team];
+    const perRow = PER_ROW[team] ?? roles.length;
     roles.forEach((role, i) => {
-      const x = room.x + (room.w * (i + 1)) / (roles.length + 1);
+      const row = Math.floor(i / perRow);
+      const inRow = Math.min(perRow, roles.length - row * perRow);
+      const slot = i % perRow;
+      // Evenly spaced; when that leaves less than a desk each, one cell per desk instead.
+      const x = room.w / (inRow + 1) >= DESK_W
+        ? room.x + (room.w * (slot + 1)) / (inRow + 1)
+        : room.x + (room.w * (2 * slot + 1)) / (2 * inRow);
       // Desk against the back of the room, the agent sits south of it facing north (-z):
       // the camera sees the agent's back and the screen over the desk.
-      seats.set(role, { x, z: room.z + 2.4, deskZ: room.z + 1.4, rotY: Math.PI, team });
+      const seat = { x, z: room.z + 2.4 + row * ROW_STEP, deskZ: room.z + 1.4 + row * ROW_STEP, rotY: Math.PI, team, row };
+      // A seat behind another row cannot walk north through it: it leaves by the side, then north.
+      if (row > 0) seat.exit = [{ x, z: seat.z + 0.9 }, { x: room.x + room.w - 0.45, z: seat.z + 0.9 }, { x: room.x + room.w - 0.45, z: HUB.z }];
+      seats.set(role, seat);
     });
   }
 
   const seatOf = (role) => seats.get(role);
   const doorOf = (team) => DOORS[team];
+  const front = (seat) => seat.exit ?? [{ x: seat.x, z: seat.z + 0.9 }];
 
   // Straight segments only: out of the desk, door, hub, door, in front of the target desk.
   function walkPath(fromRole, toRole) {
@@ -58,11 +73,11 @@ export function createLayout(roleTeams) {
     const b = seatOf(toRole);
     const points = [
       { x: a.x, z: a.z },
-      { x: a.x, z: a.z + 0.9 },
+      ...front(a),
       doorOf(a.team),
       HUB,
       doorOf(b.team),
-      { x: b.x, z: b.z + 0.9 },
+      ...[...front(b)].reverse(),
     ];
     return points.filter((p, i) => i === 0 || p.x !== points[i - 1].x || p.z !== points[i - 1].z);
   }

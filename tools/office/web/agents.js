@@ -1,9 +1,11 @@
 // One low-poly agent per role. Draws what the snapshot says; decides nothing about the workflow.
 import * as THREE from "three";
 import { TEAM_COLORS } from "./layout.js";
-import { STATE_COLORS, roleTitle } from "./roles.js";
+import { STATE_COLORS, STATE_GLYPHS, roleTitle } from "./roles.js";
 
 const SPEED = 4.5; // world units per second while walking a handoff
+const DIM_SPEED = 5; // how fast a role outside the run fades to grey, and back
+const DIM_TARGET = 0.8; // how much of its color is lost, 1 being a flat grey
 const HANDOVER_PAUSE = 0.6;
 const DEFER_MAX = 4; // the receiver starts working when the walker arrives, or after this
 const CHECK_SECONDS = 3;
@@ -44,21 +46,7 @@ function textSprite(text, { fg, bg, size, w, h, scale }) {
   return sprite;
 }
 
-// A small colored dot above each head, so the state of the whole team reads at a glance.
-const PIP = (() => {
-  const c = document.createElement("canvas");
-  c.width = c.height = 64;
-  const g = c.getContext("2d");
-  g.fillStyle = "#fff";
-  g.beginPath();
-  g.arc(32, 32, 26, 0, Math.PI * 2);
-  g.fill();
-  g.strokeStyle = "rgba(0,0,0,.55)";
-  g.lineWidth = 6;
-  g.stroke();
-  return new THREE.CanvasTexture(c);
-})();
-
+// The state above each head is a glyph on a colored disc, so it never rests on color alone.
 const statusSprite = (text, bg) => textSprite(text, { fg: "#fff", bg, size: 64, w: 96, h: 96, scale: [0.55, 0.55] });
 
 // A resting agent should look alive: it glances around, stretches, sips a drink, then daydreams.
@@ -81,7 +69,14 @@ function restingPose(time, phase) {
 }
 
 function makeAgent(role, seat) {
-  const standard = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+  // Every material of the body, with its own color and the grey it fades to outside the run.
+  const materials = [];
+  const standard = (color) => {
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+    const grey = material.color.getHSL({}).l * 0.8;
+    materials.push({ material, base: material.color.clone(), grey: new THREE.Color(grey, grey, grey) });
+    return material;
+  };
   const part = (w, h, d, color, y) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), standard(color));
     mesh.position.y = y;
@@ -140,22 +135,25 @@ function makeAgent(role, seat) {
   const folder = part(0.32, 0.04, 0.42, 0xf4f4f4, 0.45);
   folder.position.z = 0.42;
   folder.visible = false;
+  folder.scale.setScalar(1.5); // big enough to follow across the floor
   body.add(folder);
+  // The folder takes the color of the verdict while it walks, so it does not fade with the body.
+  materials.splice(materials.findIndex((m) => m.material === folder.material), 1);
 
-  const label = textSprite(roleTitle(role), { fg: "#fff", bg: "rgba(10,12,28,0.88)", size: 46, w: 512, h: 96, scale: [2.3, 0.43] });
+  const label = textSprite(roleTitle(role), { fg: "#fff", bg: "rgba(10,12,28,0.9)", size: 56, w: 640, h: 96, scale: [3.2, 0.48] });
   label.userData.text = roleTitle(role);
-  label.position.y = 2.2;
-  const pip = new THREE.Sprite(new THREE.SpriteMaterial({ map: PIP, transparent: true, depthTest: false, toneMapped: false }));
-  pip.scale.set(0.26, 0.26, 1);
-  pip.position.y = 1.85;
-  pip.renderOrder = 9;
-  pip.visible = false;
-  root.add(pip);
-  const sprites = { "?": statusSprite("?", "#dc2626"), "!": statusSprite("!", "#dc2626"), check: statusSprite("✓", "#16a34a") };
-  for (const s of Object.values(sprites)) s.position.y = 2.75;
-  root.add(label, ...Object.values(sprites));
+  label.position.y = 2.3;
+  // Small glyphs for the calm states; blocked and escalate have the large pulsing signs below.
+  const pips = Object.fromEntries(["working", "done"].map((state) => [state, statusSprite(STATE_GLYPHS[state], STATE_COLORS[state])]));
+  for (const pip of Object.values(pips)) {
+    pip.position.y = 1.85;
+    pip.renderOrder = 9;
+  }
+  const sprites = { "?": statusSprite(STATE_GLYPHS.blocked, STATE_COLORS.blocked), "!": statusSprite(STATE_GLYPHS.escalate, STATE_COLORS.escalate), check: statusSprite("✓", STATE_COLORS.done) };
+  for (const s of Object.values(sprites)) s.position.y = 3.0;
+  root.add(label, ...Object.values(pips), ...Object.values(sprites));
 
-  return { role, seat, root, body, neck, arms, legs, folder, label, pip, sprites, mode: "seated", phase: Math.random() * 6 };
+  return { role, seat, root, body, neck, arms, legs, folder, label, pips, sprites, materials, dim: 0, mode: "seated", phase: Math.random() * 6 };
 }
 
 export function createAgents(scene, layout, stations) {
@@ -198,6 +196,8 @@ export function createAgents(scene, layout, stations) {
   let time = 0;
 
   const stateOf = (role) => (deferred.has(role) ? "idle" : run?.roles?.[role]?.state ?? "idle");
+  // A role the run does not use stays on the floor as furniture: dimmed, so the roles that matter stand out.
+  const outside = (role) => Boolean(run?.route?.length) && !run.route.includes(role);
 
   function sit(agent) {
     agent.root.position.set(agent.seat.x, 0, agent.seat.z);
@@ -334,29 +334,40 @@ export function createAgents(scene, layout, stations) {
       }
       agent.body.position.y = 0.58 + (walking ? Math.abs(Math.sin(time * 9)) * 0.05 : Math.sin(time * 2 + agent.phase) * 0.008);
 
-      const marked = role === hovered || role === selected;
-      const flagged = state === "working" || state === "blocked" || state === "escalate" || walking || marked;
-      agent.label.visible = flagged;
-      agent.pip.visible = state !== "idle";
-      if (state !== "idle") {
-        agent.pip.material.color.set(STATE_COLORS[state] ?? STATE_COLORS.idle);
-        agent.pip.scale.setScalar(state === "working" ? 0.26 + 0.05 * Math.sin(time * 6) : 0.26);
+      const off = outside(role);
+      const target = off ? DIM_TARGET : 0;
+      if (agent.dim !== target) {
+        agent.dim += (target - agent.dim) * Math.min(1, dt * DIM_SPEED);
+        if (Math.abs(target - agent.dim) < 0.01) agent.dim = target;
+        for (const { material, base, grey } of agent.materials) material.color.copy(base).lerp(grey, agent.dim);
       }
+
+      const marked = role === hovered || role === selected;
+      const active = state === "working" || state === "blocked" || state === "escalate";
+      const flagged = active || walking || marked;
+      agent.label.visible = flagged;
+      for (const [key, pip] of Object.entries(agent.pips)) pip.visible = !off && state === key;
+      agent.pips.working.scale.setScalar(0.42 + 0.06 * Math.sin(time * 6));
+      agent.pips.done.scale.setScalar(0.42);
       agent.sprites["?"].visible = state === "blocked";
       agent.sprites["!"].visible = state === "escalate";
       agent.sprites.check.visible = checks.has(role) && state === "done";
       const pulse = 0.55 + 0.45 * Math.sin(time * 6);
       for (const key of ["?", "!"]) agent.sprites[key].scale.setScalar(0.55 + 0.08 * pulse);
 
-      agent.ring.visible = marked;
-      if (marked) agent.ring.material.color.set(role === selected ? TEAM_COLORS[agent.seat.team] : 0xffffff);
-      agent.ring.material.opacity = role === selected ? 0.95 : 0.55;
+      // The ring stays under whoever is at work, in the color of its state, and pulses; hover and selection override it.
+      agent.ring.visible = marked || active;
+      if (marked || active) {
+        agent.ring.material.color.set(role === selected ? TEAM_COLORS[agent.seat.team] : marked ? 0xffffff : STATE_COLORS[state]);
+        agent.ring.material.opacity = role === selected ? 0.95 : marked ? 0.55 : 0.6 + 0.3 * pulse;
+        agent.ring.scale.setScalar(active && !marked ? 1 + 0.07 * pulse : 1);
+      }
 
       const screen = stations.get(role)?.screen;
       if (screen) {
         const alert = state === "blocked" || state === "escalate";
         screen.material.emissive.set(alert ? 0xff3b3b : TEAM_COLORS[agent.seat.team]);
-        screen.material.emissiveIntensity = (working ? 0.8 + 0.25 * Math.sin(time * 5 + agent.phase) : alert ? 0.4 + 0.3 * pulse : 0.12) + (marked ? 0.35 : 0);
+        screen.material.emissiveIntensity = off ? 0.02 : (working ? 0.8 + 0.25 * Math.sin(time * 5 + agent.phase) : alert ? 0.4 + 0.3 * pulse : 0.12) + (marked ? 0.35 : 0);
       }
     }
   }

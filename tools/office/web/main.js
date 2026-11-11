@@ -334,6 +334,7 @@ window.addEventListener("keydown", (event) => {
     return;
   }
   const key = event.key.toLowerCase();
+  if (event.key === "?") hud.toggleHint();
   if (key === "t") view.toggleTheme();
   if (key === "f") setFollow(!follow);
   if (key === "d") toggleDecisions();

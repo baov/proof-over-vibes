@@ -313,18 +313,20 @@ export function createScene(canvas, layout) {
   }
 
   // Furniture that makes it an office.
-  const vending = box(0.95, 2.1, 0.85, 0xe6ebf5, [11.2, 1.05, 9.3]);
+  // Past the hub's second row of desks (z 8 to 10): the sofa and the vending machine wait in the corridor.
+  const VENDING_Z = 12.6;
+  const vending = box(0.95, 2.1, 0.85, 0xe6ebf5, [11.2, 1.05, VENDING_Z]);
   const front = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 1.5), new THREE.MeshStandardMaterial({ color: 0x20324a, emissive: 0x4fb4ff, emissiveIntensity: 0.6 }));
-  front.position.set(11.2, 1.2, 9.73);
+  front.position.set(11.2, 1.2, VENDING_Z + 0.43);
   scene.add(vending, front);
   const snacks = [0xe8505b, 0xf5a623, 0x22c55e, 0x3b82f6, 0xf1f5f9, 0x8b5cf6];
   for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) scene.add(box(0.12, 0.2, 0.05, snacks[(row * 3 + col) % snacks.length], [10.92 + col * 0.19, 0.78 + row * 0.33, 9.76], { emissive: 0x111111 }));
+    for (let col = 0; col < 4; col++) scene.add(box(0.12, 0.2, 0.05, snacks[(row * 3 + col) % snacks.length], [10.92 + col * 0.19, 0.78 + row * 0.33, VENDING_Z + 0.46], { emissive: 0x111111 }));
   }
-  scene.add(glow(0x4fb4ff, 2.6, 0.35, [11.2, 1.2, 9.9]));
+  scene.add(glow(0x4fb4ff, 2.6, 0.35, [11.2, 1.2, VENDING_Z + 0.6]));
   scene.add(bookshelf([7.2, 0.28]), bookshelf([19.2, 0.28]), bookshelf([0.28, 11], "x"), bookshelf([0.28, 3.4], "x"));
   scene.add(box(1.0, 1.0, 0.5, 0xeef2fa, [5.2, 0.5, 11.5]), box(1.0, 1.0, 0.5, 0xeef2fa, [16.4, 0.5, 0.35]));
-  scene.add(box(2.4, 0.55, 0.9, 0x4a3f82, [10, 0.28, 8.4]), box(2.4, 0.5, 0.2, 0x4a3f82, [10, 0.7, 8.8]));
+  scene.add(box(2.4, 0.55, 0.9, 0x4a3f82, [10, 0.28, 10.9]), box(2.4, 0.5, 0.2, 0x4a3f82, [10, 0.7, 11.3]));
   for (const [x, z] of [[0.8, 0.8], [11.4, 4.6], [8.6, 4.6], [0.8, 13.2], [19.2, 13.2], [19.2, 0.8], [7.4, 13.2], [12.6, 13.2]]) scene.add(plant(x, z));
   for (const [x, w] of [[2.4, 1.2], [4.6, 0.9], [14.4, 1.2], [17.2, 0.9]]) {
     scene.add(box(w, 0.8, 0.06, 0xf4f6fb, [x, 2.55, 0.06]), box(w - 0.16, 0.64, 0.02, [0xe8505b, 0x3b82f6, 0xf5a623, 0x22c55e][Math.round(x) % 4], [x, 2.55, 0.1], { emissive: 0x111111 }));
