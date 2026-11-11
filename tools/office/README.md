@@ -4,7 +4,7 @@ A local web page that shows the roles of [`agents/`](../../agents) working, live
 
 It is read-only: it watches the files a run writes and draws them. It controls nothing.
 
-![The floor at night: the office lit above the city, the holographic sign and the Namsan tower](docs/night.jpg)
+![The floor at night: the office lit above the city, the holographic sign and the Namsan tower](docs/night.webp)
 
 *By night, from the scripted demo. The pipeline strip, the run card and the time box surround the floor.*
 
@@ -27,7 +27,7 @@ It needs Python 3 and a browser; nothing to install. The server listens on `127.
 
 ## Around the floor
 
-![Dawn, with the journal of events at the top right and an agent walking a handoff](docs/journal-dawn.jpg)
+![Dawn, with the journal of events at the top right and an agent walking a handoff](docs/journal-dawn.webp)
 
 *Dawn, while a run is under way: the journal lists what just happened, and the Reviewer walks the folder back to the Developer after a NO-GO.*
 
@@ -39,13 +39,13 @@ It needs Python 3 and a browser; nothing to install. The server listens on `127.
 
 ## Day and night
 
-![The same floor by day: a light city map, a wide river, glass towers in the sun](docs/day.jpg)
+![The same floor by day: a light city map, a wide river, glass towers in the sun](docs/day.webp)
 
 *By day: the sun is up, the office lights are low, the towers are all there.*
 
 The floor follows your machine's clock. Sunrise is at 6:00 and sunset at 18:00 every day (no location, no season). By night the city below is lit, a few glass towers show their lit windows, the holographic `서울` sign glows and the office lamps and neon signs are on; by day the city is a clean light map with a wide river, all the glass towers stand in the sun, the sun crosses the sky (the shadows move with it) and the office's own lighting turns down. Dawn and dusk tint the city.
 
-![The cool palette, by night](docs/cool-theme.jpg)
+![The cool palette, by night](docs/cool-theme.webp)
 
 *`T` swaps the warm palette for the cool one, at any hour.*
 
@@ -53,13 +53,13 @@ The time box under the run card shows the hour. Pick `Dawn`, `Day`, `Dusk` or `N
 
 ## Reading an agent's screen
 
-![A review that said NO-GO: chips, reasons, findings, and a switch to the other review](docs/agent-report.jpg)
+![A review that said NO-GO: chips, reasons, findings, and a switch to the other review](docs/agent-report.webp)
 
 *Clicking the Reviewer after a NO-GO: the reasons first, then the findings; the buttons `1` and `2` switch between its two reviews.*
 
 Hover an agent or its desk for a tooltip with its role, what it does (the first sentence of its `agents/<role>.md`), its state and its last file. Click to pin a panel with the report the role wrote: status and verdict chips, the `reasons` first, then the report rendered as text. When a role wrote several files (`developer-<n>.md`, several reviews), numbered buttons switch between them, which shows why a review was a NO-GO. The orchestrator's page is the run's `brief.md`. The panel also says where the role stands, who the file came from and who gets it next (click to move along the route), and copies the report's path. A blocked role shows its question in a callout, and the banner turns orange.
 
-![A blocked Planner: its question in a callout and an orange banner](docs/blocked.jpg) A role that has written nothing says which file it is expected to write.
+![A blocked Planner: its question in a callout and an orange banner](docs/blocked.webp) A role that has written nothing says which file it is expected to write.
 
 | Key | Effect |
 |---|---|
@@ -72,7 +72,7 @@ The panel updates by itself when the file changes. The server reads a report fro
 
 ## Decisions to review
 
-![The decisions of a run that nobody read, and the one that waits for a person](docs/decisions.jpg)
+![The decisions of a run that nobody read, and the one that waits for a person](docs/decisions.webp)
 
 The run card carries a chip when the run has decisions to look at (`⚑ 1 waiting for you · 2 never read`); click it, or press `D`. The page reads the decision log, `docs/business/decisions.md`, and lists the entries of the run (by their `request:` field): those `human-needed` first, then the `answered-by-delegate` ones, which are recommendations a role made and the orchestrator relayed without anyone reading them. Each card shows the question, the answer or the recommendation, the source, and copies a reference (`D-12 · docs/business/decisions.md`).
 
@@ -101,6 +101,6 @@ Not shown: the Auditor and the Coach, which write no file a run owns.
 python3 -m unittest discover -s tools/office/tests -t tools/office
 ```
 
-The snapshot logic, the server, the demo script and the time-of-day logic are tested; the last one runs with `node --test` through the same command, and is skipped when node is not installed (the tool itself never needs node). The 3D page is checked by eye with `--demo`. CI runs these tests (`.github/workflows/office-tests.yml`).
+The snapshot logic, the server, the demo script and the time-of-day logic are tested; the last one runs with `node --test` through the same command, and is skipped when node is not installed (the tool itself never needs node). The 3D page is checked by eye with `--demo`. The screenshots in `docs/` are regenerated, sharp, with `node tools/office/docs/capture.mjs` (it needs Google Chrome and node 22, and builds a throwaway project from the demo; pass scene names to redo only some). CI runs these tests (`.github/workflows/office-tests.yml`).
 
 `web/vendor/` holds three.js 0.170.0 (MIT licence, in `three.LICENSE`), pinned and copied as is; `VERSION` there gives its checksum.

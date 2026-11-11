@@ -21,6 +21,9 @@ mimetypes.add_type("text/javascript", ".mjs")
 
 class _Server(ThreadingHTTPServer):
     daemon_threads = True
+    # A browser opens a handful of connections at once (page, modules, snapshot, events): the default
+    # backlog of 5 resets some of them, which leaves a blank page.
+    request_queue_size = 128
 
     def __init__(self, address, handler, root: Path, poll_seconds: float):
         super().__init__(address, handler)
