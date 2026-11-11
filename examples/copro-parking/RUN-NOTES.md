@@ -10,9 +10,9 @@ Idea (from the human): "Renting parking spaces within a co-ownership." Python 3.
 | Foundations | Architect, Harness Engineer | clean architecture, JSON file, application API with an explicit role (ADR-0001..0003); executable layers rule, shape checks, test-case bridge, a stdlib mutation script |
 | Feature F1.2 | Product Owner, then per story Planner, Developer, Reviewer | S1 register and list, S2 correct owner and number, S3 remove a space |
 
-Reviews: 4 (S1, S2 twice, S3), all GO, no NO-GO. Failure Analyst never ran. Every review escalated: the manager-only check and the JSON store are sensitive zones, and the human accepted each.
+Reviews: 5 (S1, S2 twice, S3, then E5 S1), all GO, no NO-GO. Failure Analyst never ran. Every review escalated: the manager-only check and the JSON store are sensitive zones, and the human accepted each.
 
-Final state: 72 tests, 28 business test-cases all bridged to a test, mutation 90.6% on the critical scope (5 equivalent survivors), threshold 90 set as `warn`. 23 decisions in `docs/business/decisions.md`, every one answered by a person.
+Final state: 125 tests, 47 business test-cases all bridged to a test, mutation 90.9% on the critical scope (equivalent survivors only), threshold 90 set as `warn`. 44 decisions in `docs/business/decisions.md`, every one answered by a person.
 
 ## Where the loop did something
 
