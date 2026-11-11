@@ -270,6 +270,13 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         roles[active]["state"] = "working"
     decisions = decision_counts(root, slug)
     human = human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
+    if stage != "in-progress":
+        # The Orchestrator never archives a run that waits for the human: a run that left
+        # in-progress was accepted, and its escalations are history, not an open question.
+        human = False
+        for info in roles.values():
+            if info["state"] == "escalate":
+                info["state"] = "done"
 
     updated = max([r.mtime for r in reports] + [_newest_inside(run_dir)])
     view = {

@@ -133,6 +133,13 @@ class SnapshotTest(unittest.TestCase):
         self.assertTrue(run["human_needed"])
         self.assertEqual(run["roles"]["architect"]["state"], "escalate")
 
+    def test_an_archived_run_does_not_wait_for_a_human_any_more(self):
+        put(self.root, ".plans/done/feat/brief.md", brief(), 100)
+        put(self.root, ".reviews/b-d-1.md", report("reviewer", "escalate", verdict="GO"), 200)
+        run = self.run0()
+        self.assertFalse(run["human_needed"])
+        self.assertEqual(run["roles"]["reviewer"]["state"], "done")
+
     def test_limit_reached_activates_failure_analyst(self):
         put(self.root, f"{RUN}/brief.md", brief(5), 100)
         put(self.root, ".reviews/b-d-5.md", report("reviewer", verdict="NO-GO"), 300)
