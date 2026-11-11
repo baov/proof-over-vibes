@@ -2,7 +2,7 @@
 feature: register-lots-and-spaces
 type: functional
 priority: high
-automated_test: tests/test_json_repository.py::test_a_correction_survives_a_re_read_from_the_same_file
+automated_test: tests/test_json_repository.py::test_entries_corrections_and_removals_survive_a_re_read_from_the_same_file
 status: covered
 source: stories.md S2 AC6, S1 AC10
 ---

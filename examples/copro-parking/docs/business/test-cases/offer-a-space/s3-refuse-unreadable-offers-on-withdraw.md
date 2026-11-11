@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_json_offer_repository.py::test_an_unreadable_offers_file_ends_a_withdrawal_and_is_never_overwritten
+automated_test: tests/test_json_offer_repository.py::test_unreadable_offers_are_reported_on_list_offer_and_withdrawal_and_never_overwritten
 status: covered
 source: stories.md S3 AC5; decisions.md D-19, D-70
 ---
