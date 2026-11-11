@@ -320,6 +320,22 @@ class SnapshotTest(unittest.TestCase):
         put(self.root, "docs/business/decisions.md", log, 100)
         self.assertEqual(self.run0()["decisions"], {"pending": 1, "unread": 1})
 
+    def test_a_pending_decision_needs_a_human_and_an_unread_one_does_not(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, "docs/business/decisions.md", "### D-1 Currency\n- status: answered-by-delegate\n- request: feat\n", 100)
+        self.assertFalse(self.run0()["human_needed"])
+        put(self.root, "docs/business/decisions.md", "### D-2 Rounding\n- status: human-needed\n- request: feat\n", 100)
+        self.assertTrue(self.run0()["human_needed"])
+
+    def test_a_slug_in_two_stages_is_one_run_and_the_live_one_gets_the_review(self):
+        put(self.root, ".plans/in-progress/feat/brief.md", brief(), 100)
+        put(self.root, ".plans/done/feat/brief.md", brief(), 500)  # an archived story, files touched by a rebase
+        put(self.root, ".reviews/b-d-1.md", report("reviewer", verdict="GO"), 600)
+        runs = build_snapshot(self.root)["runs"]
+        self.assertEqual([r["slug"] for r in runs], ["feat"])
+        self.assertEqual(runs[0]["stage"], "in-progress")
+        self.assertTrue(runs[0]["ready_to_merge"])
+
     def test_review_attaches_to_the_latest_started_run(self):
         put(self.root, ".plans/in-progress/old/brief.md", brief(), 100)
         put(self.root, ".plans/in-progress/new/brief.md", brief(), 200)

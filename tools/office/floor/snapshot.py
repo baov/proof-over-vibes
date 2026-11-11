@@ -263,14 +263,15 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         active = "orchestrator"
     if active and roles[active]["state"] not in ("blocked", "escalate"):
         roles[active]["state"] = "working"
-    human = human or any(v["state"] == "escalate" for v in roles.values())
+    decisions = decision_counts(root, slug)
+    human = human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
 
     updated = max([r.mtime for r in reports] + [_newest_inside(run_dir)])
     view = {
         "slug": slug, "stage": stage, "kind": kind,
         "iteration": iteration, "limit": limit,
         "active_role": active, "human_needed": human, "ready_to_merge": ready,
-        "updated": updated, "route": list(ROUTES[kind]), "decisions": decision_counts(root, slug), "roles": roles,
+        "updated": updated, "route": list(ROUTES[kind]), "decisions": decisions, "roles": roles,
     }
     return view, shown
 
@@ -308,6 +309,12 @@ def _collect(root: Path) -> list[tuple[dict, list[Report]]]:
         except OSError:
             continue
         run_dirs.extend((stage, p) for p in children)
+
+    # A feature archives story by story into .plans/done/<feature>/, so its slug can sit in two
+    # stages at once. The live one speaks for the run: the archived twin would show twice, and a
+    # rebase that rewrites its files would make it look newer and steal the reviews.
+    seen: set[str] = set()
+    run_dirs = [(s, d) for s, d in run_dirs if not (d.name in seen or seen.add(d.name))]
 
     # A review belongs to the run started most recently before it was written.
     starts = {d: _start(d) for _, d in run_dirs}

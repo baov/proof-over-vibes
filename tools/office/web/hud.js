@@ -131,7 +131,8 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
     banner.className = "banner";
     if (run?.human_needed) {
       banner.classList.add("human");
-      banner.textContent = "Human needed";
+      const waiting = run.decisions?.pending;
+      banner.textContent = waiting ? `Human needed · ${waiting} decision${waiting > 1 ? "s" : ""} waiting` : "Human needed";
     } else if (run?.ready_to_merge) {
       banner.classList.add("ready");
       banner.textContent = "Ready to merge";
