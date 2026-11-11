@@ -141,3 +141,133 @@
 - answer: invalid JSON or encoding, wrong shape or missing fields, a blank owner, a duplicate lot or space, a space on an unknown lot
 - source: human
 - request: register-lots-and-spaces
+
+### D-24 Which kinds of rule exist?
+- status: answered
+- answer: a closed list of two kinds, duration bounds and owner consent required
+- source: human (PRD, decision Q1)
+- request: legal-rules-skeleton
+
+### D-25 With several rules, how is a proposal judged?
+- status: answered
+- answer: every rule is evaluated; one refusal suffices to refuse; every refusing rule is listed
+- source: human (PRD, decision Q2)
+- request: legal-rules-skeleton
+
+### D-26 What if no rule is configured?
+- status: answered
+- answer: a valid proposal is allowed, and the answer says that no rule was evaluated
+- source: human (PRD, decision Q3)
+- request: legal-rules-skeleton
+
+### D-27 Who configures rules, who lists and checks them?
+- status: answered
+- answer: only the manager configures (D-3, D-4); anyone may list rules and run a check (D-17)
+- source: human (PRD, "Decisions of the human"; reuses D-3, D-4, D-17)
+- request: legal-rules-skeleton
+
+### D-28 Changing or removing a rule that does not exist?
+- status: human-needed
+- answer: pending
+- source: none (PRD requirement 5 lists refusals for adding only)
+- recommended: refused with a named "unknown rule" reason, rules unchanged
+- request: legal-rules-skeleton
+
+### D-29 In what order are rules listed (and refusing rules in an answer)?
+- status: human-needed
+- answer: pending
+- source: none (PRD requirement 11 says "order of rule names" without saying which order; requirement 3 gives no order for the listing)
+- recommended: the same order everywhere: rule names in natural order, case-folded, as D-20; ties in registration order as D-22
+- request: legal-rules-skeleton
+
+### D-30 A proposal with a missing or unreadable date, or a missing consent value?
+- status: human-needed
+- answer: pending
+- source: none (PRD requirement 9 names blank name, unknown space, end before start only)
+- recommended: refused as invalid, with a named reason, like requirement 9: no rule evaluated, rules and register unchanged
+- request: legal-rules-skeleton
+
+### D-31 When rules are unreadable and the proposal is also invalid, or when the rules are only listed?
+- status: human-needed
+- answer: pending
+- source: none (PRD requirement 9 says no rule is evaluated; requirement 15 says a check ends with "rules unreadable")
+- recommended: the proposal is validated first (it needs no rule), so an invalid proposal gets its invalid reason; "rules unreadable" applies to a valid proposal, and to listing the rules
+- request: legal-rules-skeleton
+
+### D-32 Changing or removing a rule that does not exist? (supersedes D-28)
+- status: answered
+- answer: refused with a named "unknown rule" reason on change and on removal; rules unchanged
+- source: human
+- request: legal-rules-skeleton
+
+### D-33 Order of the rule list and of refusing rules in an answer? (supersedes D-29)
+- status: answered
+- answer: natural order of the names, case-folded; ties in registration order (as D-20, D-22)
+- source: human
+- request: legal-rules-skeleton
+
+### D-34 A proposal with a missing or unreadable date, or no consent value? (supersedes D-30)
+- status: answered
+- answer: refused as invalid, with a named reason; no rule evaluated
+- source: human
+- request: legal-rules-skeleton
+
+### D-35 Unreadable rules with an invalid proposal, and listing when unreadable? (supersedes D-31)
+- status: answered
+- answer: the proposal is validated first, so an invalid proposal gets its invalid reason; listing the rules, and a check of a valid proposal, fail with "rules unreadable"
+- source: human
+- request: legal-rules-skeleton
+
+### D-36 Are duration bounds inclusive?
+- status: answered
+- answer: yes; with a minimum of 30 days, 30 passes and 29 is refused; the maximum likewise
+- source: human
+- request: legal-rules-skeleton
+
+### D-37 Where are the rules stored?
+- status: answered
+- answer: a second JSON file next to the register file; the register file is untouched
+- source: human
+- request: legal-rules-skeleton
+
+### D-38 Which new sensitive zones does the rules feature add?
+- status: answered
+- answer: the rule write use cases, the rule store write path, and the fail-closed path of the proposal check
+- source: human
+- request: legal-rules-skeleton
+
+### D-39 Changing a duration rule's parameter: replace or merge?
+- status: answered
+- answer: replace; a given parameter is the whole new one, validated like an addition; none given keeps the old one
+- source: human
+- request: legal-rules-skeleton
+
+### D-40 Source note on change: keep, replace, clear?
+- status: answered
+- answer: not given keeps it, text replaces it, blank text clears it; a blank note on add means no note
+- source: human
+- request: legal-rules-skeleton
+
+### D-41 Shape of the duration parameter?
+- status: answered
+- answer: {"minimum": n, "maximum": n}, both keys always present, None for no bound; whole numbers above 0, text, decimals and booleans refused as invalid days; any other key refused as an invalid parameter
+- source: human
+- request: legal-rules-skeleton
+
+### D-42 A duration parameter with a single key, such as {"minimum": 30}
+- status: answered
+- answer: accepted; the missing key means no bound, and both keys are stored (refines D-41)
+- source: human
+- request: legal-rules-skeleton
+
+### D-43 A source note that is not text
+- status: answered
+- answer: refused as a blank value; unreadable rules when it is read from the file
+- source: human
+- request: legal-rules-skeleton
+
+### D-44 Changing a rule with an empty parameter
+- status: answered
+- answer: parameter={} is refused as "no bound"; None keeps the old parameter
+- source: human
+- request: legal-rules-skeleton

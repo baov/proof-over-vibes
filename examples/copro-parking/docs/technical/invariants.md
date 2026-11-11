@@ -60,3 +60,6 @@ All start in `warn`: they move to `error` only when the humans decide.
 
 - `application` role check on every write use case (manager only, ADR-0003): security, a missed check lets any role edit the register.
 - `infrastructure` JSON repository write path (temp file + `os.replace`, ADR-0002): data, a non-atomic write corrupts or half-applies the only copy of the register.
+- `application` role check on the rule write use cases (`application/rule_use_cases.py`, manager only, ADR-0003, D-38): security, a missed check lets any role edit the rules.
+- `infrastructure` rule store write path (`infrastructure/json_rule_repository.py` and the shared atomic write `infrastructure/atomic_file.py`, extracted from `json_repository.py`, D-38): data, a non-atomic write corrupts the only copy of the rules.
+- `application` fail-closed path of the proposal check (`application/check.py`, `check_proposal`, D-38): security, it must never return `Allowed` on an unreadable rule store or an evaluation error. Not written yet.

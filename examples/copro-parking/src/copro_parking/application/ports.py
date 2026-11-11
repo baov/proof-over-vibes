@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ..domain.register import Register
+from ..domain.rules import RuleSet
 
 
 class RegisterRepository(ABC):
@@ -21,3 +22,15 @@ class RentalCheck(ABC):
     @abstractmethod
     def has_rental(self, space_number: str) -> bool:
         """True when the space, given by its registered number, is rented."""
+
+
+class RuleRepository(ABC):
+    """Stores the whole rule set; it enforces no rule itself (ADR-0002)."""
+
+    @abstractmethod
+    def load(self) -> RuleSet:
+        """The stored rules; an empty set when nothing is stored yet."""
+
+    @abstractmethod
+    def save(self, rules: RuleSet) -> None:
+        """Replace the stored rules."""

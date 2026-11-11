@@ -4,8 +4,11 @@ from dataclasses import dataclass
 from ..domain import errors
 from .ports import RegisterRepository, RentalCheck
 from .refusals import (BlankValueRefused, DuplicateLotRefused,
-                       DuplicateSpaceRefused, ManagerOnly,
-                       SpaceRentedRefused, UnknownLotRefused,
+                       DuplicateRuleRefused, DuplicateSpaceRefused,
+                       InvalidDaysRefused, InvalidParameterRefused,
+                       ManagerOnly, MinimumAboveMaximumRefused,
+                       NoBoundRefused, SpaceRentedRefused, UnknownKindRefused,
+                       UnknownLotRefused, UnknownRuleRefused,
                        UnknownSpaceRefused)
 from .role import Role
 
@@ -15,6 +18,13 @@ _REFUSALS = {
     errors.DuplicateSpace: DuplicateSpaceRefused,
     errors.UnknownLot: UnknownLotRefused,
     errors.UnknownSpace: UnknownSpaceRefused,
+    errors.UnknownKind: UnknownKindRefused,
+    errors.NoBound: NoBoundRefused,
+    errors.InvalidDays: InvalidDaysRefused,
+    errors.MinimumAboveMaximum: MinimumAboveMaximumRefused,
+    errors.InvalidParameter: InvalidParameterRefused,
+    errors.DuplicateRule: DuplicateRuleRefused,
+    errors.UnknownRule: UnknownRuleRefused,
 }
 
 

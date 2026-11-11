@@ -39,3 +39,35 @@ class StoreUnreadable(Exception):
     Not a Refusal: no rule of the register was broken, the store itself is
     unusable. Raised on every read and write; the file is never overwritten.
     """
+
+
+class UnknownKindRefused(Refusal):
+    """The kind of the rule is not on the closed list."""
+
+
+class NoBoundRefused(Refusal):
+    """A duration rule needs a minimum, a maximum or both."""
+
+
+class InvalidDaysRefused(Refusal):
+    """A bound is not a whole number of days above zero."""
+
+
+class MinimumAboveMaximumRefused(Refusal):
+    """The minimum is above the maximum."""
+
+
+class InvalidParameterRefused(Refusal):
+    """The parameter is not a mapping or has an unknown key."""
+
+
+class DuplicateRuleRefused(Refusal):
+    """The rule name is already registered."""
+
+
+class UnknownRuleRefused(Refusal):
+    """The rule to change or remove is not registered."""
+
+
+class RulesUnreadable(StoreUnreadable):
+    """The stored rules are corrupt or malformed (D-19, D-35)."""

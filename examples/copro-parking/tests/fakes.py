@@ -1,6 +1,8 @@
 import bootstrap  # noqa: F401  (must come first)
-from copro_parking.application.ports import RegisterRepository, RentalCheck
+from copro_parking.application.ports import (RegisterRepository, RentalCheck,
+                                             RuleRepository)
 from copro_parking.domain.register import Register
+from copro_parking.domain.rules import RuleSet
 
 
 class InMemoryRepository(RegisterRepository):
@@ -35,3 +37,24 @@ class StubRentals(RentalCheck):
     def has_rental(self, space_number: str) -> bool:
         self.asked.append(space_number)
         return space_number in self._rented
+
+
+class InMemoryRuleRepository(RuleRepository):
+    """Keeps the rules in memory; stores a copy of the entries, like a file."""
+
+    def __init__(self) -> None:
+        self._entries: list[tuple] = []
+        self.loads = 0
+        self.saves = 0
+
+    def load(self) -> RuleSet:
+        self.loads += 1
+        rules = RuleSet()
+        for name, kind, parameter, note in self._entries:
+            rules.add(name, kind, dict(parameter), note)
+        return rules
+
+    def save(self, rules: RuleSet) -> None:
+        self.saves += 1
+        self._entries = [(r.name, r.kind, r.condition.parameter(), r.note)
+                         for r in rules.in_registration_order()]

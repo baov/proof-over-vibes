@@ -23,3 +23,31 @@ class UnknownLot(DomainError):
 
 class UnknownSpace(DomainError):
     """The space to correct is not registered."""
+
+
+class UnknownKind(DomainError):
+    """The kind of a rule is not on the closed list."""
+
+
+class NoBound(DomainError):
+    """A duration rule has neither a minimum nor a maximum."""
+
+
+class InvalidDays(DomainError):
+    """A bound is not a whole number of days above zero."""
+
+
+class MinimumAboveMaximum(DomainError):
+    """The minimum of a duration rule is above its maximum."""
+
+
+class InvalidParameter(DomainError):
+    """The parameter of a rule is not a mapping or has an unknown key."""
+
+
+class DuplicateRule(DomainError):
+    """A rule with the same name is already registered."""
+
+
+class UnknownRule(DomainError):
+    """The rule to change or remove is not registered."""
