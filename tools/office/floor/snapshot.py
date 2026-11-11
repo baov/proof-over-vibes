@@ -162,16 +162,21 @@ def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bo
 
 
 def _review_reports(root: Path) -> list[Report]:
-    folder = root / ".reviews"
-    try:
-        files = sorted(folder.glob("*.md"))
-    except OSError:
-        return []
+    """The reviewer's reports: `.reviews/*.md`, and `reviews/*.md` when the file says `role: reviewer`.
+
+    The role writes to `.reviews/`, but a project whose `.gitignore` hides it may get the reports
+    in a visible `reviews/` instead; the front-matter keeps an unrelated folder from being read.
+    """
     out = []
-    for path in files:
-        report = _make_report("reviewer", path, proof=path.stem.endswith("-proof"))
-        if report:
-            out.append(report)
+    for name, strict in ((".reviews", False), ("reviews", True)):
+        try:
+            files = sorted((root / name).glob("*.md"))
+        except OSError:
+            continue
+        for path in files:
+            report = _make_report("reviewer", path, proof=path.stem.endswith("-proof"))
+            if report and (not strict or report.front.get("role") == "reviewer"):
+                out.append(report)
     return out
 
 

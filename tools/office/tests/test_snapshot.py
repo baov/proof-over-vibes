@@ -336,6 +336,14 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(runs[0]["stage"], "in-progress")
         self.assertTrue(runs[0]["ready_to_merge"])
 
+    def test_a_visible_reviews_folder_is_read_when_the_file_says_it_is_a_reviewer_report(self):
+        put(self.root, ".plans/in-progress/feat/brief.md", brief(), 100)
+        put(self.root, "reviews/notes.md", "---\ntitle: customer reviews\n---\nnice", 300)
+        self.assertFalse(self.run0()["ready_to_merge"])
+        self.assertEqual(self.run0()["roles"]["reviewer"]["reports"], [])
+        put(self.root, "reviews/01-s1.md", report("reviewer", verdict="GO"), 400)
+        self.assertTrue(self.run0()["ready_to_merge"])
+
     def test_review_attaches_to_the_latest_started_run(self):
         put(self.root, ".plans/in-progress/old/brief.md", brief(), 100)
         put(self.root, ".plans/in-progress/new/brief.md", brief(), 200)
