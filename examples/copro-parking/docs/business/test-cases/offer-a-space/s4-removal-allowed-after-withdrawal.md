@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_removal_is_allowed_once_the_offer_is_withdrawn
+automated_test: tests/test_offer_use_cases.py::test_the_removal_waits_for_every_open_offer_of_the_space_to_be_withdrawn
 status: covered
 source: stories.md S4 AC2
 ---

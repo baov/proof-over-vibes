@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_an_offer_whose_space_is_not_registered_is_an_unknown_offer_for_any_name
+automated_test: tests/test_offer_use_cases.py::test_a_number_that_is_not_an_open_offer_is_an_unknown_offer_for_any_name
 status: covered
 source: decisions.md D-65, D-69
 ---

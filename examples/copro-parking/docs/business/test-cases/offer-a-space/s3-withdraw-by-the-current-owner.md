@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_after_a_correction_the_new_owner_withdraws_and_the_old_name_does_not
+automated_test: tests/test_offer_use_cases.py::test_after_a_correction_of_the_lot_owner_only_the_new_name_may_offer_or_withdraw
 status: covered
 source: decisions.md D-56
 ---

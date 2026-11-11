@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_the_unknown_offer_refusal_has_no_cause_and_hides_its_context
+automated_test: tests/test_offer_use_cases.py::test_a_number_that_is_not_an_open_offer_is_an_unknown_offer_for_any_name
 status: covered
 source: review 08 m3; decisions.md D-65
 ---

@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_no_offer_another_space_or_an_offer_ended_yesterday_answer_exactly_false
+automated_test: tests/test_offer_use_cases.py::test_a_space_has_an_open_offer_until_its_last_day_found_ignoring_case_and_spaces
 status: covered
 source: architect.md ADR-0004
 ---

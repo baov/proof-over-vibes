@@ -2,7 +2,7 @@
 feature: offer-a-space
 type: functional
 priority: high
-automated_test: tests/test_offer_use_cases.py::test_it_then_blocks_removal_and_renumbering_until_its_owner_withdraws_it
+automated_test: tests/test_offer_use_cases.py::test_a_number_registered_again_brings_the_orphan_back_and_blocks_until_its_owner_withdraws_it
 status: covered
 source: decisions.md D-69
 ---
