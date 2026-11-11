@@ -75,7 +75,7 @@ A finished role shows how long its task took (`took 4 min`) under its step in th
 
 ## Documents
 
-The `Documents` button of the run card, or `M`, lists the Markdown files under `docs/` and `.audit/` (the output of a framing, a PRD, the business and technical documentation, an audit), newest first, and opens one in the panel. The list refreshes while the panel is open. The server serves a document only when its own scan lists it, never a path the page invents, and ignores a file that leaves the project through a link. Mermaid diagrams show as their source: the page does not draw them.
+The `Documents` button of the run card, or `M`, lists the Markdown files under `docs/` and `.audit/` (the output of a framing, a PRD, the business and technical documentation, an audit), grouped by folder with the most recent folder first, and opens one in the panel. A dot marks what was written since you opened the list; `/` filters by title or file name, the arrows walk the list, and `◀ ▶` in a document read its neighbours. The list refreshes while the panel is open. The server serves a document only when its own scan lists it, never a path the page invents, and ignores a file that leaves the project through a link. Mermaid diagrams show as their source: the page does not draw them.
 
 ## Decisions to review
 

@@ -70,10 +70,12 @@ let docsLoaded = false;
 let openDocPath = null;
 let openDoc = null; // the document on screen
 let docsTicket = 0;
+let docsSince = Date.now() / 1000; // what was written after this is new to the reader
 
 const panel = createPanel({
   onClose: () => {
     decisionsOpen = false;
+    if (docsOpen) docsSince = Date.now() / 1000;
     docsOpen = false;
     setSelected(null, true);
   },
@@ -198,11 +200,12 @@ function syncDocs() {
 
 function drawDocs() {
   if (!docsOpen) return;
-  panel.renderDocs({ entries: docsList, doc: openDoc, loading: !docsLoaded || Boolean(openDocPath && !openDoc), error: docsError });
+  panel.renderDocs({ entries: docsList, since: docsSince, doc: openDoc, loading: !docsLoaded || Boolean(openDocPath && !openDoc), error: docsError });
 }
 
 function toggleDocs() {
   docsOpen = !docsOpen;
+  if (!docsOpen) docsSince = Date.now() / 1000; // what was on screen is read
   if (docsOpen) {
     decisionsOpen = false;
     selected = null;
@@ -322,6 +325,14 @@ createPicker({
 });
 
 window.addEventListener("keydown", (event) => {
+  if (event.target instanceof HTMLInputElement) {
+    if (event.key === "Escape" && !event.target.value) event.target.blur(); // the filter keeps its own keys
+    return;
+  }
+  if (event.key === "/" && docsOpen && panel.focusFilter()) {
+    event.preventDefault();
+    return;
+  }
   const key = event.key.toLowerCase();
   if (key === "t") view.toggleTheme();
   if (key === "f") setFollow(!follow);
@@ -333,6 +344,7 @@ window.addEventListener("keydown", (event) => {
   }
   if (event.key === "Escape") {
     decisionsOpen = false;
+    if (docsOpen) docsSince = Date.now() / 1000;
     docsOpen = false;
     setSelected(null, true);
   }
