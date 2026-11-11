@@ -12,7 +12,7 @@ const PALETTES = {
   night: {
     base: "#0a1028",
     block: (r) => `rgb(${22 + r() * 18}, ${28 + r() * 18}, ${58 + r() * 28})`,
-    lights: 0.35,
+    lights: 0.2,
     lightColors: ["rgba(255,214,140,.6)", "rgba(160,215,255,.55)"],
     avenue: "rgba(255,196,110,.2)",
     street: "rgba(255,186,100,.07)",
@@ -29,7 +29,7 @@ const PALETTES = {
     lightColors: [],
     avenue: "rgba(255,255,255,.55)",
     street: "rgba(255,255,255,.3)",
-    river: ["#4f8fd0", "#6aa8e6", "rgba(225,242,255,.45)"],
+    river: ["#7aa0cc", "#8fb3d9", "rgba(225,242,255,.4)"], // muted: the river must not outshine the floor
     riverScale: 1.6,
     glint: (a) => `rgba(255,255,255,${a * 0.5})`,
     bridge: "rgba(255,255,255,.95)",
@@ -187,6 +187,8 @@ function hologramTexture() {
 }
 
 const smooth = (x) => x * x * (3 - 2 * x);
+const HOLOGRAM_Y = 3;
+const TOWER_NIGHT_GLOW = 0.45; // the lit windows of the towers, kept below the office's own lights
 
 export function createOutside(scene) {
   let clock = 0;
@@ -286,8 +288,8 @@ export function createOutside(scene) {
 
   // The holographic sign, floating a little.
   const hologram = new THREE.Sprite(new THREE.SpriteMaterial({ map: hologramTexture(), transparent: true, depthTest: false, toneMapped: false }));
-  hologram.scale.set(6.4, 3.75, 1);
-  hologram.position.set(-2, 3.5, -6);
+  hologram.scale.set(4.4, 2.57, 1); // smaller and dimmer than the floor's own signs: a backdrop, not an announcement
+  hologram.position.set(-4, HOLOGRAM_Y, -5);
   hologram.renderOrder = 8;
   scene.add(hologram);
 
@@ -319,17 +321,17 @@ export function createOutside(scene) {
         t.material.opacity = opacity;
         t.roofMaterial.opacity = opacity;
       }
-      t.material.emissiveIntensity = 1 - d;
+      t.material.emissiveIntensity = TOWER_NIGHT_GLOW * (1 - d);
       t.material.color.setHex(0x7d8fb8).lerp(tint.setHex(0xffffff), d);
       t.roofMaterial.color.setHex(0x5a6788).lerp(tint.setHex(0xf1f4f9), d);
     }
-    hologram.material.opacity = 0.75 + 0.25 * (1 - d);
+    hologram.material.opacity = 0.45 + 0.2 * (1 - d);
   }
 
   function update(dt) {
     clock += dt;
     beacons.forEach((beacon, i) => { beacon.visible = Math.sin(clock * 2.4 + i) > -0.2; });
-    hologram.position.y = 3.5 + Math.sin(clock * 1.1) * 0.22;
+    hologram.position.y = HOLOGRAM_Y + Math.sin(clock * 1.1) * 0.22;
   }
 
   setTheme("warm");

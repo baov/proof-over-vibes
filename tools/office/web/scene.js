@@ -212,7 +212,7 @@ export function createScene(canvas, layout) {
   const useHangul = hangulAvailable();
   for (const [team, room] of Object.entries(ROOMS)) {
     if (team !== "common") {
-      const tint = new THREE.Mesh(new THREE.PlaneGeometry(room.w, room.d), new THREE.MeshBasicMaterial({ color: TEAM_COLORS[team], transparent: true, opacity: 0.14 }));
+      const tint = new THREE.Mesh(new THREE.PlaneGeometry(room.w, room.d), new THREE.MeshBasicMaterial({ color: TEAM_COLORS[team], transparent: true, opacity: 0.24 }));
       tint.rotation.x = -Math.PI / 2;
       tint.position.set(room.x + room.w / 2, 0.015, room.z + room.d / 2);
       scene.add(tint);
@@ -222,17 +222,35 @@ export function createScene(canvas, layout) {
     scene.add(lamp);
     lamps.push(lamp);
 
+    // The name in Hangul with its Latin name under it. The back rooms hang it on their wall; the others
+    // would need poles across the view, so theirs is painted on the floor, flat, reading along the screen.
     const label = useHangul ? SIGN_LABELS[team] : SIGN_FALLBACK[team];
-    const sign = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.6, 1.12),
-      new THREE.MeshBasicMaterial({ map: signTexture(label, TEAM_COLORS[team]), transparent: true, toneMapped: false }),
-    );
-    sign.position.set(room.x + room.w / 2, 3.15, room.z + 0.12);
-    SIGN_MATERIALS.push(sign.material);
-    scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
-    if (room.z > 0) {
-      for (const dx of [-1.7, 1.7]) scene.add(box(0.06, 2.6, 0.06, 0x20243a, [sign.position.x + dx, 1.3, room.z + 0.12]));
+    const sub = useHangul ? SIGN_FALLBACK[team].toUpperCase() : null;
+    const material = new THREE.MeshBasicMaterial({ map: signTexture(label, TEAM_COLORS[team], sub), transparent: true, toneMapped: false });
+    SIGN_MATERIALS.push(material);
+    if (room.z === 0 || team === "common") {
+      // The hub is far from the north wall, but its desks hide any marking on the floor behind them.
+      const hub = team === "common";
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(hub ? 2.6 : 3.6, hub ? 0.81 : 1.12), material);
+      sign.position.set(room.x + room.w / 2, hub ? 2.0 : 3.15, hub ? 0.12 : room.z + 0.12);
+      scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), hub ? 2.6 : 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
+    } else {
+      const w = 3.2;
+      const marking = new THREE.Group();
+      marking.position.set(room.x + room.w / 2, 0.035, room.z + room.d - 0.8);
+      marking.rotation.y = Math.PI / 4;
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.3125), material);
+      plane.rotation.x = -Math.PI / 2;
+      marking.add(plane);
+      scene.add(marking);
     }
+  }
+
+  // A low skirting in the team's color along the open edges of the front rooms, which have no colored wall.
+  for (const [x, z, w, d, team] of [[0, 13.9, 8, 0.1, "build"], [12, 13.9, 8, 0.1, "quality"], [20, 8, 0.1, 6, "quality"]]) {
+    const skirting = box(w, 0.32, d, TEAM_COLORS[team], [x + (w > 0.1 ? w / 2 : -0.05), 0.16, z + (d > 0.1 ? d / 2 : 0.05)], { roughness: 0.6 });
+    skirting.castShadow = false;
+    scene.add(skirting);
   }
 
   // Back walls (north z = 0, west x = 0): thick, colored per room, with window openings onto the city.
@@ -281,17 +299,18 @@ export function createScene(canvas, layout) {
     const lo = horizontal ? Math.min(x1, x2) : Math.min(z1, z2);
     const hi = horizontal ? Math.max(x1, x2) : Math.max(z1, z2);
     const spans = gap ? [[lo, gap[0]], [gap[1], hi]] : [[lo, hi]];
-    const metal = 0xdfe6f2;
+    // Darker and thinner than the walls, with no top rail: the partitions mark the rooms without cutting the floor into pieces.
+    const metal = 0x8a93ad;
     for (const [a, b] of spans) {
       const len = b - a;
       if (len <= 0) continue;
       const mid = (a + b) / 2;
       if (horizontal) {
-        scene.add(glass(len, 1.8, 0.06, [mid, 0.95, z1]), box(len, 0.07, 0.1, metal, [mid, 1.88, z1]), box(len, 0.1, 0.1, metal, [mid, 0.05, z1]));
-        scene.add(box(0.08, 1.9, 0.08, metal, [a, 0.95, z1]), box(0.08, 1.9, 0.08, metal, [b, 0.95, z1]));
+        scene.add(glass(len, 1.8, 0.06, [mid, 0.95, z1]), box(len, 0.06, 0.07, metal, [mid, 0.04, z1]));
+        scene.add(box(0.05, 1.9, 0.05, metal, [a, 0.95, z1]), box(0.05, 1.9, 0.05, metal, [b, 0.95, z1]));
       } else {
-        scene.add(glass(0.06, 1.8, len, [x1, 0.95, mid]), box(0.1, 0.07, len, metal, [x1, 1.88, mid]), box(0.1, 0.1, len, metal, [x1, 0.05, mid]));
-        scene.add(box(0.08, 1.9, 0.08, metal, [x1, 0.95, a]), box(0.08, 1.9, 0.08, metal, [x1, 0.95, b]));
+        scene.add(glass(0.06, 1.8, len, [x1, 0.95, mid]), box(0.07, 0.06, len, metal, [x1, 0.04, mid]));
+        scene.add(box(0.05, 1.9, 0.05, metal, [x1, 0.95, a]), box(0.05, 1.9, 0.05, metal, [x1, 0.95, b]));
       }
     }
   };
