@@ -2,7 +2,7 @@
 
 A small Python module (register the lots and parking spaces of a co-ownership, their owners, correct and remove them, list them) built from a one-sentence idea by the roles and skills of this repository, and watched live on the office floor (`tools/office`). Nothing here was written by hand except the idea, the briefs and these notes.
 
-> Idea: "Renting parking spaces within a co-ownership (copropriété)."
+> Idea: "Renting parking spaces within a co-ownership."
 
 > Built with the roles and skills of this repository as of the commit titled "Add TL;DR and diagrams to generated docs; durations, document reader and resting agents on the floor". The security and performance targets (PRD, Architect, review), added to `main` since, are not part of it.
 
