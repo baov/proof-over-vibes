@@ -246,18 +246,15 @@ export function createScene(canvas, layout) {
     if (room.z === 0 || team === "common") {
       // The hub is far from the north wall, but its desks hide any marking on the floor behind them.
       const hub = team === "common";
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(hub ? 2.6 : 3.6, hub ? 0.81 : 1.12), material);
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(hub ? 3.4 : 3.6, hub ? 1.06 : 1.12), material);
       sign.position.set(room.x + room.w / 2, hub ? 2.0 : 3.15, hub ? 0.12 : room.z + 0.12);
-      scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), hub ? 2.6 : 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
+      scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), hub ? 3.4 : 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
     } else {
-      const w = 3.2;
-      const marking = new THREE.Group();
-      marking.position.set(room.x + room.w / 2, 0.035, room.z + room.d - 0.8);
-      marking.rotation.y = Math.PI / 4;
-      const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.3125), material);
-      plane.rotation.x = -Math.PI / 2;
-      marking.add(plane);
-      scene.add(marking);
+      // Flat on the floor, a name is squeezed to a sliver by the view: it stands on the front edge instead, facing the camera.
+      const plaque = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.0), material);
+      plaque.position.set(room.x + room.w / 2, 0.9, room.z + room.d - 0.3);
+      plaque.rotation.y = Math.PI / 4;
+      scene.add(plaque, glow(new THREE.Color(TEAM_COLORS[team]), 3.4, 0.18, [plaque.position.x + 0.15, plaque.position.y, plaque.position.z + 0.15]));
     }
   }
 
