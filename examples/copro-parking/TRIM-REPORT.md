@@ -1,11 +1,11 @@
 # Trim report — copro-parking test suite
 
-**TL;DR** — "How many tests" applied to 5 of 6 test files: 303 → 155 tests, 2 847 → 2 019 lines, mutation score unchanged, harness green, 109/109 test-cases still bridged. `test_json_rule_repository.py` was not trimmed yet.
+**TL;DR** — "How many tests" applied to all 6 test files: 303 → 151 tests, 2 847 → 2 004 lines, mutation score unchanged, harness green, 109/109 test-cases still bridged. 
 
 | | Before | After |
 |---|---|---|
-| Tests | 303 | 155 |
-| Lines of tests (`tests/*.py`) | 2 847 | 2 019 |
+| Tests | 303 | 151 |
+| Lines of tests (`tests/*.py`) | 2 847 | 2 004 |
 | Mutation score (critical) | 91.3 % (188/206) | 91.3 % (188/206) |
 | Harness / bridge | green / 109 ok | green / 109 ok |
 
@@ -27,6 +27,3 @@
 - Rule 4 ("already exercised elsewhere") is a judgment call: mutation was the only arbiter, and it caught one over-trim (restored).
 - No decision requires a call count, so every count was dropped; "withdrawal is one save" is no longer asserted.
 - Some test-cases now point to a table test shared with others (e.g. blank values), so one test serves several test-cases.
-
-## Not done
-`tests/test_json_rule_repository.py` (168 lines) untouched; likely a few more merges (refusal-leaves-file, unreadable table).
