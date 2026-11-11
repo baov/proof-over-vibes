@@ -7,7 +7,7 @@ reasons: []
 # Brief: product framing
 
 - Type: prompt (no ticket)
-- Idea (one sentence, from the human): "Renting parking spaces within a co-ownership (copropriété)."
+- Idea (one sentence, from the human): "Renting parking spaces within a co-ownership."
 - Stack constraint (the human's): Python 3.14, tests with the standard library `unittest` (pytest, mutmut and any download are unavailable). Offline.
 - Language of the project: English.
 - Iteration counter: 0 / limit 5 (applies from the first feature on).

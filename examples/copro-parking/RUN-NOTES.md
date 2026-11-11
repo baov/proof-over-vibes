@@ -1,6 +1,6 @@
 # Run notes
 
-Idea (from the human): "Renting parking spaces within a co-ownership (copropriété)." Python 3.14, stdlib `unittest` (pytest and any download were unavailable). Built with the roles of this repository, each started as a fresh agent that read its role file, watched on the office floor (`tools/office`). The human answered the product questions in chat.
+Idea (from the human): "Renting parking spaces within a co-ownership." Python 3.14, stdlib `unittest` (pytest and any download were unavailable). Built with the roles of this repository, each started as a fresh agent that read its role file, watched on the office floor (`tools/office`). The human answered the product questions in chat.
 
 ## What ran
 

@@ -4,7 +4,7 @@ status: done
 reasons: []
 ---
 
-# S2 Corriger le propriétaire d'un lot et le numéro d'une place
+# S2 Correct a lot's owner and a space's number
 
 Decisions D-19 (corrupt store), D-20 (natural order), D-21 (same-value correction) answered by the human.
 

@@ -10,6 +10,14 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 - **Duration of a finished task** (`tools/office/`): the pipeline strip, the tooltip and the panel say how long a role's report took, measured from the previous file of the run.
 - **Resting agents** (`tools/office/`): an agent with nothing to do glances around, stretches, sips a drink and daydreams, and the head follows the typing of one at work.
 - **TL;DR and diagrams in generated documents:** a shared rule (`AGENTS.md`, `docs/glossary.md`) applied by `codebase-cartographer`, `product-strategy`, `premerge-review`, `ai-code-remediation`, `ddd-advisor` and the Architect: a long document opens with a TL;DR, and a Mermaid diagram is drawn where a structure or a flow is easier seen than read.
+- **Security and performance targets:** the PRD gets a "Security and performance targets" section, measurable and sourced, only when the feature calls for it. The Architect gets a step that runs only on a signal (a stated target, a new way into the system, a new dependency, sensitive data) and decides trust boundaries, authorization and the structure that meets a target, never inventing one. `premerge-review` checks performance where a target is declared or the diff adds unbounded work.
+- `examples/copro-parking/` — a fourth worked example, in Python: a register of the lots and parking spaces of a co-ownership, from a one-sentence idea to three reviewed stories. The human answered every product question; one review-driven fix iteration; 72 tests, a stdlib mutation script. It is the first run watched live on the office floor. Its README lists what it does not show: no NO-GO, no person reviewing the sensitive zones, roles that predate the security and performance targets.
+
+### Fixed
+
+- **Floor, decisions:** a pending decision raises `Human needed`, and a slug counts as one run across its stages.
+- **Floor, reports:** the reviewer's reports are also read from a visible `reviews/` folder.
+- **Floor, archived runs:** a run that was archived no longer waits for a human.
 
 ## [0.5.0] — 2026-11-11
 

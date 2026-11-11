@@ -2,7 +2,7 @@
 
 Every legal claim about French law below is *unverified*.
 
-**For** co-ownerships (copropriétés) in France, **our product** lets owners offer unused parking spaces and residents rent them, with a manager arbitrating, so that spaces are used, disputes are rarer, and the rules of the building and of the law are applied by default.
+**For** co-ownerships in France, **our product** lets owners offer unused parking spaces and residents rent them, with a manager arbitrating, so that spaces are used, disputes are rarer, and the rules of the building and of the law are applied by default.
 
 - Positioning (confirmed): resident-to-resident exchange under a manager's control, one tenant per co-ownership (multi-tenant).
 - Out of scope: payment processing (price and amount due are recorded only), outside visitors, public marketplace.

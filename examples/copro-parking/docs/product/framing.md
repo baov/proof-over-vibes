@@ -1,6 +1,6 @@
 # Framing: parking rental in a co-ownership
 
-Source: `brief.md` ("Renting parking spaces within a co-ownership (copropriété)."). Status: answered; the defaults below were recommendations.
+Source: `brief.md` ("Renting parking spaces within a co-ownership."). Status: answered; the defaults below were recommendations.
 
 ## Ambiguities
 
@@ -12,7 +12,7 @@ Source: `brief.md` ("Renting parking spaces within a co-ownership (copropriété
 ## Assumptions
 
 - Spaces are individually numbered and owned by lots (*inferred*).
-- A co-ownership exists as a legal frame, hence "copropriété", a French term (*inferred*: France).
+- A co-ownership exists as a legal frame, hence a French-law notion (*inferred*: France).
 - Rent is paid by the renter (*inferred*).
 
 ## Contradictions
