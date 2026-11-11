@@ -2,7 +2,7 @@
 feature: legal-rules-skeleton
 type: functional
 priority: high
-automated_test: tests/test_rule_use_cases.py::test_a_given_parameter_replaces_the_whole_one
+automated_test: tests/test_rule_use_cases.py::test_a_given_parameter_replaces_the_whole_one_and_a_missing_one_keeps_it
 status: covered
 source: decisions.md D-39
 ---

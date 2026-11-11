@@ -2,7 +2,7 @@
 feature: register-lots-and-spaces
 type: functional
 priority: high
-automated_test: tests/test_register.py::test_a_space_on_an_unknown_lot_is_refused
+automated_test: tests/test_use_cases.py::test_an_unknown_lot_or_space_is_refused
 status: covered
 source: stories.md S1 AC6
 ---

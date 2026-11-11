@@ -2,7 +2,7 @@
 feature: legal-rules-skeleton
 type: functional
 priority: high
-automated_test: tests/test_rule_use_cases.py::test_any_other_role_is_refused_first_with_nothing_read_or_written
+automated_test: tests/test_rule_use_cases.py::test_any_other_role_is_refused_first_whatever_the_request
 status: covered
 source: stories.md S1 AC9
 ---

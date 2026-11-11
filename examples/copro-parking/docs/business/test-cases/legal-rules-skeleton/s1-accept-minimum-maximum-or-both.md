@@ -2,7 +2,7 @@
 feature: legal-rules-skeleton
 type: functional
 priority: high
-automated_test: tests/test_rule_use_cases.py::test_a_minimum_only_a_maximum_only_or_both_are_accepted
+automated_test: tests/test_rule_use_cases.py::test_a_minimum_only_a_maximum_only_or_both_are_accepted_and_both_keys_are_stored
 status: covered
 source: stories.md S1 AC2
 ---
