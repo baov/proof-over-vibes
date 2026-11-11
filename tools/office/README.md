@@ -66,9 +66,16 @@ Hover an agent or its desk for a tooltip with its role, what it does (the first 
 | `←` / `→` | Select the previous / next agent |
 | `F` | Follow activity: the panel always shows the role that works now |
 | `D` | Open or close the decisions to review |
+| `M` | Open or close the documents of the project |
 | `Esc` | Close the panel |
 
 The panel updates by itself when the file changes. The server reads a report from a run and a role, never from a path the page sends, caps its size, and refuses requests whose `Host` header is not `127.0.0.1` or `localhost`, so another site cannot read your reports.
+
+A finished role shows how long its task took (`took 4 min`) under its step in the strip, in the tooltip and in the panel. A role is only visible through its files, so the duration runs from the newest file written before its report (the hand-off) to the report itself: an estimate, absent for the first file of a run and for the Orchestrator. An agent with nothing to do is not frozen: it glances around, stretches, sips a drink and daydreams, each at its own pace.
+
+## Documents
+
+The `Documents` button of the run card, or `M`, lists the Markdown files under `docs/` and `.audit/` (the output of a framing, a PRD, the business and technical documentation, an audit), newest first, and opens one in the panel. The list refreshes while the panel is open. The server serves a document only when its own scan lists it, never a path the page invents, and ignores a file that leaves the project through a link. Mermaid diagrams show as their source: the page does not draw them.
 
 ## Decisions to review
 

@@ -61,7 +61,7 @@ The 8 families of symptoms to sweep through every time:
 8. **Core domain drowned** — the differentiating logic indistinguishable from generic code
 
 ### 3. Reporting back
-- A short prose summary, then a table of findings (symptom, location, severity, pattern).
+- A short prose summary (the TL;DR, which also opens a written report), then a table of findings (symptom, location, severity, pattern).
 - **Diagrams**: Mermaid for structural views (the current context map, dependencies between
   layers, proposed aggregate boundaries); ASCII for one-off inline illustrations. Always show
   the CURRENT state and the TARGET state when proposing a change.

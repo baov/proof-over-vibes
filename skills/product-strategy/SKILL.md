@@ -52,6 +52,7 @@ A PRD is written **on demand**, for the feature the user picked, never for the w
 - **Hypotheses, not facts.** A market watch gives sourced hypotheses. Every claim carries its source, or is marked *unverified*. The user decides; the skill recommends.
 - **Validation by multiple-choice question.** A vision, a positioning and a prioritization are bets. Each goes through the user (shape and degraded mode: see `clarify-with-choices`) before it is written. Questions are asked in the target project's language.
 - **File-backed.** Everything lives in `docs/product/`, versioned, not in the context window.
+- **Readable.** Each document opens with a TL;DR when it runs past a screen (the question, the conclusion, what the user must decide), and carries a Mermaid diagram where one helps: the journey of the vision, the backbone of the story map, the dependencies of the roadmap. No diagram for a table that already says it.
 - **Degraded mode.** Without web access, the skill says so, asks the user for their own sources (competitors, reports, interviews), and marks everything it could not check as *unverified*. It never invents a market figure.
 - **Nothing is launched.** The skill ends on the backlog or the PRD. The user picks an item and starts the work: this skill creates no ticket and no request.
 

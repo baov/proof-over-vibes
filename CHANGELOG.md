@@ -4,6 +4,13 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added
+
+- **Documents of a session, from the floor** (`tools/office/`): a `Documents` button on the run card, or `M`, lists the Markdown files written under `docs/` and `.audit/` and opens one in the side panel (the output of a framing, a PRD, an audit). Read-only: a document is served only when the listing finds it.
+- **Duration of a finished task** (`tools/office/`): the pipeline strip, the tooltip and the panel say how long a role's report took, measured from the previous file of the run.
+- **Resting agents** (`tools/office/`): an agent with nothing to do glances around, stretches, sips a drink and daydreams, and the head follows the typing of one at work.
+- **TL;DR and diagrams in generated documents:** a shared rule (`AGENTS.md`, `docs/glossary.md`) applied by `codebase-cartographer`, `product-strategy`, `premerge-review`, `ai-code-remediation`, `ddd-advisor` and the Architect: a long document opens with a TL;DR, and a Mermaid diagram is drawn where a structure or a flow is easier seen than read.
+
 ## [0.5.0] — 2026-11-11
 
 The roles can now be watched at work. `tools/office/` is application code, a read-only local web page: it is not a skill or a role, and the roles themselves do not change. It has been checked on its scripted demo and on hand-made project folders, and its tests pass in CI; it has not yet been watched on a real run of the roles in an installed client.

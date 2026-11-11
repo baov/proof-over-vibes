@@ -83,7 +83,7 @@ Write the report to `.audit/<project>-<YYYY-MM-DD>.md`, then present the summary
 **Date**: ... · **Scope**: ... · **Reference material available**: ...
 
 ## Summary
-Overall state in 3-5 sentences, and the 2-3 worksites that would change the most.
+Overall state in 3-5 sentences, and the 2-3 worksites that would change the most. This is the TL;DR of the report. Draw the systemic findings (boundaries crossed, duplicated flows) as a Mermaid diagram rather than a paragraph.
 
 ## Measured signals
 Raw numbers from Phase 1.

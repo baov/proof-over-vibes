@@ -17,3 +17,13 @@ export function ago(seconds) {
   if (s < 5400) return `${Math.round(s / 60)} min ago`;
   return `${Math.round(s / 3600)} h ago`;
 }
+
+// How long a finished task took, for a label ("45s", "4 min", "1 h 20"). null when the page cannot tell.
+export function took(seconds) {
+  if (seconds == null) return null;
+  const s = Math.round(seconds);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.round(s / 60)} min`;
+  const minutes = Math.round((s % 3600) / 60);
+  return minutes ? `${Math.floor(s / 3600)} h ${String(minutes).padStart(2, "0")}` : `${Math.floor(s / 3600)} h`;
+}

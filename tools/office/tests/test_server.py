@@ -34,6 +34,17 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(json.loads(body)["runs"], [])
 
+    def test_docs_are_listed_and_read_by_listed_path_only(self):
+        (self.root / "docs").mkdir()
+        (self.root / "docs" / "a.md").write_text("# A\n\ntext")
+        (self.root / "secret.md").write_text("# Secret")
+        resp, body = self.get("/api/docs")
+        self.assertEqual([d["path"] for d in json.loads(body)], ["docs/a.md"])
+        resp, body = self.get("/api/doc?path=docs/a.md")
+        self.assertEqual((resp.status, json.loads(body)["title"]), (200, "A"))
+        self.assertEqual(self.get("/api/doc?path=secret.md")[0].status, 404)
+        self.assertEqual(self.get("/api/doc?path=../secret.md")[0].status, 404)
+
     def test_index_is_served(self):
         resp, body = self.get("/")
         self.assertEqual(resp.status, 200)

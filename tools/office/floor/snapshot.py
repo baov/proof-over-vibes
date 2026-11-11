@@ -197,8 +197,28 @@ def _history(reports: list[Report], role: str) -> list[Report]:
     return sorted((r for r in reports if r.role == role and r.path is not None), key=lambda r: (r.mtime, r.path.name))
 
 
-def _summary(report: Report) -> dict:
-    return {"name": report.path.name, "mtime": report.mtime, "status": report.status, "verdict": report.verdict}
+def _took(reports: list[Report]) -> dict[int, float]:
+    """How long each finished report took: from the newest file written before it to its own write.
+
+    A role is only visible through its files, so a task starts when the previous file of the run
+    appeared (the hand-off) and ends when the role's own report did. The first file of a run has
+    nothing before it, and a report still being written is not finished: neither gets a duration.
+    """
+    took = {}
+    for report in reports:
+        if report.status != "done" or report.path is None or report.role == "orchestrator":
+            continue  # the brief is rewritten every iteration: its own task has no start to measure
+        before = [r.mtime for r in reports if r is not report and r.mtime < report.mtime]
+        if before:
+            took[id(report)] = round(report.mtime - max(before), 1)
+    return took
+
+
+def _summary(report: Report, took: dict[int, float]) -> dict:
+    return {
+        "name": report.path.name, "mtime": report.mtime, "status": report.status, "verdict": report.verdict,
+        "duration": took.get(id(report)),
+    }
 
 
 def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> tuple[dict, list[Report]] | None:
@@ -225,8 +245,9 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         roles["failure-analyst"]["state"] = "done"
     brief = _brief_report(run_dir, sub)
     shown = reports + [brief] if brief else reports
+    took = _took(shown)
     for role in roles:
-        roles[role]["reports"] = [_summary(rep) for rep in _history(shown, role)]
+        roles[role]["reports"] = [_summary(rep, took) for rep in _history(shown, role)]
         roles[role]["expects"] = EXPECTS.get(role)
 
     active, human, ready = None, False, False

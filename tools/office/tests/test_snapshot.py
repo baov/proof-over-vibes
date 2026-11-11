@@ -29,6 +29,35 @@ def brief(n: int = 0) -> str:
     return f"Iteration counter: {n}\nIteration limit: 5\n"
 
 
+class DurationTest(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def roles(self) -> dict:
+        return build_snapshot(self.root)["runs"][0]["roles"]
+
+    def test_finished_report_took_the_time_since_the_previous_file(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/plan.md", report("planner"), 190)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 400)
+        roles = self.roles()
+        self.assertEqual(roles["planner"]["reports"][0]["duration"], 90)
+        self.assertEqual(roles["developer"]["reports"][0]["duration"], 210)
+
+    def test_orchestrator_and_unfinished_reports_have_no_duration(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/plan.md", report("planner", status="blocked"), 190)
+        roles = self.roles()
+        self.assertIsNone(roles["orchestrator"]["reports"][0]["duration"])
+        self.assertIsNone(roles["planner"]["reports"][0]["duration"])
+
+    def test_first_file_of_a_run_has_no_duration(self):
+        put(self.root, f"{RUN}/plan.md", report("planner"), 190)
+        self.assertIsNone(self.roles()["planner"]["reports"][0]["duration"])
+
+
 class SnapshotTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()

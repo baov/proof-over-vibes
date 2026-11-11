@@ -64,6 +64,8 @@ used once, in one file, does not need an entry.
 | merge gate | CI merge, merge check, release gate | The last step before the merge, outside the agents: a CI, or a person where there is none |
 | escalation | handover to a human, bubble-up | A run stopping to call a person |
 | iteration | cycle, round, loop turn | One Developer-to-Reviewer round, counted toward the limit of 5 |
+| TL;DR | abstract, executive summary, digest | The two-to-four-line block that opens a long generated document. A report whose template already opens with a `Summary` section keeps it: that section is its TL;DR |
+| diagram | schema, chart, figure | A Mermaid drawing in a generated document, kept for structure, flow or dependencies |
 
 ## Front-matter contract
 

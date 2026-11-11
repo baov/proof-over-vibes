@@ -1,5 +1,5 @@
 // Everything around the floor: the run card and its switcher, the pipeline strip, the banner and the tooltip.
-import { STATE_COLORS, roleShort } from "./roles.js";
+import { STATE_COLORS, roleShort, took } from "./roles.js";
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -18,6 +18,7 @@ const STYLE = `
   .card .runs button.on { background: rgba(255,255,255,.18); border-color: #fff; }
   .card .decisions { display: block; width: 100%; margin-top: 8px; padding: 5px 8px; text-align: left; font: inherit; font-size: 12px; color: inherit; cursor: pointer; border-radius: 8px; border: 1px solid rgba(251,191,36,.55); background: rgba(251,191,36,.12); }
   .card .decisions.waiting { border-color: rgba(248,113,113,.7); background: rgba(248,113,113,.14); }
+  .card .docs { display: block; width: 100%; margin-top: 8px; padding: 5px 8px; text-align: left; font: inherit; font-size: 12px; color: inherit; cursor: pointer; border-radius: 8px; border: 1px solid rgba(56,189,248,.5); background: rgba(56,189,248,.1); }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: #22c55e; }
   .dot.reconnecting { background: #f59e0b; }
   .strip { position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%); display: flex; align-items: center; gap: 0; z-index: 3; max-width: calc(100% - 32px); overflow-x: auto; padding: 6px 10px; border-radius: 999px; background: rgba(10,12,28,.78); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); }
@@ -27,6 +28,7 @@ const STYLE = `
   .strip .active .node { animation: pulse 1.2s infinite; border-color: #fff; }
   .strip .sel .node { box-shadow: 0 0 0 3px rgba(255,255,255,.45); }
   .strip .label { font-size: 11px; opacity: .85; white-space: nowrap; }
+  .strip .took { font-size: 10px; opacity: .6; white-space: nowrap; margin-top: -3px; }
   .strip .link { width: 18px; height: 2px; background: rgba(255,255,255,.25); margin-bottom: 14px; }
   .strip .link.done { background: #16a34a; }
   @keyframes pulse { 50% { transform: scale(1.18); } }
@@ -44,7 +46,7 @@ const STYLE = `
   .banner.idle { background: rgba(10,12,28,.78); color: #cbd5e1; font-weight: 500; }
 `;
 
-export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions }) {
+export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOpenDocs }) {
   document.head.append(Object.assign(el("style"), { textContent: STYLE }));
   const card = el("div", "card");
   const strip = el("div", "strip");
@@ -86,6 +88,10 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions }) {
       chip.onclick = onOpenDecisions;
       card.append(chip);
     }
+    const docs = el("button", "docs", "▤ Documents (M)");
+    docs.title = "Markdown documents written under docs/ and .audit/";
+    docs.onclick = onOpenDocs;
+    card.append(docs);
     if (runs.length > 1) {
       const chips = el("div", "runs");
       for (const r of runs.slice(0, 5)) {
@@ -96,7 +102,7 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions }) {
       }
       card.append(chips);
     }
-    hint.textContent = `Click an agent or a step · ←/→ switch · D decisions · N time · F follow ${m.follow ? "on" : "off"} · T theme · Esc close`;
+    hint.textContent = `Click an agent or a step · ←/→ switch · D decisions · M documents · N time · F follow ${m.follow ? "on" : "off"} · T theme · Esc close`;
 
     strip.replaceChildren();
     if (run) {
@@ -106,8 +112,10 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions }) {
         const b = el("button", `${role === run.active_role ? "active" : ""} ${role === m.selected ? "sel" : ""}`);
         const node = el("div", "node");
         node.style.background = STATE_COLORS[info.state] ?? STATE_COLORS.idle;
+        const duration = info.state === "done" ? took(info.reports.at(-1)?.duration) : null;
         b.append(node, el("div", "label", roleShort(role)));
-        b.title = `${role} · ${info.state}`;
+        if (duration) b.append(el("div", "took", duration));
+        b.title = `${role} · ${info.state}${duration ? ` · took ${duration}` : ""}`;
         b.onclick = () => onSelectRole(role);
         strip.append(b);
       });

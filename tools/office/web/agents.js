@@ -7,6 +7,7 @@ const SPEED = 4.5; // world units per second while walking a handoff
 const HANDOVER_PAUSE = 0.6;
 const DEFER_MAX = 4; // the receiver starts working when the walker arrives, or after this
 const CHECK_SECONDS = 3;
+const IDLE_CYCLE = 18; // seconds of one resting routine: look around, stretch, sip, daydream
 const SKIN = 0xf1c7a0;
 
 function textSprite(text, { fg, bg, size, w, h, scale }) {
@@ -60,6 +61,25 @@ const PIP = (() => {
 
 const statusSprite = (text, bg) => textSprite(text, { fg: "#fff", bg, size: 64, w: 96, h: 96, scale: [0.55, 0.55] });
 
+// A resting agent should look alive: it glances around, stretches, sips a drink, then daydreams.
+// Each is a smooth bump over its own slice of the cycle; the phase of the agent offsets the cycle
+// so that the whole floor never moves in step. Returns the pose offsets, all in radians.
+function restingPose(time, phase) {
+  const c = (time + phase * 3) % IDLE_CYCLE;
+  const bump = (from, to) => (c >= from && c < to ? Math.sin(((c - from) / (to - from)) * Math.PI) : 0);
+  const look = c < 6 ? Math.sin((c / 6) * Math.PI * 2) * 0.6 : 0;
+  const stretch = bump(8, 11);
+  const sip = bump(12, 15);
+  const daydream = bump(15, 18);
+  return {
+    yaw: look + daydream * 0.35,
+    pitch: -0.25 * stretch - 0.2 * sip + 0.12 * daydream,
+    lean: -0.14 * stretch,
+    armLeft: -2.5 * stretch,
+    armRight: -2.5 * stretch - 1.45 * sip,
+  };
+}
+
 function makeAgent(role, seat) {
   const standard = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
   const part = (w, h, d, color, y) => {
@@ -98,7 +118,11 @@ function makeAgent(role, seat) {
   const hairTop = part(0.4, 0.14, 0.4, hair, 1.1);
   const hairBack = part(0.4, 0.3, 0.1, hair, 0.98);
   hairBack.position.z = -0.15; // the back of the head faces the camera
-  body.add(head, hairTop, hairBack);
+  // The head turns on the neck, so the hair goes with it.
+  const neck = pivot(0, 0.78);
+  for (const piece of [head, hairTop, hairBack]) piece.position.y -= 0.78;
+  neck.add(head, hairTop, hairBack);
+  body.add(neck);
 
   const arms = [pivot(-0.33, 0.62), pivot(0.33, 0.62)];
   const legs = [pivot(-0.13, 0), pivot(0.13, 0)];
@@ -131,7 +155,7 @@ function makeAgent(role, seat) {
   for (const s of Object.values(sprites)) s.position.y = 2.75;
   root.add(label, ...Object.values(sprites));
 
-  return { role, seat, root, body, arms, legs, folder, label, pip, sprites, mode: "seated", phase: Math.random() * 6 };
+  return { role, seat, root, body, neck, arms, legs, folder, label, pip, sprites, mode: "seated", phase: Math.random() * 6 };
 }
 
 export function createAgents(scene, layout, stations) {
@@ -293,6 +317,20 @@ export function createAgents(scene, layout, stations) {
         agent.arms[0].rotation.x = (working ? -1.15 : -0.35) + typing;
         agent.arms[1].rotation.x = (working ? -1.15 : -0.35) - typing;
         agent.body.rotation.z = state === "blocked" || state === "escalate" ? Math.sin(time * 6) * 0.06 : 0;
+        // Nothing to do (or done): the resting routine. At work, the head follows the typing.
+        const resting = state === "idle" || state === "done";
+        const pose = resting ? restingPose(time, agent.phase) : null;
+        agent.neck.rotation.y = pose ? pose.yaw : 0;
+        agent.neck.rotation.x = pose ? pose.pitch : working ? 0.08 + Math.sin(t * 0.5) * 0.04 : 0;
+        agent.body.rotation.x = pose ? pose.lean : 0;
+        if (pose) {
+          agent.arms[0].rotation.x += pose.armLeft;
+          agent.arms[1].rotation.x += pose.armRight;
+        }
+      }
+      if (walking) {
+        agent.neck.rotation.set(0, 0, 0);
+        agent.body.rotation.x = 0;
       }
       agent.body.position.y = 0.58 + (walking ? Math.abs(Math.sin(time * 9)) * 0.05 : Math.sin(time * 2 + agent.phase) * 0.008);
 

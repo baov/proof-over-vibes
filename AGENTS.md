@@ -54,3 +54,4 @@ These rules live inside the skills themselves; restating them here keeps a contr
 - **File-backed persistence** — plans, reports and invariants live in the repository, not in the context window.
 - **Explicit degraded mode** — a skill works without its reference material, but says so.
 - **No silent auto-fix** — the harness reports; the correction goes through a visible commit.
+- **Readable documents** — a document a skill or a role writes that runs past a screen opens with a TL;DR (two to four lines: what it holds, the conclusion, what it asks of the reader), and draws a diagram in Mermaid wherever a structure, a flow or a set of dependencies is easier seen than read. Both only when relevant: a short note needs neither, and a diagram that restates a sentence is padding. The TL;DR heading and the diagram labels follow the target project's language.

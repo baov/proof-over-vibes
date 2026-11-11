@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from .decisions import decisions_for
+from .docs import list_docs, read_doc
 from .snapshot import build_snapshot, read_report
 
 WEB = Path(__file__).resolve().parents[1] / "web"
@@ -67,6 +68,14 @@ class _Handler(BaseHTTPRequestHandler):
         path = parts.path
         if path == "/api/report":
             self._report(parse_qs(parts.query))
+        elif path == "/api/docs":
+            self._send(200, "application/json", json.dumps(list_docs(self.server.root)).encode())
+        elif path == "/api/doc":
+            found = read_doc(self.server.root, parse_qs(parts.query).get("path", [""])[0])
+            if found is None:
+                self._send(404, "text/plain", b"not found")
+            else:
+                self._send(200, "application/json", json.dumps(found).encode())
         elif path == "/api/decisions":
             run = parse_qs(parts.query).get("run", [None])[0]
             self._send(200, "application/json", json.dumps(decisions_for(self.server.root, run)).encode())

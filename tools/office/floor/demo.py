@@ -51,10 +51,29 @@ Append only. `answered` = a person read and answered. `answered-by-delegate` = a
 - request: demo-feature
 """
 
+FRAMING = """# Brief framing: empty the cart
+
+## TL;DR
+
+The brief asks for a one-click cart reset. Two points are open: whether a confirmation is asked, and how totals are rounded. Both are in the decision log.
+
+## Flow
+
+```mermaid
+flowchart LR
+  Customer --> Cart --> Confirmation --> EmptyCart
+```
+
+## Open questions
+
+1. Is a confirmation required before emptying?
+2. How are the totals rounded?
+"""
+
 # One entry per step: the files written, in order. A half-written report (an
 # unclosed front-matter block) shows the role as working.
 DEMO_STEPS: list[dict[str, str]] = [
-    {f"{RUN}/brief.md": _brief(0)},
+    {f"{RUN}/brief.md": _brief(0), "docs/product/framing.md": FRAMING},
     {f"{RUN}/stories.md": "---\nrole: product-owner\n"},
     {f"{RUN}/stories.md": _report("product-owner"), "docs/business/decisions.md": DECISIONS},
     {f"{RUN}/architect.md": _report("architect")},

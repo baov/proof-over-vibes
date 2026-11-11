@@ -95,6 +95,8 @@ Once the questions are answered, the agent writes the `.md` file straight into `
 - Stay factual and concise (no filler)
 - Use the glossary vocabulary (consistency)
 - Include relative links to the other docs where relevant
+- Open with a TL;DR (two to four lines) when the file runs past a screen
+- Draw a Mermaid diagram where the structure is easier seen than read: the flows of `core-features.md`, the components and dependencies of `architecture.md`, the context of an ADR. None for a glossary or a list of test cases
 
 After writing, the agent **briefly announces** what it just produced and moves on to the next file, without waiting for confirmation (the user already validated through the questions).
 

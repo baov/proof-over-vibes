@@ -7,7 +7,7 @@ import { TEAM_COLORS, createLayout } from "./layout.js";
 import { connect } from "./live.js";
 import { createPanel } from "./panel.js";
 import { createPicker } from "./pick.js";
-import { ago, roleTitle } from "./roles.js";
+import { ago, roleTitle, took } from "./roles.js";
 import { createScene } from "./scene.js";
 
 const first = await (await fetch("/api/snapshot")).json();
@@ -36,6 +36,7 @@ const hud = createHud(document.getElementById("hud"), {
     applyRun(currentRun());
   },
   onOpenDecisions: () => toggleDecisions(),
+  onOpenDocs: () => toggleDocs(),
 });
 const daybox = createDayBox(document.getElementById("hud"), {
   onPeriod: (period) => { clock.setPeriod(period); refreshDay(true); },
@@ -62,10 +63,18 @@ let ticket = 0;
 let decisionsOpen = false;
 let decisionsLoaded = null; // { key, entries }
 let decisionsLoading = null;
+let docsOpen = false;
+let docsList = []; // the Markdown documents of the project, newest first
+let docsError = null;
+let docsLoaded = false;
+let openDocPath = null;
+let openDoc = null; // the document on screen
+let docsTicket = 0;
 
 const panel = createPanel({
   onClose: () => {
     decisionsOpen = false;
+    docsOpen = false;
     setSelected(null, true);
   },
   onPick: (index) => {
@@ -74,6 +83,16 @@ const panel = createPanel({
   },
   onToggleFollow: () => setFollow(!follow),
   onNavigate: (role) => setSelected(role, true),
+  onOpenDoc: (path) => {
+    openDocPath = path;
+    openDoc = null;
+    syncDocs();
+  },
+  onBackToDocs: () => {
+    openDocPath = null;
+    openDoc = null;
+    syncDocs();
+  },
 });
 
 function showHud() {
@@ -101,7 +120,10 @@ function marks() {
 }
 
 function setSelected(role, manual) {
-  if (role) decisionsOpen = false; // an agent and the decisions share the same panel
+  if (role) {
+    decisionsOpen = false; // an agent, the decisions and the documents share the same panel
+    docsOpen = false;
+  }
   if (manual) follow = false;
   if (role !== selected) pinnedIndex = null;
   selected = role;
@@ -144,6 +166,7 @@ function syncDecisions() {
 function toggleDecisions() {
   decisionsOpen = !decisionsOpen;
   if (decisionsOpen) {
+    docsOpen = false;
     selected = null;
     marks();
   }
@@ -151,9 +174,54 @@ function toggleDecisions() {
   sync();
 }
 
+// The documents are listed again each time the panel opens and every few seconds while it stays open.
+function syncDocs() {
+  const mine = ++docsTicket;
+  fetch("/api/docs")
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`Documents unavailable (${response.status}).`))))
+    .then((entries) => { docsList = entries; docsError = null; })
+    .catch((failure) => { docsError = failure.message; })
+    .finally(() => {
+      docsLoaded = true;
+      drawDocs();
+    });
+  if (openDocPath) {
+    const path = openDocPath;
+    fetch(`/api/doc?path=${encodeURIComponent(path)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("This document is gone."))))
+      .then((doc) => { if (path === openDocPath) openDoc = doc; })
+      .catch((failure) => { if (path === openDocPath) { docsError = failure.message; openDocPath = null; } })
+      .finally(() => { if (mine === docsTicket) drawDocs(); });
+  }
+  drawDocs();
+}
+
+function drawDocs() {
+  if (!docsOpen) return;
+  panel.renderDocs({ entries: docsList, doc: openDoc, loading: !docsLoaded || Boolean(openDocPath && !openDoc), error: docsError });
+}
+
+function toggleDocs() {
+  docsOpen = !docsOpen;
+  if (docsOpen) {
+    decisionsOpen = false;
+    selected = null;
+    openDocPath = null;
+    openDoc = null;
+    docsLoaded = false;
+    marks();
+    showHud();
+    syncDocs();
+    return;
+  }
+  showHud();
+  sync();
+}
+
 function sync() {
   if (!selected) {
-    if (decisionsOpen) syncDecisions();
+    if (docsOpen) drawDocs();
+    else if (decisionsOpen) syncDecisions();
     else panel.hide();
     return;
   }
@@ -194,7 +262,7 @@ function sync() {
     working: "Working now",
     blocked: "Blocked: it asked a question and waits for the answer",
     escalate: "Needs a human decision",
-    done: when ? `Finished ${when}` : "Done",
+    done: when ? `Finished ${when}${entry?.duration != null ? ` · took ${took(entry.duration)}` : ""}` : "Done",
     idle: when ? `Idle since ${when}` : "Has not started in this run",
   }[state];
   panel.render({
@@ -247,7 +315,7 @@ createPicker({
     const last = info?.reports?.at(-1);
     const lines = [[layout.seats.get(role).team, info?.state ?? "idle", info?.verdict].filter(Boolean).join(" · ")];
     if (aboutRole[role]) lines.push(aboutRole[role].length > 110 ? `${aboutRole[role].slice(0, 110).replace(/\s+\S*$/, "")}…` : aboutRole[role]);
-    if (last) lines.push(`${last.name} · ${ago(last.mtime)}`);
+    if (last) lines.push(`${last.name} · ${ago(last.mtime)}${last.duration != null ? ` · took ${took(last.duration)}` : ""}`);
     hud.showTip(roleTitle(role), lines, event.clientX, event.clientY);
   },
   onSelect: (role) => setSelected(role === selected ? null : role, true),
@@ -258,12 +326,14 @@ window.addEventListener("keydown", (event) => {
   if (key === "t") view.toggleTheme();
   if (key === "f") setFollow(!follow);
   if (key === "d") toggleDecisions();
+  if (key === "m") toggleDocs();
   if (key === "n") {
     clock.cycle();
     refreshDay(true);
   }
   if (event.key === "Escape") {
     decisionsOpen = false;
+    docsOpen = false;
     setSelected(null, true);
   }
   // Arrows switch agent, so Tab keeps moving between the buttons of the page.
@@ -275,7 +345,10 @@ window.addEventListener("keydown", (event) => {
 });
 
 // Relative times in the panel ("5s ago") move on even when no file changes.
-setInterval(sync, 5000);
+setInterval(() => {
+  if (docsOpen && !selected) syncDocs(); // a document may have been written or changed
+  else sync();
+}, 5000);
 
 let last = performance.now();
 function frame(now) {

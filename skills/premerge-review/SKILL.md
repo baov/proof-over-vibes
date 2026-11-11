@@ -163,7 +163,7 @@ Write the report to `.reviews/<branch>-<YYYY-MM-DD>.md` (create the folder if ne
 **Criticality**: critical | standard | low — <signal that triggered it>
 
 ## Summary
-2-4 sentences: nature of the change, general state, reason for the verdict.
+2-4 sentences: nature of the change, general state, reason for the verdict. This is the TL;DR of the report. When a finding is about a flow or a dependency, a small Mermaid diagram beside it shows it better than a paragraph.
 
 ## Gauntlet
 | Check | Result |

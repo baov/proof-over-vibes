@@ -33,6 +33,10 @@ const STYLE = `
   .decision .row { margin-top: 3px; opacity: .85; }
   .decision .row b { font-weight: 600; opacity: .7; }
   .decision button { margin-top: 6px; border: 1px solid rgba(255,255,255,.25); background: none; border-radius: 999px; padding: 2px 9px; font-size: 11px; }
+  .doclist { flex: 1; overflow: auto; padding: 8px 0 14px; }
+  .doclist button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid rgba(255,255,255,.07); padding: 8px 14px; font-size: 13px; }
+  .doclist button:hover { background: rgba(255,255,255,.07); }
+  .doclist .path { display: block; font-size: 11px; opacity: .6; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 14px 0; }
   .chip { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #fff; }
   .frise { display: flex; gap: 6px; align-items: center; padding: 10px 14px 0; font-size: 12px; opacity: .95; }
@@ -58,7 +62,7 @@ const STYLE = `
   @media (max-width: 700px) { .panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; max-height: 55vh; } }
 `;
 
-export function createPanel({ onClose, onPick, onToggleFollow, onNavigate }) {
+export function createPanel({ onClose, onPick, onToggleFollow, onNavigate, onOpenDoc, onBackToDocs }) {
   document.head.append(Object.assign(document.createElement("style"), { textContent: STYLE }));
   const root = el("aside", "panel");
   root.setAttribute("aria-label", "Agent screen");
@@ -237,5 +241,52 @@ export function createPanel({ onClose, onPick, onToggleFollow, onNavigate }) {
     root.append(foot);
   }
 
-  return { render, renderDecisions, hide };
+  // The Markdown documents of the project (docs/, .audit/): a list, then one document at a time.
+  // model: { entries, doc, loading, error }
+  function renderDocs(model) {
+    const scroll = root.querySelector(".body")?.scrollTop ?? 0;
+    root.replaceChildren();
+    setOpen(true);
+    const head = el("header");
+    const swatch = el("div", "swatch");
+    swatch.style.background = "#38bdf8";
+    const title = el("div", "grow");
+    title.append(el("h2", "", model.doc ? model.doc.title : "Documents"), el("div", "muted", model.doc ? model.doc.path : "Written during the session"));
+    const close = el("button", "close", "×");
+    close.setAttribute("aria-label", "Close");
+    close.onclick = onClose;
+    head.append(swatch, title, close);
+    root.append(head);
+
+    if (model.doc) {
+      const nav = el("div", "nav");
+      const back = el("button", "", "◀ All documents");
+      back.onclick = onBackToDocs;
+      nav.append(back);
+      root.append(nav);
+      const body = el("div", "body");
+      body.append(renderMarkdown(model.doc.body));
+      if (model.doc.truncated) body.append(el("p", "", "(The document is longer; only the beginning is shown.)"));
+      root.append(body);
+      body.scrollTop = scroll;
+      const foot = el("footer");
+      foot.append(el("span", "grow", `${model.doc.path} · ${ago(model.doc.mtime)}`));
+      root.append(foot);
+      return;
+    }
+    if (model.loading || model.error || !model.entries.length) {
+      root.append(el("div", "empty", model.loading ? "Loading…" : model.error || "No document yet. The Markdown files a session writes under docs/ or .audit/ appear here."));
+      return;
+    }
+    const list = el("div", "doclist");
+    for (const entry of model.entries) {
+      const row = el("button", "");
+      row.append(document.createTextNode(`${entry.title} · ${ago(entry.mtime)}`), el("span", "path", entry.path));
+      row.onclick = () => onOpenDoc(entry.path);
+      list.append(row);
+    }
+    root.append(list);
+  }
+
+  return { render, renderDecisions, renderDocs, hide };
 }
