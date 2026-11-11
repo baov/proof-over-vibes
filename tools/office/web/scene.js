@@ -182,7 +182,22 @@ export function createScene(canvas, layout) {
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -200, 400);
   camera.position.set(center.x + 24, 24, center.z + 24);
   camera.lookAt(center);
+  camera.updateMatrixWorld();
   let zoom = 1;
+  // Zooming keeps the point under the cursor in place, which pans the view: the offset along the screen's
+  // right and up axes, held to what keeps the original frame covered.
+  const home = camera.position.clone();
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  let panRight = 0;
+  let panUp = 0;
+  function placeCamera() {
+    const maxRight = Math.max(0, camera.right * zoom - camera.right); // zoomed out, nothing to pan
+    const maxUp = Math.max(0, camera.top * zoom - camera.top);
+    panRight = Math.min(maxRight, Math.max(-maxRight, panRight));
+    panUp = Math.min(maxUp, Math.max(-maxUp, panUp));
+    camera.position.copy(home).addScaledVector(right, panRight).addScaledVector(up, panUp);
+  }
 
   const ambient = new THREE.AmbientLight(THEMES.warm.ambient, 0.95);
   const moon = new THREE.DirectionalLight(0xa9b8ff, 0.8);
@@ -364,12 +379,23 @@ export function createScene(canvas, layout) {
     camera.top = half;
     camera.bottom = -half;
     camera.updateProjectionMatrix();
+    placeCamera();
   }
   window.addEventListener("resize", resize);
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
-    zoom = Math.min(2, Math.max(0.6, zoom * (event.deltaY < 0 ? 1.08 : 1 / 1.08)));
+    const next = Math.min(2.5, Math.max(0.6, zoom * (event.deltaY < 0 ? 1.08 : 1 / 1.08)));
+    if (next === zoom) return;
+    const box = canvas.getBoundingClientRect();
+    const x = ((event.clientX - box.left) / box.width) * 2 - 1;
+    const y = -(((event.clientY - box.top) / box.height) * 2 - 1);
+    const { right: halfW, top: halfH } = camera;
+    zoom = next;
     resize();
+    panRight += x * (halfW - camera.right);
+    panUp += y * (halfH - camera.top);
+    placeCamera();
+    camera.updateMatrixWorld();
   }, { passive: false });
   resize();
 

@@ -23,7 +23,7 @@ python3 tools/office/serve.py --root .
 | `--no-open` | Do not open the browser. |
 | `--demo` | Watch a scripted run in a temporary folder, about a minute long, instead of a real project. |
 
-It needs Python 3 and a browser; nothing to install. The server listens on `127.0.0.1` only. In the page, `T` swaps the warm and cool color themes and the wheel zooms.
+It needs Python 3 and a browser; nothing to install. The server listens on `127.0.0.1` only. In the page, `T` swaps the warm and cool color themes and the wheel zooms toward the cursor. The shortcuts are listed until your first interaction, then fold into the `?` button (or press `?`).
 
 ## Around the floor
 
@@ -31,11 +31,12 @@ It needs Python 3 and a browser; nothing to install. The server listens on `127.
 
 *Dawn, while a run is under way: the journal lists what just happened, and the Reviewer walks the folder back to the Developer after a NO-GO.*
 
-- **Pipeline strip:** the roles of the run in order, colored by state, with the active one pulsing and a final `Merge` or `Human` gate. Click a step to open that role.
+- **Pipeline strip:** the roles of the run in order, colored by state and marked with a glyph (`…` working, `✓` done, `?` blocked, `!` needs a human), with the active one pulsing and a final `Merge` or `Human` gate. Click a step to open that role.
 - **Run card:** the project, the run, its iteration counter, and a switcher when several runs exist (pick one by hand, click again to follow the newest).
 - **Journal:** the last events (a role started, finished, is blocked, a verdict, an iteration), at the top right.
 - **Banner:** `Ready to merge`, `Human needed`, `<role> is blocked`, or who is at work. The tab title carries the same state.
-- **Agents:** a colored dot above each head shows its state at a glance; a walking agent says who it hands over to.
+- **Agents:** the roles of the run stand out and the others fade to grey. A glyph above each head shows its state (`…` working, `✓` done), a ring under whoever is at work pulses in the color of its state, and a large `?` or `!` says a role is blocked or waits for a human. A walking agent says who it hands over to, and leaves a dotted trail on the floor in the color of the receiving team (red after a NO-GO).
+- **Rooms:** each is named in Hangul with its Latin name under it: on the wall for the back rooms and the hub, painted on the floor for the front rooms.
 
 ## Day and night
 
@@ -49,7 +50,7 @@ The floor follows your machine's clock. Sunrise is at 6:00 and sunset at 18:00 e
 
 *`T` swaps the warm palette for the cool one, at any hour.*
 
-The time box under the run card shows the hour. Pick `Dawn`, `Day`, `Dusk` or `Night` to fix a period, drag the slider to fix an hour, and `Auto` to follow the clock again. `N` cycles auto, dawn, day, dusk, night. Opening the page with `?time=19:30` starts at that hour, which is handy for a screenshot or a test. `T` (warm or cool palette) is independent of the hour.
+The time box under the run card is folded to the hour; click it to open the controls. Pick `Dawn`, `Day`, `Dusk` or `Night` to fix a period, drag the slider to fix an hour, and `Auto` to follow the clock again. `N` cycles auto, dawn, day, dusk, night. Opening the page with `?time=19:30` starts at that hour, which is handy for a screenshot or a test. `T` (warm or cool palette) is independent of the hour.
 
 ## Reading an agent's screen
 
@@ -67,6 +68,7 @@ Hover an agent or its desk for a tooltip with its role, what it does (the first 
 | `F` | Follow activity: the panel always shows the role that works now |
 | `D` | Open or close the decisions to review |
 | `M` | Open or close the documents of the project |
+| `?` | Show or hide this list of shortcuts |
 | `Esc` | Close the panel |
 
 The panel updates by itself when the file changes. The server reads a report from a run and a role, never from a path the page sends, caps its size, and refuses requests whose `Host` header is not `127.0.0.1` or `localhost`, so another site cannot read your reports.

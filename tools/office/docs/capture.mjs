@@ -153,6 +153,8 @@ for i in range(1, 7):
       spawnSync("python3", ["-c", steps]);
       await sleep(1500);
     }
+    // The shortcuts fold on the first interaction: do it, so that the help block is not in every picture.
+    await browser.send("Runtime.evaluate", { expression: key("Shift") });
     for (const action of scene.actions ?? []) {
       await browser.send("Runtime.evaluate", { expression: action });
       await sleep(120);

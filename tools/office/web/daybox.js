@@ -16,7 +16,10 @@ export function createDayBox(root, { onPeriod, onAuto, onHour }) {
   document.head.append(Object.assign(el("style"), {
     textContent: `
       .daybox { margin-top: 8px; pointer-events: auto; padding: 8px 10px; border-radius: 14px; background: rgba(10,12,28,.78); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); font-size: 12px; display: flex; flex-direction: column; gap: 6px; width: 230px; box-sizing: border-box; }
-      .daybox .top { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; }
+      .daybox .top { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0; font: inherit; font-size: 14px; font-weight: 700; color: inherit; background: none; border: 0; border-radius: 0; cursor: pointer; }
+      .daybox .top .caret { font-size: 10px; opacity: .6; margin-left: 6px; }
+      .daybox:not(.open) .modes, .daybox:not(.open) input[type=range] { display: none; }
+      .daybox:not(.open) { padding: 6px 10px; }
       .daybox .top small { font-weight: 400; opacity: .65; font-size: 12px; }
       .daybox .modes { display: flex; gap: 4px; }
       .daybox button { font: inherit; font-size: 11px; color: inherit; cursor: pointer; flex: 1; padding: 3px 0; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); background: none; }
@@ -25,12 +28,23 @@ export function createDayBox(root, { onPeriod, onAuto, onHour }) {
       @media (max-width: 700px) { .daybox { display: none; } }
     `,
   }));
+  // Folded by default: the hour is read at a glance, and the controls open on a click (they are rarely needed).
   const box = el("div", "daybox");
   box.setAttribute("aria-label", "Time of day");
-  const top = el("div", "top");
+  const top = el("button", "top");
+  top.setAttribute("aria-expanded", "false");
+  top.title = "Time of day: click to set it";
   const time = el("span");
   const mode = el("small");
-  top.append(time, mode);
+  const caret = el("span", "caret", "▾");
+  const label = el("span");
+  label.append(mode, caret);
+  top.append(time, label);
+  top.onclick = () => {
+    const open = box.classList.toggle("open");
+    top.setAttribute("aria-expanded", String(open));
+    caret.textContent = open ? "▴" : "▾";
+  };
   const modes = el("div", "modes");
   const auto = el("button", "", "Auto");
   auto.onclick = onAuto;
