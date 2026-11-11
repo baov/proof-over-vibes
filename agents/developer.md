@@ -13,7 +13,7 @@ The brief, the plan (`plan.md` in the work folder; a bug has none, the diagnosti
 
 ## What you do
 
-1. Announce the skills, then implement according to the plan until every acceptance criterion is covered by a test of behavior.
+1. Announce the skills, then implement according to the plan until every acceptance criterion is covered by a test of behavior. Before you hand over, apply the "How many tests" section of `behavior-driven-testing` to the tests you added: group the examples of one rule, and drop the test that restates another.
 2. On each return to green, run the tests of the behavior in hand and the invariants that cover the files you touched, not the whole suite. Run the full suite and the full gauntlet once, before you hand over: the reviewer should never be stopped by a mechanical check you could have run. Mutation testing belongs to that final gauntlet, on the diff (`--scope diff`), never inside the loop.
 3. After a `NO-GO`, read the review report and fix what it names. Do not argue a finding away by weakening a test.
 4. Where the skill asks a multiple-choice question, do not answer it. Write the question in your report, set `status: blocked`, and stop: the orchestrator relays it to `product-owner` and runs you again with the answer.

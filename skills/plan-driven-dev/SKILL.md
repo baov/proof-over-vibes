@@ -87,11 +87,11 @@ Create the file `.plans/in-progress/<slug>/plan.md` (slug = short kebab-case ide
 <summary of what step 1 uncovered: key files, conventions, constraints>
 
 ## 4. Expected behaviors
-<bullet list of the behaviors to test — the backbone of the TDD loop>
-<format per behavior: given <context>, when <action>, then <observable outcome> — **test boundary**: <use case / port / module API the test goes through>>
+<bullet list of the behaviors to test, one per business rule — the backbone of the TDD loop>
+<format per rule: given <context>, when <action>, then <observable outcome> — **test boundary**: <use case / port / module API the test goes through> — **examples**: <inputs → outcome, one per distinct outcome, edge cases included>>
 - Nominal: ...
-- Edge case 1: ...
-- Edge case 2: ...
+- Rule 1: ... — examples: ...
+- Rule 2: ... — examples: ...
 
 ## 5. Steps
 <ordered checklist of the coding actions>
@@ -178,8 +178,10 @@ How it goes:
    - Check that the test passes
    - Refactor if needed, keeping the test green
 
-3. **Then each edge case, one at a time**:
+3. **Then each remaining rule, one at a time**:
+   - One test per rule, its examples (edge cases included) as the cases of that test: subtests or a table
    - Test (red) → implementation (green) → refactor
+   - An edge case that is one more example of a rule already tested joins that test; one that is a different rule gets a test of its own
    - Only move to the next one once the previous one is green
 
 4. **On every move to green, run the invariants that cover the files you touched** (the scripts spotted at step 1) before moving to the next behavior.

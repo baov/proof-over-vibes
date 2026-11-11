@@ -109,7 +109,7 @@ The question: *what is going to break?*
 - Unhandled edge cases (null/empty/zero, bounds, concurrency, encoding, time zones).
 - Contract changes: signature, return format, error behavior — check the existing callers.
 - Inverted logic, incomplete conditions, off-by-one, shared state mutated.
-- Tests: are the added or modified behaviors covered by tests that test the behavior (and not the structure)? A modified behavior with no modified test is suspicious.
+- Tests, in both directions. Missing: are the added or modified behaviors covered by tests that test the behavior (and not the structure)? A modified behavior with no modified test is suspicious. Surplus: among the tests the diff adds, look for those that restate another test with other inputs, those that repeat for one use case a rule another test already covers, and those that pin what no decision requires (a number of reads or clock calls, a class hierarchy, a docstring). Report them as minor; report one as major only when it pins an implementation detail so tightly that a refactoring changing no behavior would break it. A count that a decision requires is not a finding. Never ask for a test to go on the strength of the mutation score alone: it does not see most of what a test asserts.
 - Performance, only where a target is declared (an acceptance criterion, the plan, an ADR, an invariant) or where the diff plainly adds unbounded work: a query inside a loop, a read with no limit, a full scan where an index is recorded. Check a declared target against a test or a measurement; a target no check exercises is a finding. Do not speculate about speed nobody asked for.
 
 ### Angle 2 — Security
@@ -138,7 +138,7 @@ Every finding gets a severity. The definitions matter: they are what makes the v
 
 - **Blocking** — a defect that will cause an incident, an exploitable vulnerability, data corruption, or a head-on violation of an ADR. Merged as it stands, it will mean coming back in a hurry.
 - **Major** — a real defect that degrades reliability, security or architecture, but with no immediate danger: a plausible edge case left unhandled, a modified behavior with no test, notable structural debt.
-- **Minor** — a desirable improvement with no risk: readability, naming, small duplication.
+- **Minor** — a desirable improvement with no risk: readability, naming, small duplication, a test that restates another.
 
 When hesitating between two levels, retain the lower one but say so in the finding — the credibility of the review rests on blocking findings that really block. A review that cries wolf ends up ignored.
 

@@ -53,6 +53,18 @@ The runtime cost is real — a run takes tens of minutes. In practice, restrict 
 
 4. **Assert on the observable result**, not on implementation details. Over-checking internal calls (mocking everything) makes tests brittle. A good behavior test survives refactoring as long as the behavior does not change.
 
+## How many tests
+
+The unit of a suite is the **business rule**, not the input. "An offer is open until its end date included" is one rule; the last day, the day after and a one-day offer are three examples of it. The examples are the cases of one test, not three tests.
+
+1. **One test per rule, its examples inside it.** Variants that share one assertion shape (same call, same kind of outcome, different inputs) go in a single parameterized test (subtests, a table, `test.each`), named after the rule. Two different rules never share a test: a failure must name one rule.
+2. **One example per distinct outcome.** Three invalid values that give the same refusal are one example of that refusal; a fourth that gives another refusal is another rule. Do not test what the language or the types already forbid (an old call without the new argument raising a type error).
+3. **A rule shared by several use cases is tested once.** The role check, the order in which refusals are reported, the handling of an unreadable store: one test over a table of the use cases, not one copy per use case. A use case gets a test of its own for such a rule only to add an example the others lack.
+4. **A behavior already exercised by an example elsewhere needs no test of its own.** Deciding a behavior (in a document, a plan, an answered question) is not a reason to test it again. A test is justified when the behavior could regress without another test noticing.
+5. **Do not pin how the result is obtained.** The number of reads, writes or clock calls, the class hierarchy, a type, the wording of a docstring: none of these is a behavior. The one exception is a count that a decision or the plan requires ("one save, so one atomic write"); the test then names that decision.
+
+The mutation score cannot tell enough from too many: it stays flat as tests are added. Never use it to justify a number of tests; use it to check that a trimmed suite still protects what it protected. To trim a suite that already grew, group the examples of each rule first, then drop what another test restates, and run the mutation on the same scope before and after: the score must not fall.
+
 ## Adapting to the project's stack
 
 Before writing tests, infer the context (language, framework, architecture) by inspecting the repository: manifests (`pom.xml`, `build.gradle`, `package.json`, `pyproject.toml`, `*.csproj`, `go.mod`…), existing test folders, naming conventions. Respect the framework and the style already in place.
@@ -65,6 +77,8 @@ If the project follows a layered / hexagonal / DDD architecture, the natural tes
 - A mock for every dependency, to the point where the test mirrors the implementation line by line.
 - A test that breaks on every rename or method extraction, with no change of behavior.
 - A goal stated as a coverage percentage rather than as use cases covered.
+- Several tests that differ only by their inputs, or one rule tested again for each use case.
+- An assertion on a number of calls, a type or a docstring that no decision requires.
 
 In those cases, refocus: "which behavior does this test protect?". With no clear answer, the test is to be deleted or reworded.
 
