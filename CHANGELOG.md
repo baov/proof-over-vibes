@@ -4,6 +4,15 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added
+
+- `tools/office/` — a local web page that shows the roles of a run working, live, on an isometric office floor floating above Seoul, by day and by night. It reads the files the roles write (`.plans/`, `.reviews/`), is read-only, needs only Python 3 and a browser, and has a scripted `--demo`.
+  - **The floor:** four open spaces and a hub, one agent per role, a walk from one desk to the next at each handoff, a state dot above each head.
+  - **Around it:** a pipeline strip of the run's roles, a run switcher, a journal of events, and a banner (`Ready to merge`, `Human needed`, `<role> is blocked`).
+  - **Reading an agent:** hover for its state, click for the report it wrote (chips, reasons, the question of a blocked role, a switch between its several reports, the brief for the Orchestrator, who it got the file from and who gets it next); `F` follows the role that works now.
+  - **Decisions to review:** a chip on the run card and a drawer (`D`) list the decisions of the run that nobody read (`answered-by-delegate`) or that wait for a person (`human-needed`), read from `docs/business/decisions.md`. Read-only: the page never writes the log.
+  - **Day and night:** the hour comes from the machine's clock; the sun, the sky, a daylight or night city map, glass towers, the Namsan tower, a holographic `서울` sign and the office lights follow it. A manual mode picks a period or an hour (`N`, buttons, slider, `?time=HH:MM`).
+
 ### Fixed
 
 - The count of skills was stale since 0.3.0 ("ten", when `product-strategy` made it eleven). `README.md`, `workflows.md`, `AGENTS.md`, `docs/glossary.md` and `docs/agent-organization.md` no longer state a count of skills or roles, so it cannot drift again.

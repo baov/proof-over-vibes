@@ -18,3 +18,9 @@ repos:
         entry: tools/check-glossary.sh
         language: system
         pass_filenames: false
+      - id: office-tests
+        name: office floor visualizer tests
+        entry: python3 -m unittest discover -s tools/office/tests -t tools/office
+        language: system
+        pass_filenames: false
+        files: ^tools/office/

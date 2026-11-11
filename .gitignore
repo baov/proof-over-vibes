@@ -12,3 +12,6 @@ venv/
 
 # Archives produced for the web upload (see README, Installation section)
 *.zip
+
+# Brainstorming mockups (local, never committed)
+.superpowers/

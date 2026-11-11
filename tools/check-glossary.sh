@@ -18,13 +18,14 @@ cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 failures=0
 
-# git grep searches tracked files only: build output and vendored code are not
-# ours to translate. Exit status 1 just means "no match", which is the pass case.
+# git grep searches tracked files only. Vendored code (tools/office/web/vendor)
+# is excluded below: it is not ours to translate. Exit status 1 just means
+# "no match", which is the pass case.
 check() {
   local label="$1" pattern="$2" opts="${3:-}"
   local hits
   # shellcheck disable=SC2086 -- $opts is a deliberate word-split of grep flags.
-  hits=$(git grep -nIE $opts "$pattern" -- . ':!tools/check-glossary.sh' || true)
+  hits=$(git grep -nIE $opts "$pattern" -- . ':!tools/check-glossary.sh' ':!tools/office/web/vendor' || true)
   if [ -n "$hits" ]; then
     echo "FAIL — $label"
     printf '%s\n' "$hits" | sed 's/^/    /'

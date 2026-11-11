@@ -32,6 +32,8 @@ The pre-commit hook already runs both (`pre-commit install`). What the validator
 - **A `SKILL.md` body stays under 500 lines.** It is loaded in full the moment the skill activates. Past that, move detail into `references/` — one file per branch of the workflow, so the agent reads only what concerns it.
 - **A `description` is a trigger, not a summary.** It is the only text loaded at all times: it says what the skill does *and* when to use it, in the words the user will actually type. Capped at 1024 characters.
 
+`tools/office/` is application code, not a skill or a role: the skill and role validators do not cover it, but it follows the same English and no-client-name rules, and its vendored `web/vendor/` is exempt from the glossary check.
+
 ## Two languages, two scopes
 
 The repository is English. What a skill *writes elsewhere* is not.

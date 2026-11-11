@@ -48,6 +48,8 @@ The skills work on their own, chained by you or by your agent as above. If you w
 
 The roles name no model and no reasoning effort: they inherit your session's, so the organization works with any model. Flows, governance, the iteration loop, the open risks: **[docs/agent-organization.md](docs/agent-organization.md)**.
 
+To watch the roles work, [`tools/office/`](tools/office) draws a run live on an isometric office floor: `python3 tools/office/serve.py`.
+
 ## Installation
 
 ```bash

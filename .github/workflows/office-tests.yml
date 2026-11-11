@@ -1,0 +1,23 @@
+name: office-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  office:
+    name: tools/office tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      # The server and the snapshot logic have no dependency; node only runs the
+      # time-of-day tests, which the Python suite skips when it is missing.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Tests
+        run: python3 -m unittest discover -s tools/office/tests -t tools/office

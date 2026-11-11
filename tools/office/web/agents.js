@@ -1,0 +1,332 @@
+// One low-poly agent per role. Draws what the snapshot says; decides nothing about the workflow.
+import * as THREE from "three";
+import { TEAM_COLORS } from "./layout.js";
+import { STATE_COLORS, roleTitle } from "./roles.js";
+
+const SPEED = 4.5; // world units per second while walking a handoff
+const HANDOVER_PAUSE = 0.6;
+const DEFER_MAX = 4; // the receiver starts working when the walker arrives, or after this
+const CHECK_SECONDS = 3;
+const SKIN = 0xf1c7a0;
+
+function textSprite(text, { fg, bg, size, w, h, scale }) {
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const g = c.getContext("2d");
+  const texture = new THREE.CanvasTexture(c);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const draw = (label) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = bg;
+    g.beginPath();
+    g.roundRect(2, 2, w - 4, h - 4, h / 2.4);
+    g.fill();
+    g.fillStyle = fg;
+    g.font = `bold ${size}px system-ui, sans-serif`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText(label, w / 2, h / 2 + 2);
+    texture.needsUpdate = true;
+  };
+  draw(text);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, toneMapped: false }));
+  sprite.scale.set(scale[0], scale[1], 1);
+  sprite.renderOrder = 10;
+  sprite.visible = false;
+  sprite.userData.set = (label) => {
+    if (sprite.userData.text !== label) {
+      sprite.userData.text = label;
+      draw(label);
+    }
+  };
+  return sprite;
+}
+
+// A small colored dot above each head, so the state of the whole team reads at a glance.
+const PIP = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff";
+  g.beginPath();
+  g.arc(32, 32, 26, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = "rgba(0,0,0,.55)";
+  g.lineWidth = 6;
+  g.stroke();
+  return new THREE.CanvasTexture(c);
+})();
+
+const statusSprite = (text, bg) => textSprite(text, { fg: "#fff", bg, size: 64, w: 96, h: 96, scale: [0.55, 0.55] });
+
+function makeAgent(role, seat) {
+  const standard = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+  const part = (w, h, d, color, y) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), standard(color));
+    mesh.position.y = y;
+    mesh.castShadow = true;
+    return mesh;
+  };
+  const pivot = (x, y) => {
+    const g = new THREE.Group();
+    g.position.set(x, y, 0);
+    return g;
+  };
+
+  const root = new THREE.Group();
+  root.position.set(seat.x, 0, seat.z);
+  root.rotation.y = seat.rotY;
+  const body = new THREE.Group();
+  body.position.y = 0.58; // the hip, the same seated and standing
+  root.add(body);
+
+  // A few looks per role, picked from the role name so they stay the same between reloads.
+  let hash = 0;
+  for (const ch of role) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  const pick = (list, shift) => list[(hash >> shift) % list.length];
+  const skin = pick([0xf1c7a0, 0xe0ac80, 0xc68642, 0x8d5524, 0xf6d3b5], 0);
+  const hair = pick([0x1b1b2a, 0x3b2a1a, 0x6b4a2b, 0x111111, 0x7a4a24], 3);
+  const pants = pick([0x222638, 0x2d3350, 0x3a3f55, 0x1f2a44], 6);
+  const shirt = TEAM_COLORS[seat.team];
+
+  body.add(part(0.5, 0.6, 0.3, shirt, 0.38));
+  body.add(part(0.52, 0.1, 0.32, 0xf4f6fb, 0.08)); // belt line
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 12), standard(skin));
+  head.position.y = 0.95;
+  head.castShadow = true;
+  const hairTop = part(0.4, 0.14, 0.4, hair, 1.1);
+  const hairBack = part(0.4, 0.3, 0.1, hair, 0.98);
+  hairBack.position.z = -0.15; // the back of the head faces the camera
+  body.add(head, hairTop, hairBack);
+
+  const arms = [pivot(-0.33, 0.62), pivot(0.33, 0.62)];
+  const legs = [pivot(-0.13, 0), pivot(0.13, 0)];
+  for (const arm of arms) {
+    arm.add(part(0.15, 0.3, 0.15, shirt, -0.15), part(0.12, 0.2, 0.12, skin, -0.4));
+    body.add(arm);
+  }
+  for (const leg of legs) {
+    leg.add(part(0.17, 0.55, 0.17, pants, -0.27), part(0.19, 0.08, 0.27, 0xf4f6fb, -0.55));
+    leg.children[1].position.z = 0.05;
+    body.add(leg);
+  }
+  body.scale.setScalar(1.12);
+
+  const folder = part(0.32, 0.04, 0.42, 0xf4f4f4, 0.45);
+  folder.position.z = 0.42;
+  folder.visible = false;
+  body.add(folder);
+
+  const label = textSprite(roleTitle(role), { fg: "#fff", bg: "rgba(10,12,28,0.88)", size: 46, w: 512, h: 96, scale: [2.3, 0.43] });
+  label.userData.text = roleTitle(role);
+  label.position.y = 2.2;
+  const pip = new THREE.Sprite(new THREE.SpriteMaterial({ map: PIP, transparent: true, depthTest: false, toneMapped: false }));
+  pip.scale.set(0.26, 0.26, 1);
+  pip.position.y = 1.85;
+  pip.renderOrder = 9;
+  pip.visible = false;
+  root.add(pip);
+  const sprites = { "?": statusSprite("?", "#dc2626"), "!": statusSprite("!", "#dc2626"), check: statusSprite("✓", "#16a34a") };
+  for (const s of Object.values(sprites)) s.position.y = 2.75;
+  root.add(label, ...Object.values(sprites));
+
+  return { role, seat, root, body, arms, legs, folder, label, pip, sprites, mode: "seated", phase: Math.random() * 6 };
+}
+
+export function createAgents(scene, layout, stations) {
+  const agents = new Map();
+  const targets = []; // invisible boxes the pointer can hit, one on the desk and one on the agent
+  const hitMaterial = new THREE.MeshBasicMaterial({ visible: false });
+  const hit = (w, h, d, x, y, z, role, parent) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), hitMaterial);
+    mesh.position.set(x, y, z);
+    mesh.userData.role = role;
+    parent.add(mesh);
+    targets.push(mesh);
+  };
+  for (const [role, seat] of layout.seats) {
+    const agent = makeAgent(role, seat);
+    agents.set(role, agent);
+    scene.add(agent.root);
+    hit(2.0, 2.0, 2.2, seat.x, 1.0, (seat.deskZ + seat.z) / 2 + 0.1, role, scene);
+    hit(0.9, 2.0, 0.9, 0, 1.0, 0, role, agent.root);
+    agent.ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.95, 1.1, 40),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, toneMapped: false, depthTest: false }),
+    );
+    agent.ring.rotation.x = -Math.PI / 2;
+    agent.ring.position.set(seat.x, 0.04, (seat.deskZ + seat.z) / 2 + 0.1);
+    agent.ring.renderOrder = 5;
+    agent.ring.visible = false;
+    scene.add(agent.ring);
+  }
+  let hovered = null;
+  let selected = null;
+
+  let run = null;
+  let slug = null;
+  let prevActive;
+  let prevStates = null;
+  let walk = null;
+  const deferred = new Map(); // role -> seconds left before it shows as working
+  const checks = new Map(); // role -> seconds left of the green check
+  let time = 0;
+
+  const stateOf = (role) => (deferred.has(role) ? "idle" : run?.roles?.[role]?.state ?? "idle");
+
+  function sit(agent) {
+    agent.root.position.set(agent.seat.x, 0, agent.seat.z);
+    agent.root.rotation.y = agent.seat.rotY;
+    agent.mode = "seated";
+    agent.folder.visible = false;
+    agent.label.userData.set(roleTitle(agent.role));
+  }
+
+  function cancelWalk() {
+    if (walk) sit(walk.agent);
+    walk = null;
+    deferred.clear();
+  }
+
+  function startWalk(from, to, red) {
+    cancelWalk();
+    const agent = agents.get(from);
+    if (!agent || !agents.has(to)) return;
+    const path = layout.walkPath(from, to);
+    agent.folder.material.color.set(red ? 0xef4444 : 0xf4f4f4);
+    agent.folder.visible = true;
+    agent.mode = "walking";
+    agent.label.userData.set(`${roleTitle(from)} → ${roleTitle(to)}`);
+    walk = { agent, path, back: [...path].reverse(), idx: 1, phase: "out", pause: 0, to };
+    deferred.set(to, DEFER_MAX);
+  }
+
+  function apply(next) {
+    if (next && next.slug !== slug) {
+      cancelWalk();
+      prevActive = undefined;
+      prevStates = null;
+    }
+    slug = next ? next.slug : null;
+    run = next;
+    const active = next?.active_role ?? null;
+    if (prevActive !== undefined && prevActive && active && prevActive !== active) {
+      const red = prevActive === "reviewer" && next.roles.reviewer?.verdict === "NO-GO";
+      startWalk(prevActive, active, red);
+    }
+    prevActive = active;
+    const states = Object.fromEntries(Object.entries(next?.roles ?? {}).map(([r, v]) => [r, v.state]));
+    if (prevStates) {
+      for (const [role, state] of Object.entries(states)) {
+        if (state === "done" && prevStates[role] && prevStates[role] !== "done") checks.set(role, CHECK_SECONDS);
+      }
+    }
+    prevStates = states;
+  }
+
+  function stepWalk(dt) {
+    const { agent } = walk;
+    if (walk.phase === "pause") {
+      walk.pause -= dt;
+      if (walk.pause <= 0) {
+        walk.phase = "back";
+        walk.idx = 1;
+        agent.folder.visible = false;
+      }
+      return;
+    }
+    const path = walk.phase === "out" ? walk.path : walk.back;
+    const target = path[walk.idx];
+    const dx = target.x - agent.root.position.x;
+    const dz = target.z - agent.root.position.z;
+    const dist = Math.hypot(dx, dz);
+    const step = SPEED * dt;
+    if (dist > 1e-6) agent.root.rotation.y = Math.atan2(dx, dz);
+    if (step >= dist) {
+      agent.root.position.set(target.x, 0, target.z);
+      walk.idx += 1;
+      if (walk.idx >= path.length) {
+        if (walk.phase === "out") {
+          walk.phase = "pause";
+          walk.pause = HANDOVER_PAUSE;
+          deferred.delete(walk.to);
+        } else {
+          sit(agent);
+          walk = null;
+        }
+      }
+    } else {
+      agent.root.position.x += (dx / dist) * step;
+      agent.root.position.z += (dz / dist) * step;
+    }
+  }
+
+  function update(dt) {
+    time += dt;
+    if (walk) stepWalk(dt);
+    for (const [role, left] of deferred) {
+      if (left - dt <= 0) deferred.delete(role);
+      else deferred.set(role, left - dt);
+    }
+    for (const [role, left] of checks) {
+      if (left - dt <= 0) checks.delete(role);
+      else checks.set(role, left - dt);
+    }
+
+    for (const [role, agent] of agents) {
+      const state = stateOf(role);
+      const working = state === "working";
+      const walking = agent.mode === "walking";
+      const t = time * 12 + agent.phase;
+
+      if (walking) {
+        const swing = Math.sin(time * 9) * 0.6;
+        agent.legs[0].rotation.x = swing;
+        agent.legs[1].rotation.x = -swing;
+        agent.arms[0].rotation.x = -0.9;
+        agent.arms[1].rotation.x = -0.9;
+        agent.body.rotation.z = 0;
+      } else {
+        agent.legs[0].rotation.x = agent.legs[1].rotation.x = -Math.PI / 2; // seated: thighs forward
+        const typing = working ? Math.sin(t) * 0.18 : 0;
+        agent.arms[0].rotation.x = (working ? -1.15 : -0.35) + typing;
+        agent.arms[1].rotation.x = (working ? -1.15 : -0.35) - typing;
+        agent.body.rotation.z = state === "blocked" || state === "escalate" ? Math.sin(time * 6) * 0.06 : 0;
+      }
+      agent.body.position.y = 0.58 + (walking ? Math.abs(Math.sin(time * 9)) * 0.05 : Math.sin(time * 2 + agent.phase) * 0.008);
+
+      const marked = role === hovered || role === selected;
+      const flagged = state === "working" || state === "blocked" || state === "escalate" || walking || marked;
+      agent.label.visible = flagged;
+      agent.pip.visible = state !== "idle";
+      if (state !== "idle") {
+        agent.pip.material.color.set(STATE_COLORS[state] ?? STATE_COLORS.idle);
+        agent.pip.scale.setScalar(state === "working" ? 0.26 + 0.05 * Math.sin(time * 6) : 0.26);
+      }
+      agent.sprites["?"].visible = state === "blocked";
+      agent.sprites["!"].visible = state === "escalate";
+      agent.sprites.check.visible = checks.has(role) && state === "done";
+      const pulse = 0.55 + 0.45 * Math.sin(time * 6);
+      for (const key of ["?", "!"]) agent.sprites[key].scale.setScalar(0.55 + 0.08 * pulse);
+
+      agent.ring.visible = marked;
+      if (marked) agent.ring.material.color.set(role === selected ? TEAM_COLORS[agent.seat.team] : 0xffffff);
+      agent.ring.material.opacity = role === selected ? 0.95 : 0.55;
+
+      const screen = stations.get(role)?.screen;
+      if (screen) {
+        const alert = state === "blocked" || state === "escalate";
+        screen.material.emissive.set(alert ? 0xff3b3b : TEAM_COLORS[agent.seat.team]);
+        screen.material.emissiveIntensity = (working ? 0.8 + 0.25 * Math.sin(time * 5 + agent.phase) : alert ? 0.4 + 0.3 * pulse : 0.12) + (marked ? 0.35 : 0);
+      }
+    }
+  }
+
+  const setHighlight = (hover, select) => {
+    hovered = hover;
+    selected = select;
+  };
+
+  return { apply, update, targets, setHighlight };
+}
