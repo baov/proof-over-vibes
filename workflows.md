@@ -2,7 +2,7 @@
 
 Two families of skills, and one rule: artifacts circulate, and skills are never called into a vacuum.
 
-Everything below is the chain run by hand. To run it with a team of agents — a Planner, a Developer, a Reviewer, and the roles around them — see [docs/agent-organization.md](docs/agent-organization.md).
+Everything below is the chain run by hand. To run it with a team of agents — a Planner, a Developer, QA, a Reviewer, and the roles around them — see [docs/agent-organization.md](docs/agent-organization.md).
 
 ## Two families
 
@@ -16,6 +16,7 @@ Everything below is the chain run by hand. To run it with a team of agents — a
 | `ai-code-remediation` | "audit this codebase" | `.audit/<project>-<date>.md` + a remediation plan |
 | `systematic-debugging` | "why does this crash" | A proven root cause (no file) |
 | `plan-driven-dev` | "implement", "fix" | `.plans/done/<slug>/plan.md`, `.plans/FEEDBACK.md` |
+| `acceptance-proof` | "prove the feature works", "validate the acceptance criteria with screenshots" | `.proofs/<slug>-<date>/REPORT.md` + screenshots + a verdict |
 | `premerge-review` | "review my branch" | `.reviews/<branch>-<date>.md` + a verdict |
 | `code-assimilation-quiz` | "quiz me" — **never automatic** | Nothing (learning) |
 
@@ -25,7 +26,7 @@ Everything below is the chain run by hand. To run it with a team of agents — a
 |---|---|---|
 | `behavior-driven-testing` | `plan-driven-dev` (steps 5-6), `ai-code-remediation` (S3) | Test doctrine |
 | `ddd-advisor` | `ai-code-remediation` (when S8 dominates) | Design qualification |
-| `clarify-with-choices` | `codebase-cartographer`, `codebase-harness`, `ddd-advisor`, `product-strategy` | Shapes the validation multiple-choice questions, and the degraded mode when the host agent has no question tool |
+| `clarify-with-choices` | `acceptance-proof`, `codebase-cartographer`, `codebase-harness`, `ddd-advisor`, `product-strategy` | Shapes the validation multiple-choice questions, and the degraded mode when the host agent has no question tool |
 
 ---
 
@@ -40,6 +41,10 @@ plan-driven-dev
   step 5    TDD; the invariants run on every return to green
             └─ loads behavior-driven-testing for the test boundaries
   step 6    full suite + run_all.sh + check_test_coverage
+       ↓
+acceptance-proof          (when the feature has a behavior to observe)
+  phase 2   each criterion run in the app, evidence kept
+  phase 3   a proof mark per criterion, GO/NO-GO verdict
        ↓
 premerge-review
   phase 2   criticality determined
@@ -132,6 +137,7 @@ This table is what makes the whole coherent: every file one skill produces is re
 | `docs/technical/invariants.md` | harness | plan-driven-dev (step 1), premerge-review (phase 1) |
 | `tools/harness/*` | harness | plan-driven-dev (step 5), premerge-review (phase 3) |
 | `.plans/FEEDBACK.md` | plan-driven-dev | plan-driven-dev (step 1, later tasks) |
+| `.proofs/<slug>-<date>/REPORT.md` | acceptance-proof | premerge-review (phase 4, as evidence of the criteria), systematic-debugging (a DISPROVEN criterion is the symptom) |
 | `.reviews/<branch>-<date>.md` | premerge-review | plan-driven-dev (input to the fix) |
 | `.audit/<project>.md` | ai-code-remediation | plan-driven-dev (one worksite per pass) |
 

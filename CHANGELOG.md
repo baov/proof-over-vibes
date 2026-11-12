@@ -6,6 +6,8 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ### Added
 
+- **QA role (`agents/qa.md`):** applies `acceptance-proof` between the Developer and the Reviewer. Proves the acceptance criteria in the running app, then returns `proof: GO | NO-GO | not-applicable`; a NO-GO sends the story back to the Developer and counts in the same iteration limit as a Reviewer NO-GO. `premerge-review` reads its report as evidence instead of re-checking the behavior. `docs/agent-organization.md` and `docs/glossary.md` updated accordingly.
+- **`acceptance-proof`:** a skill that proves each acceptance criterion of a feature in the running app. Every criterion gets a proof mark (PROVEN, DISPROVEN, UNPROVEN) backed by evidence (a screenshot read against an assertion, or captured output); the report in `.proofs/` ends in a GO / NO-GO verdict. It names no driving tool, covers any surface the agent can drive (web, mobile, desktop, CLI, API), and never fixes while proving. Not yet checked on a real project.
 - **Documents of a session, from the floor** (`tools/office/`): a `Documents` button on the run card, or `M`, lists the Markdown files written under `docs/` and `.audit/` and opens one in the side panel (the output of a framing, a PRD, an audit). Read-only: a document is served only when the listing finds it.
 - **Duration of a finished task** (`tools/office/`): the pipeline strip, the tooltip and the panel say how long a role's report took, measured from the previous file of the run.
 - **Resting agents** (`tools/office/`): an agent with nothing to do glances around, stretches, sips a drink and daydreams, and the head follows the typing of one at work.
