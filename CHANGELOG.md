@@ -6,7 +6,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ### Added
 
-- **QA role (`agents/qa.md`):** applies `acceptance-proof` between the Developer and the Reviewer. Proves the acceptance criteria in the running app, then returns `proof: GO | NO-GO | not-applicable`; a NO-GO sends the story back to the Developer and counts in the same iteration limit as a Reviewer NO-GO. `premerge-review` reads its report as evidence instead of re-checking the behavior, provided QA ran on the reviewed commit. `tools/office/` does not know the role yet: the floor still routes the Developer straight to the Reviewer. `docs/agent-organization.md` and `docs/glossary.md` updated accordingly.
+- **QA role (`agents/qa.md`):** applies `acceptance-proof` between the Developer and the Reviewer. Proves the acceptance criteria in the running app, then returns `proof: GO | NO-GO | not-applicable`; a NO-GO sends the story back to the Developer and counts in the same iteration limit as a Reviewer NO-GO. `premerge-review` reads its report as evidence instead of re-checking the behavior, provided QA ran on the reviewed commit. The office floor routes the Developer through QA, shows its proof and walks back red on a QA NO-GO; the organization diagram shows it too. `docs/agent-organization.md` and `docs/glossary.md` updated accordingly.
 - **`acceptance-proof`:** a skill that proves each acceptance criterion of a feature in the running app. Every criterion gets a proof mark (PROVEN, DISPROVEN, UNPROVEN) backed by evidence (a screenshot read against an assertion, or captured output); the report in `.proofs/` ends in a GO / NO-GO verdict. It names no driving tool, covers any surface the agent can drive (web, mobile, desktop, CLI, API), and never fixes while proving. Not yet checked on a real project.
 - **Documents of a session, from the floor** (`tools/office/`): a `Documents` button on the run card, or `M`, lists the Markdown files written under `docs/` and `.audit/` and opens one in the side panel (the output of a framing, a PRD, an audit). Read-only: a document is served only when the listing finds it.
 - **Duration of a finished task** (`tools/office/`): the pipeline strip, the tooltip and the panel say how long a role's report took, measured from the previous file of the run.
@@ -24,6 +24,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 - **Floor, decisions:** a pending decision raises `Human needed`, and a slug counts as one run across its stages.
 - **Floor, reports:** the reviewer's reports are also read from a visible `reviews/` folder.
 - **Floor, archived runs:** a run that was archived no longer waits for a human.
+- **Floor, story folders:** a subfolder of a run is a story only when it holds a brief or a role's file. The Diagnostician's `repro/`, and now QA's evidence (`qa-<n>/`), made a single story or a bug look like a feature.
 
 ## [0.5.0] — 2026-11-11
 

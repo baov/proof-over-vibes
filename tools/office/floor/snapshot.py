@@ -30,26 +30,27 @@ REPORT_FILES = {
     "harness-engineer.md": "harness-engineer",
     "product-manager.md": "product-manager",
 }
-DEVELOPER_NOTE = re.compile(r"^developer-\d+\.md$")
+NUMBERED_NOTES = {"developer": re.compile(r"^developer-\d+\.md$"), "qa": re.compile(r"^qa-\d+\.md$")}
 
-# role -> role that works after it, per kind of run. The reviewer is decided apart.
+# role -> role that works after it, per kind of run. QA and the reviewer are decided apart.
 FOLLOW = {
     "feature": {
         "product-owner": "architect",
         "architect": "planner",
         "planner": "developer",
-        "developer": "reviewer",
+        "developer": "qa",
     },
-    "story": {"planner": "developer", "developer": "reviewer"},
-    "bug": {"diagnostician": "reviewer", "developer": "reviewer"},
+    "story": {"planner": "developer", "developer": "qa"},
+    "bug": {"diagnostician": "reviewer", "developer": "qa"},
 }
 OTHER_FOLLOW = {"cartographer": "harness-engineer"}
+JUDGES = ["qa", "reviewer"]  # decided apart, in this order after the developer
 
 # The roles a run goes through, in order, for the page's pipeline strip.
 ROUTES = {
-    "feature": ["orchestrator", "product-owner", "architect", "planner", "developer", "reviewer"],
-    "story": ["orchestrator", "planner", "developer", "reviewer"],
-    "bug": ["orchestrator", "diagnostician", "reviewer", "developer"],
+    "feature": ["orchestrator", "product-owner", "architect", "planner", "developer", "qa", "reviewer"],
+    "story": ["orchestrator", "planner", "developer", "qa", "reviewer"],
+    "bug": ["orchestrator", "diagnostician", "reviewer", "developer", "qa"],
 }
 
 # The file each role writes, as shown to the reader. None: this page does not read it.
@@ -59,6 +60,7 @@ EXPECTS = {
     "architect": "architect.md",
     "planner": "plan.md",
     "developer": "developer-<n>.md",
+    "qa": "qa-<n>.md",
     "diagnostician": "diagnostician.md",
     "reviewer": ".reviews/<branch>-<date>-<n>.md",
     "cartographer": "cartographer.md",
@@ -72,7 +74,7 @@ class Report:
     role: str
     mtime: float
     front: dict
-    proof: bool = False
+    checks_cause: bool = False  # a review of the diagnostician's proof, not of a diff
     path: Path | None = None
 
     @property
@@ -82,6 +84,10 @@ class Report:
 
     @property
     def verdict(self) -> str | None:
+        """The reviewer's `verdict`; for QA, its `proof` (GO, NO-GO or not-applicable)."""
+        if self.role == "qa":
+            proof = self.front.get("proof")
+            return proof if proof in ("GO", "NO-GO", "not-applicable") else None
         verdict = self.front.get("verdict")
         return verdict if verdict in ("GO", "NO-GO") else None
 
@@ -100,11 +106,18 @@ def _read(path: Path) -> str | None:
         return None
 
 
-def _make_report(role: str, path: Path, proof: bool = False) -> Report | None:
+def _make_report(role: str, path: Path, checks_cause: bool = False) -> Report | None:
     mtime, text = _mtime(path), _read(path)
     if mtime is None or text is None:
         return None
-    return Report(role, mtime, parse_front_matter(text), proof, path)
+    return Report(role, mtime, parse_front_matter(text), checks_cause, path)
+
+
+def _role_of(name: str) -> str | None:
+    role = REPORT_FILES.get(name)
+    if role is None:
+        role = next((r for r, pattern in NUMBERED_NOTES.items() if pattern.match(name)), None)
+    return role
 
 
 def _reports_in(folder: Path) -> list[Report]:
@@ -114,9 +127,7 @@ def _reports_in(folder: Path) -> list[Report]:
     except OSError:
         return found
     for path in files:
-        role = REPORT_FILES.get(path.name)
-        if role is None and DEVELOPER_NOTE.match(path.name):
-            role = "developer"
+        role = _role_of(path.name)
         report = _make_report(role, path) if role else None
         if report:
             found.append(report)
@@ -128,9 +139,17 @@ def _newest_inside(folder: Path) -> float:
     return max([t for t in times if t is not None], default=_mtime(folder) or 0.0)
 
 
+def _is_story(folder: Path) -> bool:
+    """A story subfolder holds a brief or a role's file; QA's evidence or a `repro/` script does not."""
+    try:
+        return any(p.is_file() and (p.name == "brief.md" or _role_of(p.name)) for p in folder.iterdir())
+    except OSError:
+        return False
+
+
 def _latest_subfolder(run_dir: Path) -> Path | None:
     try:
-        subs = [p for p in run_dir.iterdir() if p.is_dir()]
+        subs = [p for p in run_dir.iterdir() if p.is_dir() and _is_story(p)]
     except OSError:
         return None
     return max(subs, key=_newest_inside, default=None)
@@ -149,16 +168,25 @@ def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bo
     """Return (active_role, human_needed, ready_to_merge) from the newest report."""
     if last.status != "done":
         return last.role, False, False
+    if last.role == "qa":
+        if last.verdict in ("GO", "not-applicable"):
+            return "reviewer", False, False
+        return _back_to_developer(iteration, limit, improvement)
     if last.role == "reviewer":
         if last.verdict == "GO":
-            return ("developer", False, False) if last.proof else (None, False, True)
-        if last.proof:
+            return ("developer", False, False) if last.checks_cause else (None, False, True)
+        if last.checks_cause:
             return "diagnostician", False, False
-        if iteration < limit:
-            return "developer", False, False
-        return (None, True, False) if improvement else ("failure-analyst", False, False)
+        return _back_to_developer(iteration, limit, improvement)
     nxt = FOLLOW[kind].get(last.role) or OTHER_FOLLOW.get(last.role)
     return nxt, False, False
+
+
+def _back_to_developer(iteration: int, limit: int, improvement: bool):
+    """A NO-GO, from QA or the reviewer: the developer again, or the failure analyst at the limit."""
+    if iteration < limit:
+        return "developer", False, False
+    return (None, True, False) if improvement else ("failure-analyst", False, False)
 
 
 def _review_reports(root: Path) -> list[Report]:
@@ -174,7 +202,7 @@ def _review_reports(root: Path) -> list[Report]:
         except OSError:
             continue
         for path in files:
-            report = _make_report("reviewer", path, proof=path.stem.endswith("-proof"))
+            report = _make_report("reviewer", path, checks_cause=path.stem.endswith("-proof"))
             if report and (not strict or report.front.get("role") == "reviewer"):
                 out.append(report)
     return out
@@ -244,7 +272,7 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         latest_by_role[rep.role] = rep
     for role, rep in latest_by_role.items():
         roles[role]["state"] = rep.status
-        if role == "reviewer":
+        if role in JUDGES:
             roles[role]["verdict"] = rep.verdict
     if improvement:
         roles["failure-analyst"]["state"] = "done"
@@ -257,7 +285,7 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
 
     active, human, ready = None, False, False
     if reports:
-        route_order = list(FOLLOW[kind]) + ["reviewer"]
+        route_order = list(FOLLOW[kind]) + JUDGES
         last = max(reports, key=lambda r: (r.mtime, route_order.index(r.role) if r.role in route_order else -1))
         decision = _decide(kind, last, iteration, limit, improvement)
         if stage == "in-progress":

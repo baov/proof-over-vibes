@@ -18,10 +18,12 @@ def put(root: Path, rel: str, text: str, mtime: float) -> None:
     os.utime(path, (mtime, mtime))
 
 
-def report(role: str, status: str = "done", verdict: str | None = None) -> str:
+def report(role: str, status: str = "done", verdict: str | None = None, proof: str | None = None) -> str:
     lines = ["---", f"role: {role}", f"status: {status}"]
     if verdict:
         lines.append(f"verdict: {verdict}")
+    if proof:
+        lines.append(f"proof: {proof}")
     return "\n".join(lines + ["---", "body"])
 
 
@@ -99,6 +101,54 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(self.run0()["active_role"], "architect")
         put(self.root, f"{RUN}/architect.md", report("architect"), 300)
         self.assertEqual(self.run0()["active_role"], "planner")
+
+    def test_qa_works_after_the_developer(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 200)
+        run = self.run0()
+        self.assertEqual(run["active_role"], "qa")
+        self.assertEqual(run["roles"]["qa"]["state"], "working")
+
+    def test_qa_go_or_not_applicable_hands_over_to_the_reviewer(self):
+        for proof in ("GO", "not-applicable"):
+            with self.subTest(proof=proof):
+                put(self.root, f"{RUN}/brief.md", brief(), 100)
+                put(self.root, f"{RUN}/developer-0.md", report("developer"), 200)
+                put(self.root, f"{RUN}/qa-0.md", report("qa", proof=proof), 300)
+                run = self.run0()
+                self.assertEqual(run["active_role"], "reviewer")
+                self.assertEqual(run["roles"]["qa"]["verdict"], proof)
+
+    def test_qa_no_go_sends_developer_back(self):
+        put(self.root, f"{RUN}/brief.md", brief(1), 100)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 200)
+        put(self.root, f"{RUN}/qa-0.md", report("qa", proof="NO-GO"), 300)
+        run = self.run0()
+        self.assertEqual(run["active_role"], "developer")
+        self.assertEqual(run["roles"]["qa"]["verdict"], "NO-GO")
+        self.assertFalse(run["ready_to_merge"])
+
+    def test_qa_no_go_at_the_limit_activates_failure_analyst(self):
+        put(self.root, f"{RUN}/brief.md", brief(5), 100)
+        put(self.root, f"{RUN}/qa-4.md", report("qa", proof="NO-GO"), 300)
+        self.assertEqual(self.run0()["active_role"], "failure-analyst")
+
+    def test_qa_evidence_folder_is_not_a_story(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 200)
+        put(self.root, f"{RUN}/qa-0.md", report("qa", proof="GO"), 300)
+        put(self.root, f"{RUN}/qa-0/01-c1-start.png", "png", 310)
+        run = self.run0()
+        self.assertEqual(run["kind"], "story")
+        self.assertEqual(run["active_role"], "reviewer")
+
+    def test_diagnostician_repro_folder_is_not_a_story(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/diagnostician.md", report("diagnostician"), 200)
+        put(self.root, f"{RUN}/repro/run.sh", "echo repro", 210)
+        run = self.run0()
+        self.assertEqual(run["kind"], "bug")
+        self.assertEqual(run["active_role"], "reviewer")
 
     def test_reviewer_no_go_sends_developer_back(self):
         put(self.root, f"{RUN}/brief.md", brief(1), 100)
@@ -288,6 +338,7 @@ class SnapshotTest(unittest.TestCase):
         roles = self.runs_with_brief()["roles"]
         self.assertEqual(roles["planner"]["expects"], "plan.md")
         self.assertEqual(roles["developer"]["expects"], "developer-<n>.md")
+        self.assertEqual(roles["qa"]["expects"], "qa-<n>.md")
         self.assertIsNone(roles["auditor"]["expects"])
 
     def runs_with_brief(self):
@@ -296,13 +347,13 @@ class SnapshotTest(unittest.TestCase):
 
     def test_run_route_follows_the_kind(self):
         put(self.root, f"{RUN}/brief.md", brief(), 100)
-        self.assertEqual(self.run0()["route"], ["orchestrator", "planner", "developer", "reviewer"])
+        self.assertEqual(self.run0()["route"], ["orchestrator", "planner", "developer", "qa", "reviewer"])
         put(self.root, f"{RUN}/stories.md", report("product-owner"), 110)
-        self.assertEqual(self.run0()["route"], ["orchestrator", "product-owner", "architect", "planner", "developer", "reviewer"])
+        self.assertEqual(self.run0()["route"], ["orchestrator", "product-owner", "architect", "planner", "developer", "qa", "reviewer"])
 
     def test_bug_route_starts_with_the_diagnostician(self):
         put(self.root, f"{RUN}/diagnostician.md", report("diagnostician"), 110)
-        self.assertEqual(self.run0()["route"], ["orchestrator", "diagnostician", "reviewer", "developer"])
+        self.assertEqual(self.run0()["route"], ["orchestrator", "diagnostician", "reviewer", "developer", "qa"])
 
     def test_snapshot_names_the_project(self):
         self.assertEqual(build_snapshot(self.root)["project"], self.root.name)

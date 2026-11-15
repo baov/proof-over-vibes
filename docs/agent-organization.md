@@ -42,7 +42,7 @@ Five of the roles judge: a wrong call there costs more than anywhere else.
 
 ## The flows
 
-![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then each story through the Planner, the Developer and the Reviewer in a loop and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
+![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then each story through the Planner, the Developer, QA and the Reviewer, a NO-GO from QA or the Reviewer sending it back to the Developer, and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
 
 The same flows in text:
 
@@ -183,4 +183,3 @@ Three choices are assumed, and reduce the safeguards. Revisit them after the fir
 - A client QA cannot drive (no way to run the app, no way to observe its output): the Orchestrator escalates once and the human's decision — run the story without QA, or stop — is recorded in the brief, but nothing yet keeps that decision from being asked again on the next request of the same project.
 - Cost of replaying the whole acceptance-proof plan on every iteration, not only the criteria a fix touched.
 - Weight of the evidence: the work folder is committed at archiving, so the screenshots of every QA round ship in the merge request. Nothing yet trims them to the last round.
-- The office floor (`tools/office/`) does not know QA yet: it still routes the Developer straight to the Reviewer.
