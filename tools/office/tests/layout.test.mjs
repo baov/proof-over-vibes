@@ -8,7 +8,7 @@ const ROLE_TEAMS = {
   orchestrator: "product", "product-owner": "product", "product-manager": "product",
   architect: "design", planner: "design",
   developer: "build", diagnostician: "build",
-  reviewer: "quality", auditor: "quality", "failure-analyst": "quality",
+  qa: "quality", reviewer: "quality", auditor: "quality", "failure-analyst": "quality",
   cartographer: "common", "harness-engineer": "common", coach: "common",
 };
 

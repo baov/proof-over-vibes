@@ -32,6 +32,8 @@ used once, in one file, does not need an entry.
 | doc-gardening | doc maintenance, upkeep, grooming | Block C |
 | test-case bridge | test mapping, traceability matrix | Block B |
 | verdict | decision, outcome, result | GO / NO-GO, nothing else |
+| proof mark | status, grade, test result | PROVEN / DISPROVEN / UNPROVEN: what the evidence says of one acceptance criterion. Not a verdict, which covers the whole run |
+| evidence | artifact, attachment, exhibit | A file that shows an observation (screenshot, captured output), kept next to the report. A proof mark without evidence is invalid |
 | root cause | underlying issue, real problem | It is proven, never guessed |
 | debt | cruft, legacy, mess | Technical debt |
 | cold audit | baseline audit, fresh audit | Auditing a codebase you did not write |
@@ -63,7 +65,7 @@ used once, in one file, does not need an entry.
 | hand-off | handover, relay, transfer | A role passing its result to the next through a file |
 | merge gate | CI merge, merge check, release gate | The last step before the merge, outside the agents: a CI, or a person where there is none |
 | escalation | handover to a human, bubble-up | A run stopping to call a person |
-| iteration | cycle, round, loop turn | One Developer-to-Reviewer round, counted toward the limit of 5 |
+| iteration | cycle, round, loop turn | One Developer round ended by a NO-GO from the QA role or the Reviewer, counted toward the one limit of 5 |
 | TL;DR | abstract, executive summary, digest | The two-to-four-line block that opens a long generated document. A report whose template already opens with a `Summary` section keeps it: that section is its TL;DR |
 | diagram | schema, chart, figure | A Mermaid drawing in a generated document, kept for structure, flow or dependencies |
 
@@ -91,6 +93,7 @@ another file, other values.
 role: reviewer
 status: done               # done | blocked | escalate
 verdict: GO                # the Reviewer only: GO | NO-GO
+proof: GO                  # the QA role only: GO | NO-GO | not-applicable
 structure: decided         # the Architect only: unchanged | decided | escalated
 reasons: []
 severity: major            # blocking | major | minor

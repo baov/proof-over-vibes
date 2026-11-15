@@ -98,6 +98,8 @@ Go through the diff with four distinct readings. A single pass that "looks at ev
 
 ### Reading order: the what before the how
 
+If an `acceptance-proof` report exists for this diff (the work folder, or `.proofs/`), read it first: a PROVEN criterion is functional coverage already established, and a DISPROVEN one is a defect already evidenced — do not reopen it as a new finding, point back to the report instead.
+
 At **critical** criticality, first read the test-cases in `docs/business/test-cases/` that the diff touches — through the front-matter's `automated_test` field, which points at the modified tests. The code afterwards.
 
 The reason: these files describe the expected behavior (context, action, expected result), and they are the only layer the review can validate against the real need. The code itself can only be validated against those files. Reading them after reading the code means reading them looking to confirm what has just been understood.

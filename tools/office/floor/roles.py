@@ -12,6 +12,7 @@ ROLE_TEAM = {
     "planner": "design",
     "developer": "build",
     "diagnostician": "build",
+    "qa": "quality",
     "reviewer": "quality",
     "auditor": "quality",
     "failure-analyst": "quality",
