@@ -79,7 +79,7 @@ Then hand off:
 
 ## Inside a run of roles
 
-When this skill runs as a role in an agent organization, the request's brief stands in for the announcement and for the Phase 1 validation: the acceptance criteria are already written there, so write the proof plan from them and run, without asking the user again. An ambiguity still never gets resolved by picking the reading that passes: return it as a blocked hand-off with the multiple-choice question, same as any other role. Add the hand-off front-matter the organization asks for above the report produced here.
+When this skill runs as a role in an agent organization, the request's brief stands in for the announcement and for the Phase 1 validation: the acceptance criteria are already written there, so write the proof plan from them and run, without asking the user again. An ambiguity still never gets resolved by picking the reading that passes: return it as a blocked hand-off with the multiple-choice question, same as any other role. Add the hand-off front-matter the organization asks for above the report produced here. A step that would delete or send something outside the test environment is never taken on the brief's authority: escalate it. A DISPROVEN criterion goes back to whoever corrects the code in that organization, not to `systematic-debugging` directly.
 
 ## Degraded mode
 

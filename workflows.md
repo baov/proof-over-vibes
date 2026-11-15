@@ -66,6 +66,8 @@ systematic-debugging      diagnosis only, up to the proven cause
        ↓                  never fix here
 plan-driven-dev           the root cause becomes the input to step 2
        ↓
+acceptance-proof          the reproduction becomes a criterion: it must no longer reproduce
+       ↓
 premerge-review           criticality raised automatically if the bug touches security
 ```
 
