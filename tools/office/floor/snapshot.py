@@ -22,6 +22,7 @@ AGENTS_DIR = Path(__file__).resolve().parents[3] / "agents"
 STATES = ("done", "blocked", "escalate")
 
 REPORT_FILES = {
+    "ux-designer.md": "ux-designer",
     "stories.md": "product-owner",
     "architect.md": "architect",
     "plan.md": "planner",
@@ -35,6 +36,7 @@ DEVELOPER_NOTE = re.compile(r"^developer-\d+\.md$")
 # role -> role that works after it, per kind of run. The reviewer is decided apart.
 FOLLOW = {
     "feature": {
+        "ux-designer": "product-owner",
         "product-owner": "architect",
         "architect": "planner",
         "planner": "developer",
@@ -56,6 +58,7 @@ ROUTES = {
 EXPECTS = {
     "orchestrator": "brief.md",
     "product-owner": "stories.md",
+    "ux-designer": "ux-designer.md",
     "architect": "architect.md",
     "planner": "plan.md",
     "developer": "developer-<n>.md",
@@ -138,7 +141,7 @@ def _latest_subfolder(run_dir: Path) -> Path | None:
 
 def _kind(reports: list[Report], has_subfolders: bool) -> str:
     roles = {r.role for r in reports}
-    if "product-owner" in roles or has_subfolders:
+    if roles & {"product-owner", "ux-designer"} or has_subfolders:
         return "feature"
     if "diagnostician" in roles:
         return "bug"

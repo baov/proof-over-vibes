@@ -5,7 +5,7 @@ export const STATE_COLORS = { working: "#3b82f6", done: "#16a34a", blocked: "#d9
 export const STATE_GLYPHS = { working: "…", done: "✓", blocked: "?", escalate: "!", idle: "" };
 
 const SHORT = {
-  orchestrator: "Orch", "product-owner": "PO", "product-manager": "PM", architect: "Arch", planner: "Plan",
+  orchestrator: "Orch", "product-owner": "PO", "product-manager": "PM", architect: "Arch", planner: "Plan", "ux-designer": "UX",
   developer: "Dev", diagnostician: "Diag", reviewer: "Review", auditor: "Audit", "failure-analyst": "Fail",
   cartographer: "Map", "harness-engineer": "Harness", coach: "Coach",
 };

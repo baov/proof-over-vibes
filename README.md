@@ -15,6 +15,7 @@ Conformant to the [Agent Skills specification](https://agentskills.io/specificat
 | Skill | Role | Produces |
 |---|---|---|
 | [`product-strategy`](skills/product-strategy) | Market watch, vision, roadmap, story map, prioritized backlog of epics and features, PRD of a chosen feature | `docs/product/` |
+| [`ux-redesign`](skills/ux-redesign) | Redesign of a product's experience from an inspection of the live product: diagnosis, three art directions, journey, text wireframes, microcopy, validation plan | a design document in `.plans/` |
 | [`codebase-cartographer`](skills/codebase-cartographer) | Maps a project into business + technical documentation (glossary, features, test-cases, ADRs) | `docs/`, a section in `AGENTS.md` |
 | [`codebase-harness`](skills/codebase-harness) | The enforcement layer: executable invariants, test-case bridge, mutation testing, doc-gardening | `tools/harness/`, `docs/technical/invariants.md` |
 | [`plan-driven-dev`](skills/plan-driven-dev) | Implementation workflow: validated plan, behavior-driven TDD, invariants inside the loop | `.plans/` |

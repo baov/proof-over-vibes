@@ -92,6 +92,7 @@ role: reviewer
 status: done               # done | blocked | escalate
 verdict: GO                # the Reviewer only: GO | NO-GO
 structure: decided         # the Architect only: unchanged | decided | escalated
+recommended_direction: editorial   # the UX Designer only: the art direction it recommends
 reasons: []
 severity: major            # blocking | major | minor
 ```
