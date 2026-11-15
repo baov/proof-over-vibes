@@ -33,6 +33,7 @@ used once, in one file, does not need an entry.
 | test-case bridge | test mapping, traceability matrix | Block B |
 | verdict | decision, outcome, result | GO / NO-GO, nothing else |
 | proof mark | status, grade, test result | PROVEN / DISPROVEN / UNPROVEN: what the evidence says of one acceptance criterion. Not a verdict, which covers the whole run |
+| example map | example table, scenario list, spec by example | `example-map.md`: per story, each business rule with its examples and the open questions, written before the code by the QA role and the Planner. Always "business rule" in it, never a bare "rule", which the glossary keeps from meaning an invariant |
 | evidence | artifact, attachment, exhibit | A file that shows an observation (screenshot, captured output), kept next to the report. A proof mark without evidence is invalid |
 | root cause | underlying issue, real problem | It is proven, never guessed |
 | debt | cruft, legacy, mess | Technical debt |

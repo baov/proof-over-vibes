@@ -279,7 +279,8 @@ function sync() {
     color: TEAM_COLORS[seat.team],
     // An earlier report shows its own status and verdict, not the role's current ones.
     state,
-    verdict: entry?.verdict ?? info?.verdict ?? null,
+    // A report without a verdict (QA's example map) shows none, rather than the role's latest one.
+    verdict: entry ? entry.verdict ?? null : info?.verdict ?? null,
     expects: info?.expects ?? null,
     history,
     index,

@@ -33,7 +33,7 @@ Five of the roles judge: a wrong call there costs more than anywhere else.
 | Architect | `ddd-advisor` | yes | once per feature, empty project |
 | Planner | `plan-driven-dev` (context and plan) | | feature |
 | Developer | `plan-driven-dev`, `behavior-driven-testing` | | feature, bug after diagnosis |
-| QA | `acceptance-proof` | | after every implementation, before the reviewer |
+| QA | `acceptance-proof` | | once per request before the code (example map), then after every implementation, before the reviewer |
 | Diagnostician | `systematic-debugging` | yes | bug |
 | Reviewer | `premerge-review` | yes | after qa |
 | Failure Analyst | none: analyzes the failure, proposes an improvement of the harness in a separate MR | | at the iteration limit without a GO (5 by default) |
@@ -42,12 +42,12 @@ Five of the roles judge: a wrong call there costs more than anywhere else.
 
 ## The flows
 
-![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then each story through the Planner, the Developer, QA and the Reviewer, a NO-GO from QA or the Reviewer sending it back to the Developer, and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
+![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then once through QA, which maps the criteria into examples, then each story through the Planner, the Developer, QA and the Reviewer, a NO-GO from QA or the Reviewer sending it back to the Developer, and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
 
 The same flows in text:
 
 ```
-Feature   Orchestrator → Product Owner (stories) → Architect (once) → for each story: Planner → Developer ⇄ QA ⇄ Reviewer → merge gate
+Feature   Orchestrator → Product Owner (stories) → Architect (once) → QA (example map, once) → for each story: Planner → Developer ⇄ QA ⇄ Reviewer → merge gate
 Bug       Orchestrator → Diagnostician → Reviewer (checks the proof) → Developer ⇄ QA ⇄ Reviewer → merge gate
 Idea      Product Manager → human validates → Architect → Harness Engineer (before any feature)
 Empty     Orchestrator → Architect → Harness Engineer (before any feature)
@@ -56,7 +56,7 @@ a ticket  Auditor (when the Orchestrator decides)
           Coach (when the human asks)
 ```
 
-A feature goes through the Product Owner, which cuts it into ordered stories, then once through the Architect, which exits at once when there is nothing to decide. Each story then goes through the Planner, the Developer, QA and the Reviewer, one after the other, with its own brief and its own merge request. QA proves the acceptance criteria in the running app before the Reviewer reads the diff; a NO-GO from either sends the story back to the Developer. The Orchestrator stops at the first escalation. If the Planner finds that a story needs a structural decision, the Architect runs again for that story. A request that is a single story skips the Product Owner. On an empty project the Architect and the Harness Engineer lay the foundations first. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer, QA and the Reviewer loop until a GO, and the merge gate takes over.
+A feature goes through the Product Owner, which cuts it into ordered stories, then once through the Architect, which exits at once when there is nothing to decide. QA then writes the example map of the whole feature: each acceptance criterion as a business rule, with examples someone can observe and the questions they raise, which go to the Product Owner before any code; the Planner adds its own examples to the map. Each story then goes through the Planner, the Developer, QA and the Reviewer, one after the other, with its own brief and its own merge request. QA proves the acceptance criteria in the running app before the Reviewer reads the diff; a NO-GO from either sends the story back to the Developer. The Orchestrator stops at the first escalation. If the Planner finds that a story needs a structural decision, the Architect runs again for that story. A request that is a single story skips the Product Owner, not the example map. A bug has no map: its reproduction stands for the criterion. On an empty project the Architect and the Harness Engineer lay the foundations first. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer, QA and the Reviewer loop until a GO, and the merge gate takes over.
 
 ## Governance
 
@@ -92,7 +92,8 @@ Roles share no context. Everything passes through files of the repository: the o
 |---|---|---|
 | Brief (`brief.md`) | Orchestrator | every role it runs |
 | Answers (`answers.md`) | Product Owner | Orchestrator, the role that asked |
-| Stories (`stories.md`) | Product Owner | Orchestrator, Architect, Planner |
+| Stories (`stories.md`) | Product Owner | Orchestrator, Architect, QA, Planner |
+| Example map (`example-map.md`) | QA, then the Planner | Orchestrator, Planner, Developer, QA |
 | Decision log (`docs/business/decisions.md`) | Product Owner | Product Owner, Planner, the human. Statuses: `answered`, `answered-by-delegate` (nobody read it), `human-needed` |
 | Product files (`docs/product/`) | Product Manager | human, Product Owner, Cartographer |
 | Architect's note (`architect.md`) | Architect | Planner, Orchestrator |
@@ -133,13 +134,14 @@ Cost is tracked and raised as an alert, with no cap and no blocking: only the it
 
 ## Metrics
 
-Four indicators say whether the organization works. The Orchestrator writes one file in `.metrics/` per run.
+Five indicators say whether the organization works. The Orchestrator writes one file in `.metrics/` per run.
 
 | Indicator | What it reveals |
 |---|---|
 | Rate of GO on the Reviewer's first pass | quality of the plan and the development |
 | Average number of iterations, rate at which the Failure Analyst is triggered | efficiency of the loop and the harness |
 | Rate of escalation to the human | real autonomy of the organization |
+| Questions answered before the code, criteria blocked after it | whether the example map finds the open points early enough to be worth its cost |
 | Regressions or bugs that appear after merge | what the Reviewer and the merge gate let through |
 
 Regressions show up after the run ends: the metrics file has to be completable afterwards, by linking the bug to the MR it came from.
@@ -182,4 +184,5 @@ Three choices are assumed, and reduce the safeguards. Revisit them after the fir
 - Frequency of the scheduled doc-gardening task.
 - A client QA cannot drive (no way to run the app, no way to observe its output): the Orchestrator escalates once and the human's decision — run the story without QA, or stop — is recorded in the brief, but nothing yet keeps that decision from being asked again on the next request of the same project.
 - Cost of replaying the whole acceptance-proof plan on every iteration, not only the criteria a fix touched.
+- The example map has not been checked on a real run: its value is a bet, measured by the two metrics above. Drop it if the questions keep coming after the code anyway.
 - Weight of the evidence: the work folder is committed at archiving, so the screenshots of every QA round ship in the merge request. Nothing yet trims them to the last round.

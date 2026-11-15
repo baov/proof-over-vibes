@@ -100,6 +100,39 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(self.run0()["kind"], "feature")
         self.assertEqual(self.run0()["active_role"], "architect")
         put(self.root, f"{RUN}/architect.md", report("architect"), 300)
+        self.assertEqual(self.run0()["active_role"], "qa")
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 400)
+        self.assertEqual(self.run0()["active_role"], "planner")
+
+    def test_a_single_story_is_mapped_before_it_is_planned(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 200)
+        run = self.run0()
+        self.assertEqual(run["kind"], "story")
+        self.assertEqual(run["active_role"], "planner")
+
+    def test_a_map_has_no_proof_and_is_not_a_no_go(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 200)
+        run = self.run0()
+        self.assertIsNone(run["roles"]["qa"]["verdict"])
+        self.assertEqual(run["iteration"], 0)
+        self.assertFalse(run["ready_to_merge"])
+
+    def test_a_map_with_questions_keeps_qa_blocked(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/example-map.md", report("qa", "blocked"), 200)
+        run = self.run0()
+        self.assertEqual(run["active_role"], "qa")
+        self.assertEqual(run["roles"]["qa"]["state"], "blocked")
+
+    def test_architect_again_for_a_story_hands_back_to_the_planner(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/stories.md", report("product-owner"), 110)
+        put(self.root, f"{RUN}/architect.md", report("architect"), 120)
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 130)
+        put(self.root, f"{RUN}/story-1/plan.md", report("planner", "blocked"), 140)
+        put(self.root, f"{RUN}/story-1/architect.md", report("architect"), 150)
         self.assertEqual(self.run0()["active_role"], "planner")
 
     def test_qa_works_after_the_developer(self):
@@ -338,7 +371,7 @@ class SnapshotTest(unittest.TestCase):
         roles = self.runs_with_brief()["roles"]
         self.assertEqual(roles["planner"]["expects"], "plan.md")
         self.assertEqual(roles["developer"]["expects"], "developer-<n>.md")
-        self.assertEqual(roles["qa"]["expects"], "qa-<n>.md")
+        self.assertEqual(roles["qa"]["expects"], "example-map.md, then qa-<n>.md")
         self.assertIsNone(roles["auditor"]["expects"])
 
     def runs_with_brief(self):
