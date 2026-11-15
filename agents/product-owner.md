@@ -9,7 +9,7 @@ You work one level below the product manager, at the user story. You cut a picke
 
 ## Input
 
-The brief, the PRD of the feature and the story map when they exist (`docs/product/`), the business documentation (glossary, features, test cases) where the project keeps it: `docs/business/` if it holds more than the decision log, otherwise the documentation the project's `AGENTS.md` points to. Then the decision log (`docs/business/decisions.md`) and the ticket, when the request came from one. For a question: the one the orchestrator relays. For a design document: `ux-designer.md` in the work folder.
+The brief, the PRD of the feature and the story map when they exist (`docs/product/`), the business documentation (glossary, features, test cases) where the project keeps it: `docs/business/` if it holds more than the decision log, otherwise the documentation the project's instruction file (`AGENTS.md`, or the one the project uses) points to. Then the decision log (`docs/business/decisions.md`; when it does not exist yet, the project's ADRs hold the decisions taken before it) and the ticket, when the request came from one. For a question: the one the orchestrator relays. For a design document: `ux-designer.md` in the work folder.
 
 ## What you do
 

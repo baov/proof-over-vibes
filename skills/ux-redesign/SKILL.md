@@ -11,11 +11,11 @@ The skill is product-agnostic. `references/example-palia.md` is one worked reque
 
 ## Initial announcement
 
-Like `plan-driven-dev`, this skill **announces itself before applying**: state in a line or two which product and which journey it is about to inspect, and ask the user to confirm. The design document goes to `.plans/<slug>-ux.md`, or to the path the request gives.
+Like `plan-driven-dev`, this skill **announces itself before applying**: state in a line or two which product and which journey it is about to inspect, and ask the user to confirm. The design document goes to `.plans/<slug>-ux.md`, or to the path the request gives. When a role runs this skill, the role's instructions on the announcement, the path and the questions take precedence.
 
 ## Cardinal rules
 
-1. **Inspect before designing.** Walk the real product: every screen, desktop and mobile, keyboard only once. Read the documentation of its rules. A redesign built on a guessed product is a redesign of another product.
+1. **Inspect before designing.** Walk the real product: every screen, desktop and mobile, and at least one pass with the keyboard only. Read the documentation of its rules, and any earlier design document of the product: its decisions stay settled, and the new document says what it changes. A redesign built on a guessed product is a redesign of another product.
 2. **Preserve the real product rules.** Never invent a business rule, a calculation, a feature, a duration or a statistic. What you cannot reach, you mark as a hypothesis, explicitly.
 3. **Every important proposal says three things**: what appears on screen, how it works, why it improves the experience. An intention without these three is not a deliverable.
 4. **Sophistication comes from composition, typography and interaction**, not from piling up effects. Modern is not dark mode. Creative is not complex.
@@ -23,7 +23,8 @@ Like `plan-driven-dev`, this skill **announces itself before applying**: state i
 ## Doctrine
 
 - **Validation by multiple-choice question.** The choice of a direction, and any doubt about a product rule, goes to the user (shape and degraded mode: see `clarify-with-choices`). Questions are asked in the target project's language.
-- **File-backed.** The design document lives in the repository, not in the context window.
+- **File-backed.** The design document lives in the repository, not in the context window. Its last section lists the questions still open, one per heading.
+- **Language.** The document follows the language of the project's documentation; the microcopy covers every language of the product.
 - **Readable.** The document opens with a TL;DR (what the redesign changes, the recommended direction, what the user must decide), and draws the journey and the screen architecture as Mermaid diagrams.
 - **Degraded mode.** Without a browser, or without access to a screen (behind a login, a payment, a state you cannot reach), the skill says so, designs from the documentation and what the user shows it, and marks every point it could not check as a hypothesis.
 
@@ -74,7 +75,7 @@ The design document holds, in this order:
 3. **User journey and screen architecture**.
 4. **Text wireframes** of the key screens — at least the entry point, the core interaction and the outcome — desktop and mobile.
 5. **Art direction and main components** (with their states: default, hover, focus, selected, disabled, error).
-6. **Titles, CTAs and microcopy**, in the current language of the product (every language if it is multilingual).
+6. **Titles, CTAs and microcopy**, in every language of the product.
 7. **Priorities**: essential, improvement, experimentation.
 8. **Validation plan**: comprehension, completion, drop-off and interpretation of the outcome — what to measure, how, and the threshold that would change the design.
 
