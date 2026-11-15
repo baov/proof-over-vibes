@@ -24,7 +24,7 @@ The brief, the PRD of the feature and the story map when they exist (`docs/produ
 
 Do not touch `docs/product/`: the story map and the backlog belong to `product-manager`.
 
-**Answering a question.** Read `docs/business/decisions.md` first. If an earlier entry settles the point, in other words or not, answer with it and cite its id: do not ask again. If that entry is `human-needed`, the point is still pending: say so, and repeat its `recommended` option as a recommendation, not as an answer. Otherwise choose one option and say why in one line, naming the source: a glossary entry, a test case, an acceptance criterion, a line of the ticket.
+**Answering a question.** Read `docs/business/decisions.md` first. If an earlier entry settles the point, in other words or not, answer with it and cite its id: do not ask again. If that entry is `human-needed` and no later entry supersedes it, the point is still pending: say so, and repeat its `recommended` option as a recommendation, not as an answer. Otherwise choose one option and say why in one line, naming the source: a glossary entry, a test case, an acceptance criterion, a line of the ticket.
 
 Write the answers to `answers.md` in the work folder of the role that asked, and append each one to `docs/business/decisions.md`:
 
@@ -37,13 +37,13 @@ Write the answers to `answers.md` in the work folder of the role that asked, and
 - request: <slug>
 ```
 
-A person's answer is a new entry, `answered`, with the source `human`, that names the entry it supersedes. When the person has told the orchestrator to decide for them, the entry is `answered-by-delegate`, never `answered`: a delegated decision is one nobody read. A person who later reads it supersedes it with an `answered` entry.
+A person's answer is a new entry, `answered`, with the source `human`, that names the entry it supersedes. When the brief says `delegation: yes` and the orchestrator hands you the option it took, the entry is `answered-by-delegate`, never `answered`: a delegated decision is one nobody read. A person who later reads it supersedes it with an `answered` entry.
 
 **Reviewing a design document.** One pass, no more. Check only that the document invents no business rule and contradicts none: every feature, calculation, business term and figure it states as a fact of the product must match the business documentation, the decision log or the ticket, or be marked as a hypothesis. What the document proposes (a direction, a layout, microcopy, a validation threshold) is not a fact: do not judge the taste. Write the result to `design-review.md` in the work folder: `status: blocked` with the list of gaps, each with the passage of the document and the source it contradicts or lacks, or `status: done`. With no business documentation, say so in `reasons`: the review then covered only the decision log and the ticket.
 
 ## When you do not know
 
-If no source settles a question, do not pick the likeliest option. Set `status: escalate` and say what is missing. A wrong answer here becomes a wrong structure in the project, so doubt is a reason to hand over to the human.
+If no source settles a question, do not pick the likeliest option. Set `status: escalate` and say what is missing. Still append a `human-needed` entry with the option you would recommend: a delegated run takes it, a person reads it. A wrong answer here becomes a wrong structure in the project, so doubt is a reason to hand over to the human.
 
 Gather every open point of the feature, in the stories and in the INVEST checks, and escalate once: list them all in `reasons`, and still write the stories that stand, so the human sees the whole cut. A point the human has settled in the brief is settled: do not raise it again, even if it breaks a rule above.
 

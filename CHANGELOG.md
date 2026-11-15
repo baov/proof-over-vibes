@@ -20,6 +20,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 
 ### Fixed
 
+- **Orchestrator, gaps found by a paper simulation:** an explicit delegation (`delegation: yes` in the brief) takes precedence over the "nobody reachable" rule, and never covers a costly choice, a sensitive zone or a failing loop; the Product Owner always leaves a recommended option when it escalates, and appends every answer from a person or a delegate to the decision log; a technical answer goes back to the role that asked; a superseded `human-needed` entry is no longer read as pending; any role returning `escalate` stops the run; a feature without CI goes on to its next story once the previous one is merged; story briefs carry the feature's `delegation:` line and `Carried over`, and the open majors of the previous story. What the simulations found and this does not settle is listed in the open points of `docs/agent-organization.md`.
 - **Floor, decisions:** a pending decision raises `Human needed`, and a slug counts as one run across its stages.
 - **Floor, reports:** the reviewer's reports are also read from a visible `reviews/` folder.
 - **Floor, archived runs:** a run that was archived no longer waits for a human.
