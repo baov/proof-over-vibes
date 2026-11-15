@@ -25,6 +25,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 - **Floor, decisions:** a pending decision raises `Human needed`, and a slug counts as one run across its stages.
 - **Floor, reports:** the reviewer's reports are also read from a visible `reviews/` folder.
 - **Floor, archived runs:** a run that was archived no longer waits for a human.
+- **Floor, panel neighbours:** "From" and "To" are the reports written just before and after the one on screen, and open that report, instead of the roles next to it in the pipeline strip. A role that acts twice showed the wrong neighbours: QA's example map ("From Developer, To Reviewer"), and the final review of a bug ("From Diagnostician"). The reports of a run are ordered by their round numbers rather than their dates, so a run checked out from git reads in order too; the dates decide only when a file has no number.
 - **Floor, story folders:** a subfolder of a run is a story only when it holds a brief or a role's file. The Diagnostician's `repro/`, and now QA's evidence (`qa-<n>/`), made a single story or a bug look like a feature.
 
 ## [0.5.0] — 2026-11-11
