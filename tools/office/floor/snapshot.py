@@ -25,6 +25,7 @@ REPORT_FILES = {
     "stories.md": "product-owner",
     "architect.md": "architect",
     "plan.md": "planner",
+    "example-map.md": "qa",
     "diagnostician.md": "diagnostician",
     "cartographer.md": "cartographer",
     "harness-engineer.md": "harness-engineer",
@@ -36,7 +37,7 @@ NUMBERED_NOTES = {"developer": re.compile(r"^developer-\d+\.md$"), "qa": re.comp
 FOLLOW = {
     "feature": {
         "product-owner": "architect",
-        "architect": "planner",
+        "architect": "qa",  # the example map, before any story is planned
         "planner": "developer",
         "developer": "qa",
     },
@@ -60,7 +61,7 @@ EXPECTS = {
     "architect": "architect.md",
     "planner": "plan.md",
     "developer": "developer-<n>.md",
-    "qa": "qa-<n>.md",
+    "qa": "example-map.md, then qa-<n>.md",
     "diagnostician": "diagnostician.md",
     "reviewer": ".reviews/<branch>-<date>-<n>.md",
     "cartographer": "cartographer.md",
@@ -81,6 +82,11 @@ class Report:
     def status(self) -> str:
         status = self.front.get("status")
         return status if status in STATES else "working"
+
+    @property
+    def is_map(self) -> bool:
+        """QA's example map, written before the code: it carries no proof."""
+        return self.path is not None and self.path.name == "example-map.md"
 
     @property
     def verdict(self) -> str | None:
@@ -164,10 +170,18 @@ def _kind(reports: list[Report], has_subfolders: bool) -> str:
     return "story"
 
 
-def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool):
-    """Return (active_role, human_needed, ready_to_merge) from the newest report."""
+def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool, mapped: bool = False):
+    """Return (active_role, human_needed, ready_to_merge) from the newest report.
+
+    `mapped`: the run already has its example map, so an architect that runs again for a story
+    hands back to the planner instead of asking for a second map.
+    """
     if last.status != "done":
         return last.role, False, False
+    if last.is_map:
+        return "planner", False, False
+    if last.role == "architect" and mapped:
+        return "planner", False, False
     if last.role == "qa":
         if last.verdict in ("GO", "not-applicable"):
             return "reviewer", False, False
@@ -287,7 +301,7 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
     if reports:
         route_order = list(FOLLOW[kind]) + JUDGES
         last = max(reports, key=lambda r: (r.mtime, route_order.index(r.role) if r.role in route_order else -1))
-        decision = _decide(kind, last, iteration, limit, improvement)
+        decision = _decide(kind, last, iteration, limit, improvement, mapped=any(r.is_map for r in reports))
         if stage == "in-progress":
             active, human, ready = decision
         elif stage == "done":

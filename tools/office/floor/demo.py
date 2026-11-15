@@ -32,6 +32,27 @@ def _brief(iteration: int) -> str:
     )
 
 
+EXAMPLE_MAP = """---
+role: qa
+status: done
+reasons: []
+---
+# Example map - empty the cart
+
+## Story 1 - Empty the cart in one click
+
+### B1 The cart shows zero items afterwards - source: brief
+- E1 Given a cart with 2 mugs, when the customer empties it and confirms, then the badge reads "0 items" - source: brief
+- E2 Given an empty cart, when the customer empties it, then nothing changes and no error shows - source: proposed
+
+### B2 A confirmation is asked first - source: D-2
+- E3 Given a cart with 1 mug, when the customer clicks "Empty", then a confirmation is asked before anything is removed - source: D-2
+- E4 Given the confirmation is open, when the customer cancels, then the cart still holds its mug - source: D-2
+
+### Questions
+None open: D-1 and D-2 settled the two points this map raised.
+"""
+
 DECISIONS = """# Decision log
 
 Append only. `answered` = a person read and answered. `answered-by-delegate` = a role's recommendation, relayed, nobody read it.
@@ -82,6 +103,7 @@ DEMO_STEPS: list[dict[str, str]] = [
     {f"{RUN}/stories.md": "---\nrole: product-owner\n"},
     {f"{RUN}/stories.md": _report("product-owner"), "docs/business/decisions.md": DECISIONS},
     {f"{RUN}/architect.md": _report("architect")},
+    {f"{RUN}/example-map.md": EXAMPLE_MAP},
     {f"{STORY}/brief.md": _brief(0), f"{STORY}/plan.md": _report("planner")},
     {f"{STORY}/developer-0.md": _report("developer")},
     {f"{STORY}/brief.md": _brief(1), f"{STORY}/qa-0.md": _qa(
