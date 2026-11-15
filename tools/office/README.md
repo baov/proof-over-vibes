@@ -54,7 +54,7 @@ The time box under the run card is folded to the hour; click it to open the cont
 
 ## Reading an agent's screen
 
-![A review that said NO-GO: chips, reasons, findings, and a switch to the other review](docs/agent-report.webp)
+![A QA report that said NO-GO: chips, the reason, the proof mark of each criterion, and a switch to the other rounds](docs/agent-report.webp)
 
 *Clicking the Reviewer after a NO-GO: the reasons first, then the findings; the buttons `1` and `2` switch between its two reviews.*
 
@@ -95,12 +95,12 @@ A role is only visible through the files it writes, so the page shows which role
 |---|---|
 | `.plans/<stage>/<slug>/brief.md` | Orchestrator, and the iteration counter and limit (`Iteration counter: N`, `Iteration limit: M`; `0` and `5` when absent) |
 | `stories.md`, `architect.md`, `plan.md` | Product Owner, Architect, Planner |
-| `developer-<n>.md`, `diagnostician.md` | Developer, Diagnostician |
+| `developer-<n>.md`, `qa-<n>.md`, `diagnostician.md` | Developer, QA, Diagnostician |
 | `cartographer.md`, `harness-engineer.md`, `product-manager.md` | Cartographer, Harness Engineer, Product Manager |
 | `.reviews/*.md` (`*-proof.md` for the check of a bug proof) | Reviewer |
 | `docs/business/decisions.md` | Not a role: the decisions to review (see above) |
 
-The front-matter `status` (`done`, `blocked`, `escalate`) and the reviewer `verdict` (`GO`, `NO-GO`) decide who works next. A report whose front-matter is missing or not closed yet is a role at work. The banner reads `Ready to merge` at a `GO`, and `Human needed` on an `escalate` or when the iteration limit is reached and the Failure Analyst has already run.
+The front-matter `status` (`done`, `blocked`, `escalate`), QA's `proof` (`GO`, `NO-GO`, `not-applicable`) and the reviewer `verdict` (`GO`, `NO-GO`) decide who works next: after the Developer comes QA, after a QA `GO` or `not-applicable` the Reviewer, and a `NO-GO` from either sends the Developer back. A report whose front-matter is missing or not closed yet is a role at work. A subfolder of the run is a story only when it holds a brief or a role's file: QA's evidence (`qa-<n>/`) and the Diagnostician's `repro/` are not stories. The banner reads `Ready to merge` at a `GO`, and `Human needed` on an `escalate` or when the iteration limit is reached and the Failure Analyst has already run.
 
 Not shown: the Auditor and the Coach, which write no file a run owns.
 
@@ -110,6 +110,6 @@ Not shown: the Auditor and the Coach, which write no file a run owns.
 python3 -m unittest discover -s tools/office/tests -t tools/office
 ```
 
-The snapshot logic, the server, the demo script and the time-of-day logic are tested; the last one runs with `node --test` through the same command, and is skipped when node is not installed (the tool itself never needs node). The 3D page is checked by eye with `--demo`. The screenshots in `docs/` are regenerated, sharp, with `node tools/office/docs/capture.mjs` (it needs Google Chrome and node 22, and builds a throwaway project from the demo; pass scene names to redo only some). CI runs these tests (`.github/workflows/office-tests.yml`).
+The snapshot logic, the server, the demo script, the time-of-day logic, the layout and the journal are tested; the last three run with `node --test` through the same command, and is skipped when node is not installed (the tool itself never needs node). The 3D page is checked by eye with `--demo`. The screenshots in `docs/` are regenerated, sharp, with `node tools/office/docs/capture.mjs` (it needs Google Chrome and node 22, and builds a throwaway project from the demo; pass scene names to redo only some). CI runs these tests (`.github/workflows/office-tests.yml`).
 
 `web/vendor/` holds three.js 0.170.0 (MIT licence, in `three.LICENSE`), pinned and copied as is; `VERSION` there gives its checksum.

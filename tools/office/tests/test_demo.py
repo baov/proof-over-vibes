@@ -9,7 +9,7 @@ from floor.snapshot import build_snapshot
 
 EXPECTED_ACTIVE = [
     "orchestrator", "product-owner", "architect", "planner",
-    "developer", "reviewer", "developer", "reviewer", None,
+    "developer", "qa", "developer", "qa", "reviewer", "developer", "qa", "reviewer", None,
 ]
 
 
@@ -29,7 +29,8 @@ class DemoTest(unittest.TestCase):
             iterations.append(run["iteration"])
         self.assertEqual(active, EXPECTED_ACTIVE)
         self.assertEqual(iterations[5], 0)
-        self.assertEqual(iterations[6], 1)
+        self.assertEqual(iterations[6], 1)  # QA's NO-GO counts, like the reviewer's
+        self.assertEqual(iterations[9], 2)
         self.assertTrue(run["ready_to_merge"])
 
     def test_run_demo_applies_every_step_with_the_given_pause(self):

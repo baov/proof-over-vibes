@@ -1,5 +1,5 @@
 // A short journal of what just happened, built from the changes between two snapshots of a run.
-import { roleTitle } from "./roles.js";
+import { roleTitle, verdictTone } from "./roles.js";
 
 // Pure: the events that took us from `before` to `after` (either may be null).
 export function diffEvents(before, after) {
@@ -11,7 +11,7 @@ export function diffEvents(before, after) {
   for (const [role, now] of Object.entries(after.roles)) {
     const was = before.roles[role];
     if (!was || was.state === now.state) {
-      if (was && now.verdict && was.verdict !== now.verdict) events.push({ text: `${roleTitle(role)}: ${now.verdict}`, tone: now.verdict === "GO" ? "good" : "bad" });
+      if (was && now.verdict && was.verdict !== now.verdict) events.push({ text: `${roleTitle(role)}: ${now.verdict}`, tone: verdictTone(now.verdict) });
       continue;
     }
     const file = now.reports?.at(-1)?.name;
@@ -19,7 +19,7 @@ export function diffEvents(before, after) {
     else if (now.state === "done") events.push({ text: `${roleTitle(role)} finished${file ? ` · ${file}` : ""}`, tone: "good" });
     else if (now.state === "blocked") events.push({ text: `${roleTitle(role)} is blocked`, tone: "warn" });
     else if (now.state === "escalate") events.push({ text: `${roleTitle(role)} needs a human`, tone: "bad" });
-    if (now.verdict && was.verdict !== now.verdict) events.push({ text: `${roleTitle(role)}: ${now.verdict}`, tone: now.verdict === "GO" ? "good" : "bad" });
+    if (now.verdict && was.verdict !== now.verdict) events.push({ text: `${roleTitle(role)}: ${now.verdict}`, tone: verdictTone(now.verdict) });
   }
   if (after.iteration > before.iteration) events.push({ text: `Iteration ${after.iteration}/${after.limit}`, tone: "warn" });
   if (after.ready_to_merge && !before.ready_to_merge) events.push({ text: "Ready to merge", tone: "good" });

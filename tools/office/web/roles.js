@@ -6,12 +6,19 @@ export const STATE_GLYPHS = { working: "…", done: "✓", blocked: "?", escalat
 
 const SHORT = {
   orchestrator: "Orch", "product-owner": "PO", "product-manager": "PM", architect: "Arch", planner: "Plan",
-  developer: "Dev", diagnostician: "Diag", reviewer: "Review", auditor: "Audit", "failure-analyst": "Fail",
+  developer: "Dev", qa: "QA", diagnostician: "Diag", reviewer: "Review", auditor: "Audit", "failure-analyst": "Fail",
   cartographer: "Map", "harness-engineer": "Harness", coach: "Coach",
 };
 
-export const roleTitle = (role) => role.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+// An acronym is not title-cased: "qa" reads "QA", not "Qa".
+const TITLE = { qa: "QA" };
+
+export const roleTitle = (role) => TITLE[role] ?? role.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 export const roleShort = (role) => SHORT[role] ?? roleTitle(role);
+
+// The reviewer's verdict, or QA's proof: GO, NO-GO, and for QA also not-applicable, which is neither.
+export const VERDICT_COLORS = { GO: "#16a34a", "NO-GO": "#dc2626", "not-applicable": "#64748b" };
+export const verdictTone = (verdict) => (verdict === "GO" ? "good" : verdict === "NO-GO" ? "bad" : "info");
 
 export function ago(seconds) {
   const s = Math.max(0, Math.round(Date.now() / 1000 - seconds));
