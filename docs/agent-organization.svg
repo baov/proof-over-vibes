@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 524" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 588" role="img">
 <title>Agent organization: how a request flows between roles</title>
-<desc>Four paths. An idea with no code goes from the Product Manager to the human, then the Architect and the Harness Engineer. A feature goes from the Orchestrator to the Product Owner, who cuts it into stories, then once through the Architect; each story then goes through the Planner, the Developer, QA, which proves the acceptance criteria in the running app, and the Reviewer, then the merge gate; a NO-GO from QA or the Reviewer sends the story back to the Developer. A bug goes through the Diagnostician, whose proof the Reviewer checks, then into the same loop. After five NO-GO the Failure Analyst runs, then the human is called.</desc>
+<desc>Four paths. An idea with no code goes from the Product Manager to the human, then the Architect and the Harness Engineer. A feature goes from the Orchestrator to the Product Owner, who cuts it into stories, then once through the Architect, then once through QA, which writes the example map; each story then goes through the Planner, the Developer, QA, which proves the acceptance criteria in the running app, and the Reviewer, then the merge gate; a NO-GO from QA or the Reviewer sends the story back to the Developer. A bug goes through the Diagnostician, whose proof the Reviewer checks, then into the same loop. After five NO-GO the Failure Analyst runs, then the human is called.</desc>
 <style>
 text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .th{font-size:14px;font-weight:500}
@@ -79,6 +79,14 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 </g>
 <path class="arr" d="M190 156 L261 156" marker-end="url(#arrow)"/>
 <path class="arr" d="M415 156 L486 156" marker-end="url(#arrow)"/>
+<g class="purple">
+<rect x="515" y="200" width="100" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="565" y="219" text-anchor="middle" dominant-baseline="central">QA</text>
+<text class="ts" x="565" y="239" text-anchor="middle" dominant-baseline="central">example map</text>
+</g>
+<path class="arr" d="M565 184 L565 196" marker-end="url(#arrow)"/>
+<path class="arr" d="M565 256 L565 274 L100 274 L100 338" marker-end="url(#arrow)"/>
+<g transform="translate(0 64)">
 <rect x="40" y="236" width="600" height="116" rx="16" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="5 4"/>
 <text class="ts plain" x="135" y="250" dominant-baseline="central">For each story, one after the other</text>
 <g class="purple">
@@ -106,7 +114,6 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 <text class="th" x="580" y="297" text-anchor="middle" dominant-baseline="central">Merge gate</text>
 <text class="ts" x="580" y="317" text-anchor="middle" dominant-baseline="central">CI or a person</text>
 </g>
-<path class="arr" d="M565 184 L565 210 L100 210 L100 274" marker-end="url(#arrow)"/>
 <path class="arr" d="M150 306 L166 306" marker-end="url(#arrow)"/>
 <path class="arr" d="M270 296 L286 296" marker-end="url(#arrow)"/>
 <path class="arr" d="M290 316 L274 316" marker-end="url(#arrow)"/>
@@ -144,4 +151,5 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 <text class="ts plain" x="222" y="501" dominant-baseline="central">judges</text>
 <rect class="key-gray" x="300" y="494" width="14" height="14" rx="3" stroke-width="0.5"/>
 <text class="ts plain" x="322" y="501" dominant-baseline="central">orchestrates, the human, or ends the run</text>
+</g>
 </svg>

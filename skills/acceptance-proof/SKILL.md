@@ -39,6 +39,8 @@ Establish, and record at the top of the report:
 - **Observable form.** Each criterion is rewritten as Given / When / Then with the visible state expected at the end ("the badge reads `1 item`"). A criterion with nothing observable from outside (a pure internal rule) is left to automated tests and listed as out of scope.
 - **Environment**: how the app is started, its address or command, the version or commit, and the test data needed.
 
+When an example map exists (`example-map.md`, see `references/example-map.md`), start from it: each confirmed example is a criterion in observable form, and a proposed example stays out.
+
 A criterion that is ambiguous goes through a multiple-choice question (shape and degraded mode: see `clarify-with-choices`). Never settle an ambiguity by picking the reading that happens to pass.
 
 ### Phase 1 - Proof plan
