@@ -131,12 +131,12 @@ export function createPanel({ onClose, onPick, onToggleFollow, onNavigate, onOpe
       const nav = el("div", "nav");
       if (model.prev) {
         const back = el("button", "", `◀ From ${model.prev.title}`);
-        back.onclick = () => onNavigate(model.prev.role);
+        back.onclick = () => onNavigate(model.prev.role, model.prev.index);
         nav.append(back);
       }
       if (model.next) {
         const onward = el("button", "", `To ${model.next.title} ▶`);
-        onward.onclick = () => onNavigate(model.next.role);
+        onward.onclick = () => onNavigate(model.next.role, model.next.index);
         nav.append(onward);
       }
       root.append(nav);

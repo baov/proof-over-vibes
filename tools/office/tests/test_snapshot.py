@@ -135,6 +135,56 @@ class SnapshotTest(unittest.TestCase):
         put(self.root, f"{RUN}/story-1/architect.md", report("architect"), 150)
         self.assertEqual(self.run0()["active_role"], "planner")
 
+    def neighbours(self, role: str, name: str) -> tuple:
+        entry = next(r for r in self.run0()["roles"][role]["reports"] if r["name"] == name)
+        return entry["from"], entry["to"]
+
+    def test_reports_follow_their_rounds_even_when_the_dates_are_shuffled(self):
+        # A run checked out from git: the dates say nothing, the round numbers do.
+        put(self.root, f"{RUN}/brief.md", brief(1), 50)
+        put(self.root, f"{RUN}/developer-1.md", report("developer"), 100)
+        put(self.root, f"{RUN}/qa-0.md", report("qa", proof="NO-GO"), 200)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 300)
+        put(self.root, f"{RUN}/qa-1.md", report("qa", proof="GO"), 150)
+        history = [h["name"] for h in self.run0()["roles"]["developer"]["reports"]]
+        self.assertEqual(history, ["developer-0.md", "developer-1.md"])
+        self.assertEqual(self.neighbours("qa", "qa-0.md"),
+                         ({"role": "developer", "index": 0}, {"role": "developer", "index": 1}))
+
+    def test_the_example_map_comes_from_the_architect_and_goes_to_the_planner(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/stories.md", report("product-owner"), 110)
+        put(self.root, f"{RUN}/architect.md", report("architect"), 120)
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 130)
+        put(self.root, f"{RUN}/plan.md", report("planner"), 140)
+        self.assertEqual(self.neighbours("qa", "example-map.md"),
+                         ({"role": "architect", "index": 0}, {"role": "planner", "index": 0}))
+
+    def test_a_single_story_map_comes_from_the_brief(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/example-map.md", report("qa"), 130)
+        frm, to = self.neighbours("qa", "example-map.md")
+        self.assertEqual(frm, {"role": "orchestrator", "index": 0})
+        self.assertEqual(to, {"role": "planner", "index": None})  # not written yet: the next role at work
+
+    def test_the_final_review_of_a_bug_comes_from_qa(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/diagnostician.md", report("diagnostician"), 110)
+        put(self.root, ".reviews/b-proof.md", report("reviewer", verdict="GO"), 120)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 130)
+        put(self.root, f"{RUN}/qa-0.md", report("qa", proof="GO"), 140)
+        put(self.root, ".reviews/b-d-0.md", report("reviewer", verdict="GO"), 150)
+        self.assertEqual(self.neighbours("reviewer", "b-proof.md"),
+                         ({"role": "diagnostician", "index": 0}, {"role": "developer", "index": 0}))
+        self.assertEqual(self.neighbours("reviewer", "b-d-0.md"), ({"role": "qa", "index": 0}, None))
+
+    def test_a_review_without_a_round_number_falls_back_to_the_dates(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/developer-0.md", report("developer"), 110)
+        put(self.root, f"{RUN}/qa-0.md", report("qa", proof="GO"), 120)
+        put(self.root, ".reviews/final-review.md", report("reviewer", verdict="GO"), 130)
+        self.assertEqual(self.neighbours("reviewer", "final-review.md"), ({"role": "qa", "index": 0}, None))
+
     def test_qa_works_after_the_developer(self):
         put(self.root, f"{RUN}/brief.md", brief(), 100)
         put(self.root, f"{RUN}/developer-0.md", report("developer"), 200)

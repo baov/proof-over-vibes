@@ -84,7 +84,14 @@ const panel = createPanel({
     sync();
   },
   onToggleFollow: () => setFollow(!follow),
-  onNavigate: (role) => setSelected(role, true),
+  // Opens the neighbour's own report when the snapshot names it, its newest otherwise.
+  onNavigate: (role, index = null) => {
+    setSelected(role, true);
+    if (index != null) {
+      pinnedIndex = index;
+      sync();
+    }
+  },
   onOpenDoc: (path) => {
     openDocPath = path;
     openDoc = null;
@@ -258,7 +265,9 @@ function sync() {
   const seat = layout.seats.get(selected);
   const route = lastRun?.route ?? [];
   const at = route.indexOf(selected);
-  const neighbour = (role) => (role ? { role, title: roleTitle(role) } : null);
+  const neighbour = (role, index = null) => (role ? { role, index, title: roleTitle(role) } : null);
+  // A report knows who came before and after it; the route is only the fallback for a role with no report.
+  const linked = (link) => (link ? neighbour(link.role, link.index) : null);
   const state = (index === history.length - 1 ? info?.state : entry?.status) ?? "idle";
   const when = entry ? ago(entry.mtime) : null;
   const stateLine = {
@@ -273,8 +282,8 @@ function sync() {
     title: roleTitle(selected),
     about: aboutRole[selected] ?? null,
     stateLine,
-    prev: neighbour(at > 0 ? route[at - 1] : null),
-    next: neighbour(at >= 0 && at < route.length - 1 ? route[at + 1] : null),
+    prev: entry ? linked(entry.from) : neighbour(at > 0 ? route[at - 1] : null),
+    next: entry ? linked(entry.to) : neighbour(at >= 0 && at < route.length - 1 ? route[at + 1] : null),
     team: seat.team,
     color: TEAM_COLORS[seat.team],
     // An earlier report shows its own status and verdict, not the role's current ones.

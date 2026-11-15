@@ -240,8 +240,67 @@ def _brief_report(run_dir: Path, sub: Path | None) -> Report | None:
     return None if mtime is None else Report("orchestrator", mtime, {"status": "done"}, path=path)
 
 
+# The order of a run, read from its files rather than their dates: a run checked out from git has
+# the dates of the checkout. Before the loop, the steps in route order; in the loop, round by round.
+BEFORE_LOOP = {"orchestrator": 0, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
+IN_LOOP = {"developer": 0, "qa": 1, "reviewer": 2}
+ROUND = re.compile(r"-(\d+)$")
+
+
+def _logical_key(report: Report) -> tuple | None:
+    """Where a report stands in its run, or None when its file does not say."""
+    if report.role == "orchestrator":
+        return (0, 0, 0)
+    if report.is_map:
+        return (0, 0, 5)
+    if report.role == "reviewer" and report.checks_cause:
+        return (0, 0, 4)
+    if report.role in IN_LOOP:
+        found = ROUND.search(report.path.stem) if report.path else None
+        return (1, int(found.group(1)), IN_LOOP[report.role]) if found else None
+    step = BEFORE_LOOP.get(report.role)
+    return None if step is None else (0, 0, step)
+
+
+def _in_order(reports: list[Report]) -> list[Report]:
+    """The reports in the order the run wrote them.
+
+    By round when every file says where it stands and no two claim the same place; by date
+    otherwise (a review without its round number, the stories of a feature that each count from
+    1). The brief comes first either way: it opens the run, and its date moves at every round.
+    """
+    keys = [_logical_key(r) for r in reports]
+    name = lambda r: r.path.name if r.path else ""  # noqa: E731
+    if all(k is not None for k in keys) and len(set(keys)) == len(keys):
+        by_key = {id(r): k for r, k in zip(reports, keys)}
+        return sorted(reports, key=lambda r: (by_key[id(r)], r.mtime, name(r)))
+    return sorted(reports, key=lambda r: (r.role != "orchestrator", r.mtime, name(r)))
+
+
 def _history(reports: list[Report], role: str) -> list[Report]:
-    return sorted((r for r in reports if r.role == role and r.path is not None), key=lambda r: (r.mtime, r.path.name))
+    return [r for r in _in_order(reports) if r.role == role and r.path is not None]
+
+
+def _neighbours(reports: list[Report], active: str | None) -> dict[int, tuple]:
+    """For each report, the report written before it and the one after, as (role, index in its history).
+
+    The last report hands over to the role at work now, whose report is not written yet.
+    """
+    ordered = [r for r in _in_order(reports) if r.path is not None]
+    index, seen = {}, {}
+    for r in ordered:
+        index[id(r)] = seen.get(r.role, 0)
+        seen[r.role] = index[id(r)] + 1
+    out = {}
+    for i, r in enumerate(ordered):
+        before = ordered[i - 1] if i > 0 else None
+        after = ordered[i + 1] if i + 1 < len(ordered) else None
+        if after is not None:
+            to = {"role": after.role, "index": index[id(after)]}
+        else:
+            to = {"role": active, "index": None} if active and active != r.role else None
+        out[id(r)] = ({"role": before.role, "index": index[id(before)]} if before else None, to)
+    return out
 
 
 def _took(reports: list[Report]) -> dict[int, float]:
@@ -261,10 +320,11 @@ def _took(reports: list[Report]) -> dict[int, float]:
     return took
 
 
-def _summary(report: Report, took: dict[int, float]) -> dict:
+def _summary(report: Report, took: dict[int, float], links: dict[int, tuple]) -> dict:
+    before, after = links.get(id(report), (None, None))
     return {
         "name": report.path.name, "mtime": report.mtime, "status": report.status, "verdict": report.verdict,
-        "duration": took.get(id(report)),
+        "duration": took.get(id(report)), "from": before, "to": after,
     }
 
 
@@ -293,9 +353,6 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
     brief = _brief_report(run_dir, sub)
     shown = reports + [brief] if brief else reports
     took = _took(shown)
-    for role in roles:
-        roles[role]["reports"] = [_summary(rep, took) for rep in _history(shown, role)]
-        roles[role]["expects"] = EXPECTS.get(role)
 
     active, human, ready = None, False, False
     if reports:
@@ -308,6 +365,10 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
             ready = decision[2]
     elif stage == "in-progress":
         active = "orchestrator"
+    links = _neighbours(shown, active)
+    for role in roles:
+        roles[role]["reports"] = [_summary(rep, took, links) for rep in _history(shown, role)]
+        roles[role]["expects"] = EXPECTS.get(role)
     if active and roles[active]["state"] not in ("blocked", "escalate"):
         roles[active]["state"] = "working"
     decisions = decision_counts(root, slug)
