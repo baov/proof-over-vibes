@@ -274,7 +274,8 @@ export function createAgents(scene, layout, stations) {
     run = next;
     const active = next?.active_role ?? null;
     if (prevActive !== undefined && prevActive && active && prevActive !== active) {
-      const red = prevActive === "reviewer" && next.roles.reviewer?.verdict === "NO-GO";
+      // A NO-GO, from the reviewer or from QA, sends the folder back red.
+      const red = ["reviewer", "qa"].includes(prevActive) && next.roles[prevActive]?.verdict === "NO-GO";
       startWalk(prevActive, active, red);
     }
     prevActive = active;

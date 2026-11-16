@@ -13,6 +13,7 @@ ROLE_TEAM = {
     "ux-designer": "design",
     "developer": "build",
     "diagnostician": "build",
+    "qa": "quality",
     "reviewer": "quality",
     "auditor": "quality",
     "failure-analyst": "quality",

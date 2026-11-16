@@ -26,32 +26,34 @@ REPORT_FILES = {
     "stories.md": "product-owner",
     "architect.md": "architect",
     "plan.md": "planner",
+    "example-map.md": "qa",
     "diagnostician.md": "diagnostician",
     "cartographer.md": "cartographer",
     "harness-engineer.md": "harness-engineer",
     "product-manager.md": "product-manager",
 }
-DEVELOPER_NOTE = re.compile(r"^developer-\d+\.md$")
+NUMBERED_NOTES = {"developer": re.compile(r"^developer-\d+\.md$"), "qa": re.compile(r"^qa-\d+\.md$")}
 
-# role -> role that works after it, per kind of run. The reviewer is decided apart.
+# role -> role that works after it, per kind of run. QA and the reviewer are decided apart.
 FOLLOW = {
     "feature": {
         "ux-designer": "product-owner",
         "product-owner": "architect",
-        "architect": "planner",
+        "architect": "qa",  # the example map, before any story is planned
         "planner": "developer",
-        "developer": "reviewer",
+        "developer": "qa",
     },
-    "story": {"planner": "developer", "developer": "reviewer"},
-    "bug": {"diagnostician": "reviewer", "developer": "reviewer"},
+    "story": {"planner": "developer", "developer": "qa"},
+    "bug": {"diagnostician": "reviewer", "developer": "qa"},
 }
 OTHER_FOLLOW = {"cartographer": "harness-engineer"}
+JUDGES = ["qa", "reviewer"]  # decided apart, in this order after the developer
 
 # The roles a run goes through, in order, for the page's pipeline strip.
 ROUTES = {
-    "feature": ["orchestrator", "product-owner", "architect", "planner", "developer", "reviewer"],
-    "story": ["orchestrator", "planner", "developer", "reviewer"],
-    "bug": ["orchestrator", "diagnostician", "reviewer", "developer"],
+    "feature": ["orchestrator", "product-owner", "architect", "planner", "developer", "qa", "reviewer"],
+    "story": ["orchestrator", "planner", "developer", "qa", "reviewer"],
+    "bug": ["orchestrator", "diagnostician", "reviewer", "developer", "qa"],
 }
 
 # The file each role writes, as shown to the reader. None: this page does not read it.
@@ -62,6 +64,7 @@ EXPECTS = {
     "architect": "architect.md",
     "planner": "plan.md",
     "developer": "developer-<n>.md",
+    "qa": "example-map.md, then qa-<n>.md",
     "diagnostician": "diagnostician.md",
     "reviewer": ".reviews/<branch>-<date>-<n>.md",
     "cartographer": "cartographer.md",
@@ -75,7 +78,7 @@ class Report:
     role: str
     mtime: float
     front: dict
-    proof: bool = False
+    checks_cause: bool = False  # a review of the diagnostician's proof, not of a diff
     path: Path | None = None
 
     @property
@@ -84,7 +87,16 @@ class Report:
         return status if status in STATES else "working"
 
     @property
+    def is_map(self) -> bool:
+        """QA's example map, written before the code: it carries no proof."""
+        return self.path is not None and self.path.name == "example-map.md"
+
+    @property
     def verdict(self) -> str | None:
+        """The reviewer's `verdict`; for QA, its `proof` (GO, NO-GO or not-applicable)."""
+        if self.role == "qa":
+            proof = self.front.get("proof")
+            return proof if proof in ("GO", "NO-GO", "not-applicable") else None
         verdict = self.front.get("verdict")
         return verdict if verdict in ("GO", "NO-GO") else None
 
@@ -103,11 +115,18 @@ def _read(path: Path) -> str | None:
         return None
 
 
-def _make_report(role: str, path: Path, proof: bool = False) -> Report | None:
+def _make_report(role: str, path: Path, checks_cause: bool = False) -> Report | None:
     mtime, text = _mtime(path), _read(path)
     if mtime is None or text is None:
         return None
-    return Report(role, mtime, parse_front_matter(text), proof, path)
+    return Report(role, mtime, parse_front_matter(text), checks_cause, path)
+
+
+def _role_of(name: str) -> str | None:
+    role = REPORT_FILES.get(name)
+    if role is None:
+        role = next((r for r, pattern in NUMBERED_NOTES.items() if pattern.match(name)), None)
+    return role
 
 
 def _reports_in(folder: Path) -> list[Report]:
@@ -117,9 +136,7 @@ def _reports_in(folder: Path) -> list[Report]:
     except OSError:
         return found
     for path in files:
-        role = REPORT_FILES.get(path.name)
-        if role is None and DEVELOPER_NOTE.match(path.name):
-            role = "developer"
+        role = _role_of(path.name)
         report = _make_report(role, path) if role else None
         if report:
             found.append(report)
@@ -131,9 +148,17 @@ def _newest_inside(folder: Path) -> float:
     return max([t for t in times if t is not None], default=_mtime(folder) or 0.0)
 
 
+def _is_story(folder: Path) -> bool:
+    """A story subfolder holds a brief or a role's file; QA's evidence or a `repro/` script does not."""
+    try:
+        return any(p.is_file() and (p.name == "brief.md" or _role_of(p.name)) for p in folder.iterdir())
+    except OSError:
+        return False
+
+
 def _latest_subfolder(run_dir: Path) -> Path | None:
     try:
-        subs = [p for p in run_dir.iterdir() if p.is_dir()]
+        subs = [p for p in run_dir.iterdir() if p.is_dir() and _is_story(p)]
     except OSError:
         return None
     return max(subs, key=_newest_inside, default=None)
@@ -148,20 +173,37 @@ def _kind(reports: list[Report], has_subfolders: bool) -> str:
     return "story"
 
 
-def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool):
-    """Return (active_role, human_needed, ready_to_merge) from the newest report."""
+def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool, mapped: bool = False):
+    """Return (active_role, human_needed, ready_to_merge) from the newest report.
+
+    `mapped`: the run already has its example map, so an architect that runs again for a story
+    hands back to the planner instead of asking for a second map.
+    """
     if last.status != "done":
         return last.role, False, False
+    if last.is_map:
+        return "planner", False, False
+    if last.role == "architect" and mapped:
+        return "planner", False, False
+    if last.role == "qa":
+        if last.verdict in ("GO", "not-applicable"):
+            return "reviewer", False, False
+        return _back_to_developer(iteration, limit, improvement)
     if last.role == "reviewer":
         if last.verdict == "GO":
-            return ("developer", False, False) if last.proof else (None, False, True)
-        if last.proof:
+            return ("developer", False, False) if last.checks_cause else (None, False, True)
+        if last.checks_cause:
             return "diagnostician", False, False
-        if iteration < limit:
-            return "developer", False, False
-        return (None, True, False) if improvement else ("failure-analyst", False, False)
+        return _back_to_developer(iteration, limit, improvement)
     nxt = FOLLOW[kind].get(last.role) or OTHER_FOLLOW.get(last.role)
     return nxt, False, False
+
+
+def _back_to_developer(iteration: int, limit: int, improvement: bool):
+    """A NO-GO, from QA or the reviewer: the developer again, or the failure analyst at the limit."""
+    if iteration < limit:
+        return "developer", False, False
+    return (None, True, False) if improvement else ("failure-analyst", False, False)
 
 
 def _review_reports(root: Path) -> list[Report]:
@@ -177,7 +219,7 @@ def _review_reports(root: Path) -> list[Report]:
         except OSError:
             continue
         for path in files:
-            report = _make_report("reviewer", path, proof=path.stem.endswith("-proof"))
+            report = _make_report("reviewer", path, checks_cause=path.stem.endswith("-proof"))
             if report and (not strict or report.front.get("role") == "reviewer"):
                 out.append(report)
     return out
@@ -201,8 +243,67 @@ def _brief_report(run_dir: Path, sub: Path | None) -> Report | None:
     return None if mtime is None else Report("orchestrator", mtime, {"status": "done"}, path=path)
 
 
+# The order of a run, read from its files rather than their dates: a run checked out from git has
+# the dates of the checkout. Before the loop, the steps in route order; in the loop, round by round.
+BEFORE_LOOP = {"orchestrator": 0, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
+IN_LOOP = {"developer": 0, "qa": 1, "reviewer": 2}
+ROUND = re.compile(r"-(\d+)$")
+
+
+def _logical_key(report: Report) -> tuple | None:
+    """Where a report stands in its run, or None when its file does not say."""
+    if report.role == "orchestrator":
+        return (0, 0, 0)
+    if report.is_map:
+        return (0, 0, 5)
+    if report.role == "reviewer" and report.checks_cause:
+        return (0, 0, 4)
+    if report.role in IN_LOOP:
+        found = ROUND.search(report.path.stem) if report.path else None
+        return (1, int(found.group(1)), IN_LOOP[report.role]) if found else None
+    step = BEFORE_LOOP.get(report.role)
+    return None if step is None else (0, 0, step)
+
+
+def _in_order(reports: list[Report]) -> list[Report]:
+    """The reports in the order the run wrote them.
+
+    By round when every file says where it stands and no two claim the same place; by date
+    otherwise (a review without its round number, the stories of a feature that each count from
+    1). The brief comes first either way: it opens the run, and its date moves at every round.
+    """
+    keys = [_logical_key(r) for r in reports]
+    name = lambda r: r.path.name if r.path else ""  # noqa: E731
+    if all(k is not None for k in keys) and len(set(keys)) == len(keys):
+        by_key = {id(r): k for r, k in zip(reports, keys)}
+        return sorted(reports, key=lambda r: (by_key[id(r)], r.mtime, name(r)))
+    return sorted(reports, key=lambda r: (r.role != "orchestrator", r.mtime, name(r)))
+
+
 def _history(reports: list[Report], role: str) -> list[Report]:
-    return sorted((r for r in reports if r.role == role and r.path is not None), key=lambda r: (r.mtime, r.path.name))
+    return [r for r in _in_order(reports) if r.role == role and r.path is not None]
+
+
+def _neighbours(reports: list[Report], active: str | None) -> dict[int, tuple]:
+    """For each report, the report written before it and the one after, as (role, index in its history).
+
+    The last report hands over to the role at work now, whose report is not written yet.
+    """
+    ordered = [r for r in _in_order(reports) if r.path is not None]
+    index, seen = {}, {}
+    for r in ordered:
+        index[id(r)] = seen.get(r.role, 0)
+        seen[r.role] = index[id(r)] + 1
+    out = {}
+    for i, r in enumerate(ordered):
+        before = ordered[i - 1] if i > 0 else None
+        after = ordered[i + 1] if i + 1 < len(ordered) else None
+        if after is not None:
+            to = {"role": after.role, "index": index[id(after)]}
+        else:
+            to = {"role": active, "index": None} if active and active != r.role else None
+        out[id(r)] = ({"role": before.role, "index": index[id(before)]} if before else None, to)
+    return out
 
 
 def _took(reports: list[Report]) -> dict[int, float]:
@@ -222,10 +323,11 @@ def _took(reports: list[Report]) -> dict[int, float]:
     return took
 
 
-def _summary(report: Report, took: dict[int, float]) -> dict:
+def _summary(report: Report, took: dict[int, float], links: dict[int, tuple]) -> dict:
+    before, after = links.get(id(report), (None, None))
     return {
         "name": report.path.name, "mtime": report.mtime, "status": report.status, "verdict": report.verdict,
-        "duration": took.get(id(report)),
+        "duration": took.get(id(report)), "from": before, "to": after,
     }
 
 
@@ -247,28 +349,29 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         latest_by_role[rep.role] = rep
     for role, rep in latest_by_role.items():
         roles[role]["state"] = rep.status
-        if role == "reviewer":
+        if role in JUDGES:
             roles[role]["verdict"] = rep.verdict
     if improvement:
         roles["failure-analyst"]["state"] = "done"
     brief = _brief_report(run_dir, sub)
     shown = reports + [brief] if brief else reports
     took = _took(shown)
-    for role in roles:
-        roles[role]["reports"] = [_summary(rep, took) for rep in _history(shown, role)]
-        roles[role]["expects"] = EXPECTS.get(role)
 
     active, human, ready = None, False, False
     if reports:
-        route_order = list(FOLLOW[kind]) + ["reviewer"]
+        route_order = list(FOLLOW[kind]) + JUDGES
         last = max(reports, key=lambda r: (r.mtime, route_order.index(r.role) if r.role in route_order else -1))
-        decision = _decide(kind, last, iteration, limit, improvement)
+        decision = _decide(kind, last, iteration, limit, improvement, mapped=any(r.is_map for r in reports))
         if stage == "in-progress":
             active, human, ready = decision
         elif stage == "done":
             ready = decision[2]
     elif stage == "in-progress":
         active = "orchestrator"
+    links = _neighbours(shown, active)
+    for role in roles:
+        roles[role]["reports"] = [_summary(rep, took, links) for rep in _history(shown, role)]
+        roles[role]["expects"] = EXPECTS.get(role)
     if active and roles[active]["state"] not in ("blocked", "escalate"):
         roles[active]["state"] = "working"
     decisions = decision_counts(root, slug)

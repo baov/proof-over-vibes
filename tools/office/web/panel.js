@@ -1,6 +1,6 @@
 // The side panel: the screen of the selected agent. It shows the report the role wrote.
 import { renderMarkdown } from "./markdown.js";
-import { STATE_COLORS, ago } from "./roles.js";
+import { STATE_COLORS, VERDICT_COLORS, ago } from "./roles.js";
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -121,7 +121,7 @@ export function createPanel({ onClose, onPick, onToggleFollow, onNavigate, onOpe
       chips.append(c);
     };
     chip(model.state, STATE_COLORS[model.state] ?? STATE_COLORS.idle);
-    if (model.verdict) chip(model.verdict, model.verdict === "GO" ? "#16a34a" : "#dc2626");
+    if (model.verdict) chip(model.verdict, VERDICT_COLORS[model.verdict] ?? VERDICT_COLORS["NO-GO"]);
     const severity = model.report?.front?.severity;
     if (severity) chip(severity, "#7c3aed");
     root.append(chips);
@@ -131,12 +131,12 @@ export function createPanel({ onClose, onPick, onToggleFollow, onNavigate, onOpe
       const nav = el("div", "nav");
       if (model.prev) {
         const back = el("button", "", `◀ From ${model.prev.title}`);
-        back.onclick = () => onNavigate(model.prev.role);
+        back.onclick = () => onNavigate(model.prev.role, model.prev.index);
         nav.append(back);
       }
       if (model.next) {
         const onward = el("button", "", `To ${model.next.title} ▶`);
-        onward.onclick = () => onNavigate(model.next.role);
+        onward.onclick = () => onNavigate(model.next.role, model.next.index);
         nav.append(onward);
       }
       root.append(nav);

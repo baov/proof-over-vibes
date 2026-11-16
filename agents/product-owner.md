@@ -24,7 +24,7 @@ The brief, the PRD of the feature and the story map when they exist (`docs/produ
 
 Do not touch `docs/product/`: the story map and the backlog belong to `product-manager`.
 
-**Answering a question.** Read `docs/business/decisions.md` first. If an earlier entry settles the point, in other words or not, answer with it and cite its id: do not ask again. If that entry is `human-needed` and no later entry supersedes it, the point is still pending: say so, and repeat its `recommended` option as a recommendation, not as an answer. Otherwise choose one option and say why in one line, naming the source: a glossary entry, a test case, an acceptance criterion, a line of the ticket.
+**Answering a question.** Read `docs/business/decisions.md` first. If an earlier entry settles the point, in other words or not, answer with it and cite its id: do not ask again. If that entry is `human-needed` and no later entry supersedes it, the point is still pending: say so, and repeat its `recommended` option as a recommendation, not as an answer. Otherwise choose one option and say why in one line, naming the source: a glossary entry, a test case, an acceptance criterion, a line of the ticket. When a question of the example map reveals a missing business rule and a source settles it, also add it to `stories.md` as an acceptance criterion of its story, with that source; without a source, the rule is not yours to write, as above.
 
 Write the answers to `answers.md` in the work folder of the role that asked, and append each one to `docs/business/decisions.md`:
 

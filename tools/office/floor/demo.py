@@ -19,6 +19,11 @@ def _report(role: str, status: str = "done", verdict: str | None = None, reasons
     return "\n".join(lines + ["---", body or f"## {role}\n\nDemo report written by the {role}.\n"]) + "\n"
 
 
+def _qa(proof: str, reasons: str = "[]", body: str = "") -> str:
+    lines = ["---", "role: qa", "status: done", f"proof: {proof}", f"reasons: {reasons}", "---"]
+    return "\n".join(lines + [body or "## Acceptance proof\n\nEvery criterion PROVEN in the running app.\n"]) + "\n"
+
+
 def _brief(iteration: int) -> str:
     return (
         "# Brief\n\n**Objective:** let a customer empty their cart in one click.\n\n"
@@ -26,6 +31,27 @@ def _brief(iteration: int) -> str:
         f"Iteration counter: {iteration}\nIteration limit: 5\n"
     )
 
+
+EXAMPLE_MAP = """---
+role: qa
+status: done
+reasons: []
+---
+# Example map - empty the cart
+
+## Story 1 - Empty the cart in one click
+
+### B1 The cart shows zero items afterwards - source: brief
+- E1 Given a cart with 2 mugs, when the customer empties it and confirms, then the badge reads "0 items" - source: brief
+- E2 Given an empty cart, when the customer empties it, then nothing changes and no error shows - source: proposed
+
+### B2 A confirmation is asked first - source: D-2
+- E3 Given a cart with 1 mug, when the customer clicks "Empty", then a confirmation is asked before anything is removed - source: D-2
+- E4 Given the confirmation is open, when the customer cancels, then the cart still holds its mug - source: D-2
+
+### Questions
+None open: D-1 and D-2 settled the two points this map raised.
+"""
 
 DECISIONS = """# Decision log
 
@@ -77,14 +103,22 @@ DEMO_STEPS: list[dict[str, str]] = [
     {f"{RUN}/stories.md": "---\nrole: product-owner\n"},
     {f"{RUN}/stories.md": _report("product-owner"), "docs/business/decisions.md": DECISIONS},
     {f"{RUN}/architect.md": _report("architect")},
+    {f"{RUN}/example-map.md": EXAMPLE_MAP},
     {f"{STORY}/brief.md": _brief(0), f"{STORY}/plan.md": _report("planner")},
+    {f"{STORY}/developer-0.md": _report("developer")},
+    {f"{STORY}/brief.md": _brief(1), f"{STORY}/qa-0.md": _qa(
+        "NO-GO", reasons="[C2 DISPROVEN: the cart empties without asking for confirmation]",
+        body="## Acceptance proof\n\n- **C1** The cart shows zero items afterwards: PROVEN, `qa-0/01-c1-after-click.png`\n- **C2** A confirmation is asked first: DISPROVEN, `qa-0/02-c2-after-click.png`. Expected a confirmation; observed the cart emptied at once.\n",
+    ), f"{STORY}/qa-0/01-c1-after-click.png": "demo evidence\n", f"{STORY}/qa-0/02-c2-after-click.png": "demo evidence\n"},
     {f"{STORY}/developer-1.md": _report("developer")},
-    {f"{STORY}/brief.md": _brief(1), ".reviews/demo-1.md": _report(
-        "reviewer", verdict="NO-GO", reasons="[no test for the empty cart, confirmation not asked]",
-        body="## Findings\n\n- **major** `clear_cart` runs without asking for confirmation.\n- **major** No test covers an already empty cart.\n\n```\nclear_cart(cart)  # no guard\n```\n",
+    {f"{STORY}/qa-1.md": _qa("GO")},
+    {f"{STORY}/brief.md": _brief(2), ".reviews/demo-1.md": _report(
+        "reviewer", verdict="NO-GO", reasons="[no test for an already empty cart]",
+        body="## Findings\n\n- **major** No test covers an already empty cart.\n\n```\nclear_cart(cart)  # no guard\n```\n",
     )},
     {f"{STORY}/developer-2.md": _report("developer")},
-    {".reviews/demo-2.md": _report("reviewer", verdict="GO", body="## Findings\n\nNone blocking. Both major points of round 1 are fixed.\n")},
+    {f"{STORY}/qa-2.md": _qa("GO")},
+    {".reviews/demo-2.md": _report("reviewer", verdict="GO", body="## Findings\n\nNone blocking. The major point of round 1 is fixed.\n")},
 ]
 
 

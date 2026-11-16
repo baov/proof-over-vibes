@@ -148,7 +148,7 @@ async function shoot(name, scene, port, chromePort) {
 import time
 from pathlib import Path
 from floor.demo import apply_step
-for i in range(1, 7):
+for i in range(1, 8):
     apply_step(Path(${JSON.stringify(root)}), i); time.sleep(1.3)`;
       spawnSync("python3", ["-c", steps]);
       await sleep(1500);
