@@ -30,6 +30,9 @@ The structure stays as below; headings and content go in the target project's la
 ## Checks not performed
 - <criterion or surface left out, and why> (or: none)
 
+## Other observations
+- <something seen while running that no criterion covers (a broken area, a stray warning), stated as seen and not diagnosed> (or: none)
+
 ## Hand-off
 - DISPROVEN: <criterion> -> `systematic-debugging`, symptom = the raw log line above
 - UNPROVEN: <criterion> -> what is needed to reach the state
