@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 588" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 688" role="img">
 <title>Agent organization: how a request flows between roles</title>
-<desc>Four paths. An idea with no code goes from the Product Manager to the human, then the Architect and the Harness Engineer. A feature goes from the Orchestrator to the Product Owner, who cuts it into stories, then once through the Architect, then once through QA, which writes the example map; each story then goes through the Planner, the Developer, QA, which proves the acceptance criteria in the running app, and the Reviewer, then the merge gate; a NO-GO from QA or the Reviewer sends the story back to the Developer. A bug goes through the Diagnostician, whose proof the Reviewer checks, then into the same loop. After five NO-GO the Failure Analyst runs, then the human is called.</desc>
+<desc>Five paths. An idea with no code goes from the Product Manager to the human, then the Architect and the Harness Engineer. A feature goes from the Orchestrator to the Product Owner, who cuts it into stories, then once through the Architect, then once through QA, which writes the example map; each story then goes through the Planner, the Developer, QA, which proves the acceptance criteria in the running app, and the Reviewer, then the merge gate; a NO-GO from QA or the Reviewer sends the story back to the Developer. A UX redesign or a new journey goes from the UX Designer, who proposes three art directions, to one compliance review by the Product Owner (gaps go back to the UX Designer), then to the human, who picks the direction, then into the flow of a feature from the Product Owner on. A bug goes through the Diagnostician, whose proof the Reviewer checks, then into the same loop. After five NO-GO the Failure Analyst runs, then the human is called.</desc>
 <style>
 text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .th{font-size:14px;font-weight:500}
@@ -61,6 +61,27 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 <path class="arr" d="M190 56 L216 56" marker-end="url(#arrow)"/>
 <path class="arr" d="M320 56 L346 56" marker-end="url(#arrow)"/>
 <path class="arr" d="M470 56 L496 56" marker-end="url(#arrow)"/>
+<text class="ts plain" x="40" y="118" dominant-baseline="central">UX redesign or new journey, routed by the Orchestrator</text>
+<g class="purple">
+<rect x="40" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="115" y="147" text-anchor="middle" dominant-baseline="central">UX Designer</text>
+<text class="ts" x="115" y="167" text-anchor="middle" dominant-baseline="central">3 art directions</text>
+</g>
+<g class="teal">
+<rect x="265" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="340" y="147" text-anchor="middle" dominant-baseline="central">Product Owner</text>
+<text class="ts" x="340" y="167" text-anchor="middle" dominant-baseline="central">business rules, once</text>
+</g>
+<g class="gray">
+<rect x="490" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="565" y="147" text-anchor="middle" dominant-baseline="central">Human</text>
+<text class="ts" x="565" y="167" text-anchor="middle" dominant-baseline="central">picks the direction</text>
+</g>
+<path class="arr" d="M190 146 L261 146" marker-end="url(#arrow)"/>
+<path class="arr" d="M261 166 L194 166" marker-end="url(#arrow)"/>
+<path class="arr" d="M415 156 L486 156" marker-end="url(#arrow)"/>
+<path class="arr" d="M565 184 L565 202 L340 202 L340 224" marker-end="url(#arrow)"/>
+<g transform="translate(0 100)">
 <text class="ts plain" x="40" y="118" dominant-baseline="central">Feature</text>
 <g class="gray">
 <rect x="40" y="128" width="150" height="56" rx="8" stroke-width="0.5"/>
@@ -151,5 +172,6 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 <text class="ts plain" x="222" y="501" dominant-baseline="central">judges</text>
 <rect class="key-gray" x="300" y="494" width="14" height="14" rx="3" stroke-width="0.5"/>
 <text class="ts plain" x="322" y="501" dominant-baseline="central">orchestrates, the human, or ends the run</text>
+</g>
 </g>
 </svg>

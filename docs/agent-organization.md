@@ -26,10 +26,11 @@ Five of the roles judge: a wrong call there costs more than anywhere else.
 | Role | Skills loaded | Judges | Steps in |
 |---|---|---|---|
 | Orchestrator | none: routes, keeps the brief, moves the ticket status, writes `.metrics/` | | every request |
-| Product Owner | none: cuts a feature into stories and prioritizes them; answers multiple-choice questions from the PRD, the business documentation and the ticket | yes | every feature of several stories, every multiple-choice question |
+| Product Owner | none: cuts a feature into stories and prioritizes them; answers multiple-choice questions from the PRD, the business documentation and the ticket | yes | every feature of several stories, every redesign, every multiple-choice question |
 | Cartographer | `codebase-cartographer` | | onboarding, doc-gardening |
 | Harness Engineer | `codebase-harness` | | onboarding, doc-gardening |
 | Product Manager | `product-strategy` | yes | at the human's request, outside a run |
+| UX Designer | `ux-redesign` | | UX redesign, new journey |
 | Architect | `ddd-advisor` | yes | once per feature, empty project |
 | Planner | `plan-driven-dev` (context and plan) | | feature |
 | Developer | `plan-driven-dev`, `behavior-driven-testing` | | feature, bug after diagnosis |
@@ -42,12 +43,13 @@ Five of the roles judge: a wrong call there costs more than anywhere else.
 
 ## The flows
 
-![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then once through QA, which maps the criteria into examples, then each story through the Planner, the Developer, QA and the Reviewer, a NO-GO from QA or the Reviewer sending it back to the Developer, and the merge gate; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
+![How a request flows between the roles: an idea goes from the Product Manager to the human, the Architect and the Harness Engineer; a feature goes from the Orchestrator to the Product Owner, then once through the Architect, then once through QA, which maps the criteria into examples, then each story through the Planner, the Developer, QA and the Reviewer, a NO-GO from QA or the Reviewer sending it back to the Developer, and the merge gate; a UX redesign goes through the UX Designer, one compliance review by the Product Owner and the human who picks the direction, then into the flow of a feature; a bug goes through the Diagnostician and the Reviewer into the same loop; after five NO-GO the Failure Analyst runs, then the human is called.](agent-organization.svg)
 
 The same flows in text:
 
 ```
 Feature   Orchestrator → Product Owner (stories) → Architect (once) → QA (example map, once) → for each story: Planner → Developer ⇄ QA ⇄ Reviewer → merge gate
+Redesign  Orchestrator → UX Designer → Product Owner (one compliance review) → human picks the direction → then as a feature, with the design document as its PRD and the Product Owner always cutting it
 Bug       Orchestrator → Diagnostician → Reviewer (checks the proof) → Developer ⇄ QA ⇄ Reviewer → merge gate
 Idea      Product Manager → human validates → Architect → Harness Engineer (before any feature)
 Empty     Orchestrator → Architect → Harness Engineer (before any feature)
@@ -56,16 +58,18 @@ a ticket  Auditor (when the Orchestrator decides)
           Coach (when the human asks)
 ```
 
-A feature goes through the Product Owner, which cuts it into ordered stories, then once through the Architect, which exits at once when there is nothing to decide. QA then writes the example map of the whole feature: each acceptance criterion as a business rule, with examples someone can observe and the questions they raise, which go to the Product Owner before any code; the Planner adds its own examples to the map. Each story then goes through the Planner, the Developer, QA and the Reviewer, one after the other, with its own brief and its own merge request. QA proves the acceptance criteria in the running app before the Reviewer reads the diff; a NO-GO from either sends the story back to the Developer. The Orchestrator stops at the first escalation. If the Planner finds that a story needs a structural decision, the Architect runs again for that story. A request that is a single story skips the Product Owner, not the example map. A bug has no map: its reproduction stands for the criterion. On an empty project the Architect and the Harness Engineer lay the foundations first. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer, QA and the Reviewer loop until a GO, and the merge gate takes over.
+A feature goes through the Product Owner, which cuts it into ordered stories, then once through the Architect, which exits at once when there is nothing to decide. QA then writes the example map of the whole feature: each acceptance criterion as a business rule, with examples someone can observe and the questions they raise, which go to the Product Owner before any code; the Planner adds its own examples to the map. Each story then goes through the Planner, the Developer, QA and the Reviewer, one after the other, with its own brief and its own merge request. QA proves the acceptance criteria in the running app before the Reviewer reads the diff; a NO-GO from either sends the story back to the Developer. The Orchestrator stops at the first escalation. If the Planner finds that a story needs a structural decision, the Architect runs again for that story. A request that is a single story skips the Product Owner, not the example map; a redesign never skips the Product Owner. A bug has no map: its reproduction stands for the criterion. On an empty project the Architect and the Harness Engineer lay the foundations first. A UX redesign or a new journey goes through the UX Designer, which inspects the live product and writes a design document with three art directions; the Product Owner checks it once against the business rules, never the taste; the human picks the direction, since it is a matter of taste, not of evidence; then it follows the flow of a feature, the design document standing in for the PRD. A bug goes through the Diagnostician, and the Reviewer checks its proof before any fix is written. Then the Developer, QA and the Reviewer loop until a GO, and the merge gate takes over.
 
 ## Governance
 
 A person steps in on escalation, and to merge where the project has no CI. Otherwise the merge happens at the merge gate: quality rests on the Product Owner, the Reviewer and the harness.
 
 - **Multiple-choice questions.** The Product Owner answers, relying on the business documentation the Cartographer wrote and on the ticket, when there is one. When the sources do not settle a question, it escalates to the human.
-- **Escalation to the human.** The Product Owner doubts; the Architect meets a choice that is costly to reverse (superseding an ADR, changing the stack, adding a dependency or service, breaking a public contract, choosing the architectural style of an empty project); the diff touches a sensitive zone, declared by the Harness Engineer in the `Sensitive zones` section of `docs/technical/invariants.md` (security, data and migration when the section is absent, which the metrics record as `undeclared`); or the Failure Analyst has run and the loop still has no GO.
+- **Art direction.** The UX Designer recommends one of three directions; the human picks, never the Product Owner: it is a matter of taste, not of evidence. It is a planned step, not an escalation, recorded as a `direction:` line in the briefs. A direction other than the recommended one sends the UX Designer back once to rewrite the document for it. The Product Owner reviews the design document once, for business rules only, then always cuts it into stories: only the essential priorities, the rest left to the human.
+- **Escalation to the human.** The Product Owner doubts; the Architect meets a choice that is costly to reverse (superseding an ADR, changing the stack, adding a dependency or service, breaking a public contract, choosing the architectural style of an empty project); the diff touches a sensitive zone, declared by the Harness Engineer in the `Sensitive zones` section of `docs/technical/invariants.md` (security, data and migration when the section is absent, which the metrics record as `undeclared`); or the Failure Analyst has run and the loop still has no GO. Any other role that returns `escalate` stops the run too.
+- **Delegation.** When the human tells the Orchestrator to decide for them, the brief says `delegation: yes`: an escalation of the Product Owner then continues on its recommended option, logged `answered-by-delegate`. Delegation never covers a choice costly to reverse, a sensitive zone or a loop that still fails. An answer to a question the Product Owner escalated, from a person or a delegate, reaches the decision log through the Product Owner; a technical answer goes back to the role that asked.
 - **Questions for the human come in rounds.** When several roles are blocked on a question for the human at the same moment, the Orchestrator asks them in one round, and goes on with the roles the answer does not block. It never holds back a question a blocked role waits for.
-- **Merge gate.** The last step before the merge, and always outside the agents. With a CI, the CI merges when QA returns a GO or `not-applicable` (or the human waived QA in the brief), the Reviewer returns a GO and the checks are green, with no systematic human approval. With none, the default is that a person merges: the run ends on "GO, ready to merge". A project can instead run a local script that rereads the verdict, replays the gauntlet and merges, started by a person. Whichever applies, the Orchestrator never merges.
+- **Merge gate.** The last step before the merge, and always outside the agents. With a CI, the CI merges when QA returns a GO or `not-applicable` (or the human waived QA in the brief), the Reviewer returns a GO and the checks are green, with no systematic human approval. With none, the default is that a person merges: the run ends on "GO, ready to merge", and for a feature the next story starts once the person says the previous one is merged. A project can instead run a local script that rereads the verdict, replays the gauntlet and merges, started by a person. Whichever applies, the Orchestrator never merges.
 - **Product strategy.** The Product Manager runs outside a run, only at the human's request, and starts none. It writes `docs/product/` (framing of a brief, research, vision, roadmap, story map, backlog of epics and features, and the PRD of a feature the human picked). A vision, a positioning and a prioritization are bets: its questions go to the human, never to the Product Owner. The human picks a backlog item and creates the request, citing its PRD. It writes no user stories: the Product Owner cuts the picked feature into stories from its PRD and the story map, which it never modifies. On an existing product the map shows the features already built as `done`, with `docs/business/` as the source.
 - **Technical debt.** The Architect proposes a migration or a refactor as an ADR with the status `proposed`, and never blocks the feature in hand for it. If the human accepts, they create the request themselves; the Orchestrator does not watch the ADRs.
 - **Tracker.** Every role comments its step on the ticket; only the Orchestrator changes its status. A prompt has no ticket.
@@ -96,6 +100,8 @@ Roles share no context. Everything passes through files of the repository: the o
 | Example map (`example-map.md`) | QA, then the Planner | Orchestrator, Planner, Developer, QA |
 | Decision log (`docs/business/decisions.md`) | Product Owner | Product Owner, Planner, the human. Statuses: `answered`, `answered-by-delegate` (nobody read it), `human-needed` |
 | Product files (`docs/product/`) | Product Manager | human, Product Owner, Cartographer |
+| Design document (`ux-designer.md`) | UX Designer | Product Owner, the human, Planner |
+| Design review (`design-review.md`) | Product Owner | Orchestrator, UX Designer |
 | Architect's note (`architect.md`) | Architect | Planner, Orchestrator |
 | ADR (`docs/technical/adr/`) | Architect, Cartographer | Harness Engineer, Planner |
 | Plan (`plan.md`) | Planner | Developer, QA, Reviewer |
@@ -186,3 +192,10 @@ Three choices are assumed, and reduce the safeguards. Revisit them after the fir
 - Cost of replaying the whole acceptance-proof plan on every iteration, not only the criteria a fix touched.
 - The example map has not been checked on a real run: its value is a bet, measured by the two metrics above. Drop it if the questions keep coming after the code anyway.
 - Weight of the evidence: the work folder is committed at archiving, so the screenshots of every QA round ship in the merge request. Nothing yet trims them to the last round.
+- Found by paper simulations, not seen in a real run:
+  - Delegation with no CI dead-ends: each story waits for a person to merge, and the human said they would not be reachable.
+  - After the wait for a merge, nothing says how a run resumes at the next story rather than opening a new request.
+  - Metrics are written per run, and a feature is one run: per-story rates and feature-level events (the cut, the Architect) have no home yet. No real run has written metrics so far.
+  - A feature abandoned after some stories merged moves whole to `aborted/`, though part of it is already in `done/`.
+  - The number of iterations after the Failure Analyst before the escalation is not set.
+  - A delegated decision covers any Product Owner escalation, whether or not the choice is cheap to reverse.

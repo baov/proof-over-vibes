@@ -10,6 +10,7 @@ ROLE_TEAM = {
     "product-manager": "product",
     "architect": "design",
     "planner": "design",
+    "ux-designer": "design",
     "developer": "build",
     "diagnostician": "build",
     "qa": "quality",

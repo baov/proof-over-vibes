@@ -233,6 +233,36 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(run["kind"], "bug")
         self.assertEqual(run["active_role"], "reviewer")
 
+    def test_redesign_waits_on_the_direction_then_follows_the_feature_route(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/ux-designer.md", report("ux-designer", "blocked"), 200)
+        run = self.run0()
+        self.assertEqual(run["kind"], "feature")
+        self.assertEqual(run["active_role"], "ux-designer")
+        self.assertEqual(run["roles"]["ux-designer"]["state"], "blocked")
+        self.assertEqual(run["route"][:3], ["orchestrator", "ux-designer", "product-owner"])
+        put(self.root, f"{RUN}/stories.md", report("product-owner"), 300)
+        self.assertEqual(self.run0()["active_role"], "architect")
+
+    def test_redesign_review_hands_back_then_waits_for_the_cut(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        put(self.root, f"{RUN}/ux-designer.md", report("ux-designer", "blocked"), 200)
+        put(self.root, f"{RUN}/design-review.md", report("product-owner", "blocked"), 300)
+        self.assertEqual(self.run0()["active_role"], "ux-designer")
+        put(self.root, f"{RUN}/design-review.md", report("product-owner"), 300)
+        run = self.run0()
+        self.assertEqual(run["active_role"], "product-owner")
+        self.assertEqual(run["roles"]["product-owner"]["reports"][0]["name"], "design-review.md")
+
+    def test_redesign_waits_for_a_person_only_on_the_direction_or_a_change(self):
+        put(self.root, f"{RUN}/brief.md", brief(), 100)
+        asks = lambda *kinds: "---\nrole: ux-designer\nstatus: blocked\nreasons:\n" + "".join(  # noqa: E731
+            f'  - "{k}: a question — 9"\n' for k in kinds) + "---\nbody\n"
+        put(self.root, f"{RUN}/ux-designer.md", asks("direction", "rule"), 200)
+        self.assertFalse(self.run0()["human_needed"])
+        put(self.root, f"{RUN}/ux-designer.md", asks("direction", "change"), 210)
+        self.assertTrue(self.run0()["human_needed"])
+
     def test_reviewer_no_go_sends_developer_back(self):
         put(self.root, f"{RUN}/brief.md", brief(1), 100)
         put(self.root, f"{RUN}/developer-1.md", report("developer"), 200)

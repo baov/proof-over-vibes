@@ -9,7 +9,7 @@ You turn a feature into a plan the developer can follow. You apply the context a
 
 ## Input
 
-The brief, with its `Carried over` section, the example map (`example-map.md`, the section of your story), the project documentation, the decision log (`docs/business/decisions.md`), the harness invariants and, when it exists, the architect's note (`architect.md`: the story's own if the architect ran again for it, then the feature's) and the ADRs it wrote.
+The brief, with its `Carried over` section, the example map (`example-map.md`, the section of your story), the project documentation, the decision log (`docs/business/decisions.md`), the harness invariants and, when it exists, the architect's note (`architect.md`: the story's own if the architect ran again for it, then the feature's) and the ADRs it wrote. After a redesign: the design document (`ux-designer.md`), in the direction the `direction:` line of the brief names.
 
 ## What you do
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .decisions import decision_counts
-from .reports import parse_brief, parse_front_matter, split_front_matter
+from .reports import parse_brief, parse_front_matter, reason_kinds, split_front_matter
 from .roles import ROLE_TEAM
 
 STAGES = ("in-progress", "done", "aborted")
@@ -22,6 +22,8 @@ AGENTS_DIR = Path(__file__).resolve().parents[3] / "agents"
 STATES = ("done", "blocked", "escalate")
 
 REPORT_FILES = {
+    "ux-designer.md": "ux-designer",
+    "design-review.md": "product-owner",
     "stories.md": "product-owner",
     "architect.md": "architect",
     "plan.md": "planner",
@@ -36,6 +38,7 @@ NUMBERED_NOTES = {"developer": re.compile(r"^developer-\d+\.md$"), "qa": re.comp
 # role -> role that works after it, per kind of run. QA and the reviewer are decided apart.
 FOLLOW = {
     "feature": {
+        "ux-designer": "product-owner",
         "product-owner": "architect",
         "architect": "qa",  # the example map, before any story is planned
         "planner": "developer",
@@ -58,6 +61,7 @@ ROUTES = {
 EXPECTS = {
     "orchestrator": "brief.md",
     "product-owner": "stories.md",
+    "ux-designer": "ux-designer.md",
     "architect": "architect.md",
     "planner": "plan.md",
     "developer": "developer-<n>.md",
@@ -77,6 +81,7 @@ class Report:
     front: dict
     checks_cause: bool = False  # a review of the diagnostician's proof, not of a diff
     path: Path | None = None
+    kinds: tuple[str, ...] = ()  # the kind of each entry of `reasons`
 
     @property
     def status(self) -> str:
@@ -87,6 +92,16 @@ class Report:
     def is_map(self) -> bool:
         """QA's example map, written before the code: it carries no proof."""
         return self.path is not None and self.path.name == "example-map.md"
+
+    @property
+    def is_design_review(self) -> bool:
+        """The Product Owner's one pass over a design document, written before the stories."""
+        return self.path is not None and self.path.name == "design-review.md"
+
+    @property
+    def waits_for_human(self) -> bool:
+        """A design document blocked on the direction or a rule change: only a person answers those."""
+        return self.status == "blocked" and bool(self.kinds) and set(self.kinds) <= {"direction", "change"}
 
     @property
     def verdict(self) -> str | None:
@@ -116,7 +131,7 @@ def _make_report(role: str, path: Path, checks_cause: bool = False) -> Report | 
     mtime, text = _mtime(path), _read(path)
     if mtime is None or text is None:
         return None
-    return Report(role, mtime, parse_front_matter(text), checks_cause, path)
+    return Report(role, mtime, parse_front_matter(text), checks_cause, path, reason_kinds(text))
 
 
 def _role_of(name: str) -> str | None:
@@ -163,11 +178,19 @@ def _latest_subfolder(run_dir: Path) -> Path | None:
 
 def _kind(reports: list[Report], has_subfolders: bool) -> str:
     roles = {r.role for r in reports}
-    if "product-owner" in roles or has_subfolders:
+    if roles & {"product-owner", "ux-designer"} or has_subfolders:
         return "feature"
     if "diagnostician" in roles:
         return "bug"
     return "story"
+
+
+def _route(kind: str, reports: list[Report]) -> list[str]:
+    """The strip of a run: a redesign has the UX Designer between the Orchestrator and the Product Owner."""
+    route = list(ROUTES[kind])
+    if any(r.role == "ux-designer" for r in reports):
+        route.insert(1, "ux-designer")
+    return route
 
 
 def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool, mapped: bool = False):
@@ -176,6 +199,9 @@ def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bo
     `mapped`: the run already has its example map, so an architect that runs again for a story
     hands back to the planner instead of asking for a second map.
     """
+    if last.is_design_review and last.status in ("done", "blocked"):
+        # Gaps go back to the designer; a clean review waits for the direction, then the story cut.
+        return ("ux-designer" if last.status == "blocked" else "product-owner"), False, False
     if last.status != "done":
         return last.role, False, False
     if last.is_map:
@@ -242,7 +268,7 @@ def _brief_report(run_dir: Path, sub: Path | None) -> Report | None:
 
 # The order of a run, read from its files rather than their dates: a run checked out from git has
 # the dates of the checkout. Before the loop, the steps in route order; in the loop, round by round.
-BEFORE_LOOP = {"orchestrator": 0, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
+BEFORE_LOOP = {"orchestrator": 0, "ux-designer": 0.5, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
 IN_LOOP = {"developer": 0, "qa": 1, "reviewer": 2}
 ROUND = re.compile(r"-(\d+)$")
 
@@ -253,6 +279,8 @@ def _logical_key(report: Report) -> tuple | None:
         return (0, 0, 0)
     if report.is_map:
         return (0, 0, 5)
+    if report.is_design_review:
+        return (0, 0, 0.75)
     if report.role == "reviewer" and report.checks_cause:
         return (0, 0, 4)
     if report.role in IN_LOOP:
@@ -372,7 +400,11 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
     if active and roles[active]["state"] not in ("blocked", "escalate"):
         roles[active]["state"] = "working"
     decisions = decision_counts(root, slug)
-    human = human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
+    designer = latest_by_role.get("ux-designer")
+    human = (
+        human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
+        or (stage == "in-progress" and designer is not None and designer.waits_for_human)
+    )
     if stage != "in-progress":
         # The Orchestrator never archives a run that waits for the human: a run that left
         # in-progress was accepted, and its escalations are history, not an open question.
@@ -386,7 +418,7 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         "slug": slug, "stage": stage, "kind": kind,
         "iteration": iteration, "limit": limit,
         "active_role": active, "human_needed": human, "ready_to_merge": ready,
-        "updated": updated, "route": list(ROUTES[kind]), "decisions": decisions, "roles": roles,
+        "updated": updated, "route": _route(kind, reports), "decisions": decisions, "roles": roles,
     }
     return view, shown
 

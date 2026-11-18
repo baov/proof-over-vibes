@@ -96,6 +96,7 @@ status: done               # done | blocked | escalate
 verdict: GO                # the Reviewer only: GO | NO-GO
 proof: GO                  # the QA role only: GO | NO-GO | not-applicable
 structure: decided         # the Architect only: unchanged | decided | escalated
+recommended_direction: editorial   # the UX Designer only: the art direction it recommends
 reasons: []
 severity: major            # blocking | major | minor
 ```

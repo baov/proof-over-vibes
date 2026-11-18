@@ -11,6 +11,7 @@ Everything below is the chain run by hand. To run it with a team of agents — a
 | Skill | Trigger | Produces |
 |---|---|---|
 | `product-strategy` | "what should we build", "frame this brief", "roadmap", "write the PRD" | `docs/product/` (framing, research, vision, roadmap, story map, backlog, PRDs) |
+| `ux-redesign` | "redesign the experience", "rethink this journey", "propose an art direction" | `.plans/<slug>-ux.md` (design document) |
 | `codebase-cartographer` | "document the project" | `docs/business/`, `docs/technical/`, a section in `AGENTS.md` |
 | `codebase-harness` | "set up the guardrails" | `tools/harness/`, `docs/technical/invariants.md` |
 | `ai-code-remediation` | "audit this codebase" | `.audit/<project>-<date>.md` + a remediation plan |
