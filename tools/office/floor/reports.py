@@ -41,3 +41,25 @@ def parse_brief(text: str) -> tuple[int, int]:
         int(counter.group(1)) if counter else 0,
         int(limit.group(1)) if limit else DEFAULT_LIMIT,
     )
+
+
+def reason_kinds(text: str) -> tuple[str, ...]:
+    """The kind of each entry of `reasons` (`direction`, `rule`, `change`...), in the order written.
+
+    An entry reads `<kind>: <question>`, as a list item, quoted or not. A report with an
+    inline `reasons: []`, or none, has no kind.
+    """
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return ()
+    kinds, inside = [], False
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if not line.startswith((" ", "\t", "-")):
+            inside = line.partition(":")[0].strip() == "reasons"
+            continue
+        item = re.match(r"\s*-\s*[\"']?([a-z][\w-]*):", line)
+        if inside and item:
+            kinds.append(item.group(1))
+    return tuple(kinds)

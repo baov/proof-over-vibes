@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .decisions import decision_counts
-from .reports import parse_brief, parse_front_matter, split_front_matter
+from .reports import parse_brief, parse_front_matter, reason_kinds, split_front_matter
 from .roles import ROLE_TEAM
 
 STAGES = ("in-progress", "done", "aborted")
@@ -23,6 +23,7 @@ STATES = ("done", "blocked", "escalate")
 
 REPORT_FILES = {
     "ux-designer.md": "ux-designer",
+    "design-review.md": "product-owner",
     "stories.md": "product-owner",
     "architect.md": "architect",
     "plan.md": "planner",
@@ -80,6 +81,7 @@ class Report:
     front: dict
     checks_cause: bool = False  # a review of the diagnostician's proof, not of a diff
     path: Path | None = None
+    kinds: tuple[str, ...] = ()  # the kind of each entry of `reasons`
 
     @property
     def status(self) -> str:
@@ -90,6 +92,16 @@ class Report:
     def is_map(self) -> bool:
         """QA's example map, written before the code: it carries no proof."""
         return self.path is not None and self.path.name == "example-map.md"
+
+    @property
+    def is_design_review(self) -> bool:
+        """The Product Owner's one pass over a design document, written before the stories."""
+        return self.path is not None and self.path.name == "design-review.md"
+
+    @property
+    def waits_for_human(self) -> bool:
+        """A design document blocked on the direction or a rule change: only a person answers those."""
+        return self.status == "blocked" and bool(self.kinds) and set(self.kinds) <= {"direction", "change"}
 
     @property
     def verdict(self) -> str | None:
@@ -119,7 +131,7 @@ def _make_report(role: str, path: Path, checks_cause: bool = False) -> Report | 
     mtime, text = _mtime(path), _read(path)
     if mtime is None or text is None:
         return None
-    return Report(role, mtime, parse_front_matter(text), checks_cause, path)
+    return Report(role, mtime, parse_front_matter(text), checks_cause, path, reason_kinds(text))
 
 
 def _role_of(name: str) -> str | None:
@@ -187,6 +199,9 @@ def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bo
     `mapped`: the run already has its example map, so an architect that runs again for a story
     hands back to the planner instead of asking for a second map.
     """
+    if last.is_design_review and last.status in ("done", "blocked"):
+        # Gaps go back to the designer; a clean review waits for the direction, then the story cut.
+        return ("ux-designer" if last.status == "blocked" else "product-owner"), False, False
     if last.status != "done":
         return last.role, False, False
     if last.is_map:
@@ -264,6 +279,8 @@ def _logical_key(report: Report) -> tuple | None:
         return (0, 0, 0)
     if report.is_map:
         return (0, 0, 5)
+    if report.is_design_review:
+        return (0, 0, 0.75)
     if report.role == "reviewer" and report.checks_cause:
         return (0, 0, 4)
     if report.role in IN_LOOP:
@@ -383,7 +400,11 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
     if active and roles[active]["state"] not in ("blocked", "escalate"):
         roles[active]["state"] = "working"
     decisions = decision_counts(root, slug)
-    human = human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
+    designer = latest_by_role.get("ux-designer")
+    human = (
+        human or any(v["state"] == "escalate" for v in roles.values()) or decisions["pending"] > 0
+        or (stage == "in-progress" and designer is not None and designer.waits_for_human)
+    )
     if stage != "in-progress":
         # The Orchestrator never archives a run that waits for the human: a run that left
         # in-progress was accepted, and its escalations are history, not an open question.
