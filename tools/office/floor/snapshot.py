@@ -173,6 +173,14 @@ def _kind(reports: list[Report], has_subfolders: bool) -> str:
     return "story"
 
 
+def _route(kind: str, reports: list[Report]) -> list[str]:
+    """The strip of a run: a redesign has the UX Designer between the Orchestrator and the Product Owner."""
+    route = list(ROUTES[kind])
+    if any(r.role == "ux-designer" for r in reports):
+        route.insert(1, "ux-designer")
+    return route
+
+
 def _decide(kind: str, last: Report, iteration: int, limit: int, improvement: bool, mapped: bool = False):
     """Return (active_role, human_needed, ready_to_merge) from the newest report.
 
@@ -245,7 +253,7 @@ def _brief_report(run_dir: Path, sub: Path | None) -> Report | None:
 
 # The order of a run, read from its files rather than their dates: a run checked out from git has
 # the dates of the checkout. Before the loop, the steps in route order; in the loop, round by round.
-BEFORE_LOOP = {"orchestrator": 0, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
+BEFORE_LOOP = {"orchestrator": 0, "ux-designer": 0.5, "product-owner": 1, "architect": 2, "diagnostician": 3, "planner": 6}
 IN_LOOP = {"developer": 0, "qa": 1, "reviewer": 2}
 ROUND = re.compile(r"-(\d+)$")
 
@@ -389,7 +397,7 @@ def _run_view(root: Path, stage: str, run_dir: Path, reviews: list[Report]) -> t
         "slug": slug, "stage": stage, "kind": kind,
         "iteration": iteration, "limit": limit,
         "active_role": active, "human_needed": human, "ready_to_merge": ready,
-        "updated": updated, "route": list(ROUTES[kind]), "decisions": decisions, "roles": roles,
+        "updated": updated, "route": _route(kind, reports), "decisions": decisions, "roles": roles,
     }
     return view, shown
 

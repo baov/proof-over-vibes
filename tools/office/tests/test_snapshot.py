@@ -240,6 +240,7 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(run["kind"], "feature")
         self.assertEqual(run["active_role"], "ux-designer")
         self.assertEqual(run["roles"]["ux-designer"]["state"], "blocked")
+        self.assertEqual(run["route"][:3], ["orchestrator", "ux-designer", "product-owner"])
         put(self.root, f"{RUN}/stories.md", report("product-owner"), 300)
         self.assertEqual(self.run0()["active_role"], "architect")
 
