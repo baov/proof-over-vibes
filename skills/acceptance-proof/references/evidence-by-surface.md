@@ -16,6 +16,8 @@ Whatever the surface, a piece of evidence is a file plus one sentence "expected 
 
 - **Capture the starting state** before the first action, so the evidence shows a change.
 - **One capture per expectation**, named `NN-<criterion>-<step>.<ext>`: the number gives the order, the criterion and the step make the file findable from the report.
+- **Keep the captures with the report.** If the tool that drives the surface saves a capture elsewhere, copy it into the evidence folder beside the report and cite the copy, not the original.
 - **Capture the failure as it is.** A DISPROVEN criterion keeps the screenshot or output of the actual state; do not retake it until it looks right.
+- **Wait for the state to settle, then capture.** Read the observed value once the surface has stopped changing (a loading text, a spinner, an animation). If a capture caught a transient state, keep it, retake after the state settled, and say so in the raw log. This never applies to a failure: a failing state is not retaken to look right.
 - **Keep secrets out.** Test accounts and test data only; blur or leave out anything that identifies a real person.
 - **Time and randomness**: when the criterion depends on a value that changes (a date, an identifier), assert on its shape or on a value the run controls.
