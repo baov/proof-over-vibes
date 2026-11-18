@@ -15,7 +15,7 @@ Like `plan-driven-dev`, this skill **announces itself before applying**: state i
 
 ## Cardinal rules
 
-1. **Inspect before designing.** Walk the real product: every screen, desktop and mobile, and at least one pass with the keyboard only. Read the documentation of its rules, and any earlier design document of the product: its decisions stay settled, and the new document says what it changes. A redesign built on a guessed product is a redesign of another product.
+1. **Inspect before designing.** Walk the real product: every screen, desktop and mobile, and at least one pass with the keyboard only. Read the documentation of its rules, and any earlier design document of the product: its decisions stay settled, and the new document says what it changes. A redesign built on a guessed product is a redesign of another product. A new project has no product to walk: say so, design from its PRD, and mark every journey as a hypothesis.
 2. **Preserve the real product rules.** Never invent a business rule, a calculation, a feature, a duration or a statistic. What you cannot reach, you mark as a hypothesis, explicitly.
 3. **Every important proposal says three things**: what appears on screen, how it works, why it improves the experience. An intention without these three is not a deliverable.
 4. **Sophistication comes from composition, typography and interaction**, not from piling up effects. Modern is not dark mode. Creative is not complex.
