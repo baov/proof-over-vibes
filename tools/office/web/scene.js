@@ -237,25 +237,19 @@ export function createScene(canvas, layout) {
     scene.add(lamp);
     lamps.push(lamp);
 
-    // The name in Hangul with its Latin name under it. The back rooms hang it on their wall; the others
-    // would need poles across the view, so theirs is painted on the floor, flat, reading along the screen.
+    // The name in Hangul with its Latin name under it, hung facing the desks: the back rooms on the north wall,
+    // the front rooms (which have no wall there) on top of the glass partition at their back, the hub low on its own.
     const label = useHangul ? SIGN_LABELS[team] : SIGN_FALLBACK[team];
     const sub = useHangul ? SIGN_FALLBACK[team].toUpperCase() : null;
     const material = new THREE.MeshBasicMaterial({ map: signTexture(label, TEAM_COLORS[team], sub), transparent: true, toneMapped: false });
     SIGN_MATERIALS.push(material);
-    if (room.z === 0 || team === "common") {
-      // The hub is far from the north wall, but its desks hide any marking on the floor behind them.
-      const hub = team === "common";
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(hub ? 3.4 : 3.6, hub ? 1.06 : 1.12), material);
-      sign.position.set(room.x + room.w / 2, hub ? 2.0 : 3.15, hub ? 0.12 : room.z + 0.12);
-      scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), hub ? 3.4 : 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
-    } else {
-      // Flat on the floor, a name is squeezed to a sliver by the view: it stands on the front edge instead, facing the camera.
-      const plaque = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.0), material);
-      plaque.position.set(room.x + room.w / 2, 0.9, room.z + room.d - 0.3);
-      plaque.rotation.y = Math.PI / 4;
-      scene.add(plaque, glow(new THREE.Color(TEAM_COLORS[team]), 3.4, 0.18, [plaque.position.x + 0.15, plaque.position.y, plaque.position.z + 0.15]));
-    }
+    // The hub is far from the north wall, but its desks hide any marking on the floor behind them.
+    const hub = team === "common";
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(hub ? 3.4 : 3.6, hub ? 1.06 : 1.12), material);
+    if (hub) sign.position.set(room.x + room.w / 2, 2.0, 0.12);
+    else if (room.z === 0) sign.position.set(room.x + room.w / 2, 3.15, room.z + 0.12);
+    else sign.position.set(room.x + room.w / 2, 1.9 + 0.56, room.z + 0.06); // resting on the partition, 1.9 high
+    scene.add(sign, glow(new THREE.Color(TEAM_COLORS[team]), hub ? 3.4 : 3.6, 0.2, [sign.position.x, sign.position.y, sign.position.z + 0.2]));
   }
 
   // A low skirting in the team's color along the open edges of the front rooms, which have no colored wall.
