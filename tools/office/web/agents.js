@@ -197,7 +197,7 @@ export function createAgents(scene, layout, stations) {
   let slug = null;
   let prevActive;
   let prevStates = null;
-  let walk = null;
+  const walks = []; // handoffs under way: a walker keeps its way home after the next handoff has begun
   const deferred = new Map(); // role -> seconds left before it shows as working
   const checks = new Map(); // role -> seconds left of the green check
   let time = 0;
@@ -210,6 +210,7 @@ export function createAgents(scene, layout, stations) {
     agent.root.position.set(agent.seat.x, 0, agent.seat.z);
     agent.root.rotation.y = agent.seat.rotY;
     agent.mode = "seated";
+    agent.carrying = false;
     agent.folder.visible = false;
     agent.label.userData.set(roleTitle(agent.role));
   }
@@ -237,36 +238,42 @@ export function createAgents(scene, layout, stations) {
     return { trail, material };
   }
 
-  function clearTrail() {
-    if (!walk?.trail) return;
+  function endWalk(walk, { seat }) {
     scene.remove(walk.trail.trail);
     walk.trail.material.dispose();
+    if (seat) sit(walk.agent);
+    walks.splice(walks.indexOf(walk), 1);
   }
 
-  function cancelWalk() {
-    clearTrail();
-    if (walk) sit(walk.agent);
-    walk = null;
+  function cancelWalks() {
+    for (const walk of [...walks]) endWalk(walk, { seat: true });
     deferred.clear();
   }
 
+  // A new handoff cuts short the walkers who have not yet reached their receiver, and the one
+  // who is about to walk again; the others finish their way back to their desk.
   function startWalk(from, to, red) {
-    cancelWalk();
+    for (const walk of [...walks]) {
+      if (walk.agent.role !== from && walk.phase !== "out") continue;
+      deferred.delete(walk.to);
+      endWalk(walk, { seat: true });
+    }
     const agent = agents.get(from);
     if (!agent || !agents.has(to)) return;
     const path = layout.walkPath(from, to);
     agent.folder.material.color.set(red ? 0xef4444 : 0xf4f4f4);
     agent.folder.visible = true;
     agent.mode = "walking";
+    agent.carrying = true;
     agent.label.userData.set(`${roleTitle(from)} → ${roleTitle(to)}`);
     const trail = makeTrail(path, red ? 0xef4444 : TEAM_COLORS[layout.seats.get(to).team]);
-    walk = { agent, path, back: [...path].reverse(), idx: 1, phase: "out", pause: 0, to, trail };
+    walks.push({ agent, path, back: [...path].reverse(), idx: 1, phase: "out", pause: 0, to, trail });
     deferred.set(to, DEFER_MAX);
   }
 
   function apply(next) {
     if (next && next.slug !== slug) {
-      cancelWalk();
+      cancelWalks();
       prevActive = undefined;
       prevStates = null;
     }
@@ -288,14 +295,17 @@ export function createAgents(scene, layout, stations) {
     prevStates = states;
   }
 
-  function stepWalk(dt) {
+  function stepWalk(walk, dt) {
     const { agent } = walk;
     if (walk.phase === "pause") {
       walk.pause -= dt;
       if (walk.pause <= 0) {
         walk.phase = "back";
         walk.idx = 1;
+        // Empty-handed on the way back: nothing left to announce, so the badge goes.
         agent.folder.visible = false;
+        agent.carrying = false;
+        agent.label.userData.set(roleTitle(agent.role));
       }
       return;
     }
@@ -315,9 +325,7 @@ export function createAgents(scene, layout, stations) {
           walk.pause = HANDOVER_PAUSE;
           deferred.delete(walk.to);
         } else {
-          clearTrail();
-          sit(agent);
-          walk = null;
+          endWalk(walk, { seat: true });
         }
       }
     } else {
@@ -328,7 +336,7 @@ export function createAgents(scene, layout, stations) {
 
   function update(dt) {
     time += dt;
-    if (walk) stepWalk(dt);
+    for (const walk of [...walks]) stepWalk(walk, dt);
     for (const [role, left] of deferred) {
       if (left - dt <= 0) deferred.delete(role);
       else deferred.set(role, left - dt);
@@ -384,7 +392,7 @@ export function createAgents(scene, layout, stations) {
 
       const marked = role === hovered || role === selected;
       const active = state === "working" || state === "blocked" || state === "escalate";
-      const flagged = active || walking || marked;
+      const flagged = active || agent.carrying || marked;
       agent.label.visible = flagged;
       for (const [key, pip] of Object.entries(agent.pips)) pip.visible = !off && state === key;
       agent.pips.working.scale.setScalar(0.42 + 0.06 * Math.sin(time * 6));
