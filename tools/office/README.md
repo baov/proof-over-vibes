@@ -35,8 +35,8 @@ It needs Python 3 and a browser; nothing to install. The server listens on `127.
 - **Run card:** the project, the run, its iteration counter, and a switcher when several runs exist (pick one by hand, click again to follow the newest).
 - **Journal:** the last events (a role started, finished, is blocked, a verdict, an iteration), at the top right.
 - **Banner:** `Ready to merge`, `Human needed`, `<role> is blocked`, or who is at work. The tab title carries the same state.
-- **Agents:** the roles of the run stand out and the others fade to grey. A glyph above each head shows its state (`…` working, `✓` done), a ring under whoever is at work pulses in the color of its state, and a large `?` or `!` says a role is blocked or waits for a human. A walking agent says who it hands over to, and leaves a dotted trail on the floor in the color of the receiving team (red after a NO-GO).
-- **Rooms:** each is named in Hangul with its Latin name under it: on the wall for the back rooms and the hub, on a plaque standing at the front edge for the front rooms.
+- **Agents:** the roles of the run stand out and the others fade to grey. A glyph above each head shows its state (`…` working, `✓` done), a ring under whoever is at work pulses in the color of its state, and a large `?` or `!` says a role is blocked or waits for a human. A walking agent says who it hands over to, and leaves a dotted trail on the floor in the color of the receiving team (red after a NO-GO); once the folder is handed over it walks back to its desk empty-handed, without the badge, even if the next handoff has begun.
+- **Rooms:** each is named in Hangul with its Latin name under it, hung facing the desks: on the north wall for product and design, on top of the glass partition at the back of build and quality, which have no wall there, and low on the hub.
 
 ## Day and night
 

@@ -19,6 +19,7 @@ Notable changes to this repository. Format based on [Keep a Changelog](https://k
 ### Changed
 
 - **Walkers finish their way home** (`tools/office/`): an agent who handed the folder over now walks back to its desk even when the next handoff has already begun, instead of being cut short and put on its chair. It walks back empty-handed, without the `A → B` badge. Only a walker who has not yet reached the receiver, or who must walk again, is cut short. The scripted demo hands over every 10 s while a round trip takes 11 to 13 s, so it always cut the return.
+- **Room signs on the glass** (`tools/office/`): the `build` and `quality` signs, standing plaques on the front edge, now hang on top of the glass partition at the back of their room, facing the desks, like `product` and `design` on the north wall.
 - **Test volume:** `behavior-driven-testing` gains a "How many tests" section (one test per business rule, its examples as cases; a rule shared by use cases tested once; no assertion on call counts, types or docstrings unless a decision requires it). `plan-driven-dev` plans and tests by rule with examples instead of one test per edge case; `premerge-review` flags surplus tests (minor) as well as missing ones; the Planner and the Developer point to it. Motivated by the 303-test run of `examples/copro-parking/`; not yet checked on a new run.
 
 ### Fixed
