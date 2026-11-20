@@ -71,7 +71,8 @@ Run, in this order, whatever exists in the project:
 2. **The project's linter and formatter**, in their versioned configuration.
 3. **The harness invariants** — `bash tools/harness/run_all.sh`, or the individual scripts in `tools/harness/`.
 4. **The test-case bridge** — `check_test_coverage.*`, which flags documented behaviors whose test has disappeared.
-5. **Mutation testing on the diff** — `run_mutation.* --scope diff` — at **critical** criticality only, and only if block D is installed. It is the one gauntlet check whose cost justifies being conditional.
+5. **The project's security checks, on the diff** — its secret scanner, its dependency audit, its static analysis, whichever it has. Judge only what the diff adds or changes: a problem that was there before the diff does not stop this review. A project with none of them is the degraded case below, and angle 2 reads deeper for it.
+6. **Mutation testing on the diff** — `run_mutation.* --scope diff` — at **critical** criticality only, and only if block D is installed. It is the one gauntlet check whose cost justifies being conditional.
 
 Report for each of them: run / not available / failed, with the useful output.
 

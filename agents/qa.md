@@ -17,7 +17,8 @@ The brief, the stories (`stories.md`; a single story has only the brief), the de
 
 1. Write `example-map.md` at the root of the work folder, one section per story, in the shape of the skill's `references/example-map.md`: each acceptance criterion as a business rule, with its source; under it, examples someone can observe, each with its source, or `source: proposed` when no document settles it.
 2. Every point where two readings would show a consumer two different behaviors is a multiple-choice question in the map, not an example you pick. An example that reveals a missing business rule is a question too.
-3. If the map holds a question, set `status: blocked` and list them in `reasons`: the orchestrator relays them, and runs you again with the answers, which you write back into the map as confirmed examples. Without a question, set `status: done`.
+3. Add abuse examples only when a security signal calls for them: a new way into the system (an endpoint, a command, a message), sensitive or personal data, a sensitive zone touched, or roles and rights named in the brief. With no signal, add none. Under the rule concerned, write what someone must observe when the input is hostile (malformed, oversized, a script or a query where a name belongs) and when the caller has no right to do it. Each carries its source, or `source: proposed` when no document settles it. An abuse example that reveals a missing rule is a question, as in step 2.
+4. If the map holds a question, set `status: blocked` and list them in `reasons`: the orchestrator relays them, and runs you again with the answers, which you write back into the map as confirmed examples. Without a question, set `status: done`.
 
 ### What you never do in map mode
 
