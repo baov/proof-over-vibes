@@ -119,7 +119,7 @@ The question: *what would an attacker, or hostile data, make of this?*
 - Unvalidated inputs, injections (SQL, command, path, template), deserialization.
 - Hardcoded secrets, verbose logs on sensitive data, widened permissions.
 - AuthN/AuthZ: does every new entry point check who is calling, and with what right?
-- Added dependencies: provenance and surface.
+- Added dependencies: provenance and surface. For each one, check that the package exists in its registry, that it is the one the code means (a name one letter away from a well-known package is a finding), and how old it is: a release published a few days ago, or a package with no history, is a finding. A name an assistant could have invented is the case to catch. A dependency the plan does not name is at least major.
 
 ### Angle 3 — ADR / architecture compliance
 The question: *does this change respect the recorded decisions?*
