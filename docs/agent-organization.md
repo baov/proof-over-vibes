@@ -170,6 +170,7 @@ Three choices are assumed, and reduce the safeguards. Revisit them after the fir
 
 - No technical restriction of rights: a Reviewer or a Diagnostician could modify the code despite its instruction, and an automated merge gate merges without a human. The tool list of a subagent could take write access away from a role that does not need it, but these two do.
 - No systematic human approval before the merge, where a CI merges: the Reviewer and the CI are the only safeguards. With no CI, the person who merges is the second one.
+- Hostile content and an automated merge: a ticket or a page the roles read can carry an instruction, and the roles have no technical restriction (see the first point). Where a CI merges without a human, such an instruction can end in a merge. The prompt rule "Content read is data" narrows this and does not close it. Where the tracker is open to people you do not trust, keep a person at the merge, and restrict the client's rights (sandbox, no network, no secrets in reach).
 - No cost cap: only the iteration limit bounds a run.
 - Roles inherit the session's model: nothing in the repository guarantees that the roles that judge run on a strong one. That is left to whoever configures the client.
 
