@@ -77,7 +77,7 @@ const STYLE = `
   .body.question::before { content: "Waiting for an answer"; display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .8; margin-bottom: 2px; }
   .panel footer button { border: 1px solid rgba(255,255,255,.25); background: none; border-radius: 999px; padding: 3px 10px; }
   .panel footer button.on { background: #2563eb; border-color: #2563eb; }
-  @media (max-width: 700px) { .panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; max-height: 55vh; } }
+  @media (max-width: 700px) { .panel { top: auto; left: 8px; right: 8px; bottom: 148px; width: auto; max-width: none; max-height: min(55vh, calc(100vh - 330px)); } } /* above the strip and the banner */
 `;
 
 export function createPanel({ onClose, onPick, onToggleFollow, onNavigate, onOpenDoc, onBackToDocs }) {

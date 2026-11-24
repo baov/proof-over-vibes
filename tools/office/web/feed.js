@@ -39,6 +39,8 @@ export function createFeed() {
       .feed small { opacity: .55; margin-right: 6px; }
       @keyframes feed-in { from { opacity: 0; transform: translateY(6px); } }
       body.panel-open .feed { display: none; }
+      /* Too narrow to sit beside the run card, like the time box and the shortcuts. */
+      @media (max-width: 700px) { .feed { display: none; } }
     `,
   }));
   document.body.append(box);

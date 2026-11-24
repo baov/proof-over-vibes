@@ -187,5 +187,11 @@ try {
 } finally {
   chrome.kill();
   await new Promise((done) => (chrome.exitCode === null ? chrome.once("exit", done) : done()));
-  rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+  // Chrome's helper processes can still write to the profile after the main one exits: the images are
+  // already written, so a leftover temporary folder is only worth a warning.
+  try {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+  } catch (failure) {
+    console.warn(`Could not remove the temporary Chrome profile ${profile}: ${failure.code ?? failure.message}`);
+  }
 }

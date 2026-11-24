@@ -84,6 +84,9 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
   // m: { project, run, runs, viewed, status, follow, selected }
   function show(m) {
     const { run, runs, status } = m;
+    // The card and the strip are rebuilt on every update: the button that had the focus gets it back.
+    const focused = document.activeElement;
+    const focusKey = (card.contains(focused) || strip.contains(focused)) ? focused.dataset.key : null;
     card.replaceChildren();
     const top = el("div", "muted");
     top.append(el("span", `dot ${status}`), document.createTextNode(m.project || "Office floor"));
@@ -103,11 +106,13 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
       const chip = el("button", `decisions${decisions.pending ? " waiting" : ""}`, `⚑ ${parts.join(" · ")}`);
       chip.title = "Decisions of this run to review (D)";
       chip.onclick = onOpenDecisions;
+      chip.dataset.key = "decisions";
       card.append(chip);
     }
     const docs = el("button", "docs", "▤ Documents (M)");
     docs.title = "Markdown documents written under docs/ and .audit/";
     docs.onclick = onOpenDocs;
+    docs.dataset.key = "docs";
     card.append(docs);
     if (runs.length > 1) {
       const chips = el("div", "runs");
@@ -115,6 +120,7 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
         const b = el("button", r.slug === run?.slug ? "on" : "", r.slug);
         b.title = `${r.stage} · ${r.kind}`;
         b.onclick = () => onPickRun(r.slug === m.viewed ? null : r.slug);
+        b.dataset.key = `run:${r.slug}`;
         chips.append(b);
       }
       card.append(chips);
@@ -134,6 +140,7 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
         if (duration) b.append(el("div", "took", duration));
         b.title = `${role} · ${info.state}${duration ? ` · took ${duration}` : ""}`;
         b.onclick = () => onSelectRole(role);
+        b.dataset.key = `step:${role}`;
         strip.append(b);
       });
       strip.append(el("div", "link"));
@@ -144,6 +151,7 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
       gate.style.cursor = "default";
       strip.append(gate);
     }
+    if (focusKey) [...card.querySelectorAll("button"), ...strip.querySelectorAll("button")].find((b) => b.dataset.key === focusKey)?.focus();
 
     banner.className = "banner";
     if (run?.human_needed) {
@@ -165,7 +173,9 @@ export function createHud(root, { onSelectRole, onPickRun, onOpenDecisions, onOp
     }
 
     const tag = run ? (run.human_needed ? "⚠" : run.ready_to_merge ? "✔" : run.active_role ? "●" : "○") : "○";
-    document.title = run ? `${tag} ${run.active_role ?? (run.ready_to_merge ? "ready to merge" : "idle")} · ${run.slug}` : "Office floor";
+    // The same precedence as the banner: a run can be ready to merge and still wait for a person.
+    const state = run?.human_needed ? "human needed" : run?.ready_to_merge ? "ready to merge" : run?.active_role ?? "idle";
+    document.title = run ? `${tag} ${state} · ${run.slug}` : "Office floor";
   }
   return { show, showTip, hideTip, toggleHint };
 }

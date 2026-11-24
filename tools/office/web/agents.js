@@ -106,7 +106,8 @@ function makeAgent(role, seat) {
   // A few looks per role, picked from the role name so they stay the same between reloads.
   let hash = 0;
   for (const ch of role) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  const pick = (list, shift) => list[(hash >> shift) % list.length];
+  // Unsigned shift: the hash often exceeds 2^31, and a signed one would give a negative index.
+  const pick = (list, shift) => list[(hash >>> shift) % list.length];
   const skin = pick([0xf1c7a0, 0xe0ac80, 0xc68642, 0x8d5524, 0xf6d3b5], 0);
   const hair = pick([0x1b1b2a, 0x3b2a1a, 0x6b4a2b, 0x111111, 0x7a4a24], 3);
   const pants = pick([0x222638, 0x2d3350, 0x3a3f55, 0x1f2a44], 6);
