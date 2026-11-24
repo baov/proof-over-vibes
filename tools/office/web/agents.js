@@ -79,17 +79,21 @@ function makeAgent(role, seat) {
   // Every material of the body, with its own color and the grey it fades to outside the run.
   const materials = [];
   const standard = (color) => {
-    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+    // Flat shading keeps the facets: rounded, but still the low-poly look of the furniture.
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.8, flatShading: true });
     const grey = material.color.getHSL({}).l * 0.8;
     materials.push({ material, base: material.color.clone(), grey: new THREE.Color(grey, grey, grey) });
     return material;
   };
-  const part = (w, h, d, color, y) => {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), standard(color));
+  const shape = (geometry, color, y) => {
+    const mesh = new THREE.Mesh(geometry, standard(color));
     mesh.position.y = y;
     mesh.castShadow = true;
     return mesh;
   };
+  const part = (w, h, d, color, y) => shape(new THREE.BoxGeometry(w, h, d), color, y);
+  // A capsule `length` tall between its two caps, centred on y.
+  const limb = (radius, length, color, y) => shape(new THREE.CapsuleGeometry(radius, length, 3, 8), color, y);
   const pivot = (x, y) => {
     const g = new THREE.Group();
     g.position.set(x, y, 0);
@@ -113,29 +117,36 @@ function makeAgent(role, seat) {
   const pants = pick([0x222638, 0x2d3350, 0x3a3f55, 0x1f2a44], 6);
   const shirt = TEAM_COLORS[seat.team];
 
-  body.add(part(0.5, 0.6, 0.3, shirt, 0.38));
-  body.add(part(0.52, 0.1, 0.32, 0xf4f6fb, 0.08)); // belt line
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 12), standard(skin));
-  head.position.y = 0.95;
-  head.castShadow = true;
-  const hairTop = part(0.4, 0.14, 0.4, hair, 1.1);
-  const hairBack = part(0.4, 0.3, 0.1, hair, 0.98);
-  hairBack.position.z = -0.15; // the back of the head faces the camera
+  // A rounded torso, a little flatter front to back, on hips in the color of the trousers.
+  const torso = limb(0.21, 0.24, shirt, 0.4);
+  torso.scale.z = 0.75;
+  const hips = shape(new THREE.CylinderGeometry(0.19, 0.17, 0.18, 10), pants, 0.08);
+  hips.scale.z = 0.8;
+  const belt = shape(new THREE.CylinderGeometry(0.19, 0.19, 0.05, 10), 0xf4f6fb, 0.18); // belt line
+  belt.scale.z = 0.8;
+  body.add(torso, hips, belt, shape(new THREE.CylinderGeometry(0.075, 0.085, 0.12, 8), skin, 0.77)); // and a neck
+  const head = shape(new THREE.SphereGeometry(0.2, 12, 10), skin, 0.95);
+  // A cap of hair over the top and the back of the head, which faces the camera.
+  const hairCap = shape(new THREE.SphereGeometry(0.215, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), hair, 0.97);
+  hairCap.rotation.x = -0.45;
   // The head turns on the neck, so the hair goes with it.
   const neck = pivot(0, 0.78);
-  for (const piece of [head, hairTop, hairBack]) piece.position.y -= 0.78;
-  neck.add(head, hairTop, hairBack);
+  for (const piece of [head, hairCap]) piece.position.y -= 0.78;
+  neck.add(head, hairCap);
   body.add(neck);
 
-  const arms = [pivot(-0.33, 0.62), pivot(0.33, 0.62)];
-  const legs = [pivot(-0.13, 0), pivot(0.13, 0)];
+  const arms = [pivot(-0.255, 0.62), pivot(0.255, 0.62)];
+  const legs = [pivot(-0.1, 0), pivot(0.1, 0)];
   for (const arm of arms) {
-    arm.add(part(0.15, 0.3, 0.15, shirt, -0.15), part(0.12, 0.2, 0.12, skin, -0.4));
+    arm.add(limb(0.07, 0.18, shirt, -0.14), limb(0.055, 0.16, skin, -0.38)); // sleeve, then forearm and hand
     body.add(arm);
   }
   for (const leg of legs) {
-    leg.add(part(0.17, 0.55, 0.17, pants, -0.27), part(0.19, 0.08, 0.27, 0xf4f6fb, -0.55));
-    leg.children[1].position.z = 0.05;
+    const shoe = limb(0.07, 0.12, 0xf4f6fb, -0.55);
+    shoe.rotation.x = Math.PI / 2; // lying along the foot
+    shoe.scale.z = 0.75;
+    shoe.position.z = 0.05;
+    leg.add(limb(0.085, 0.38, pants, -0.27), shoe);
     body.add(leg);
   }
   body.scale.setScalar(1.12);
