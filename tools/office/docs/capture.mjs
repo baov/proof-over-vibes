@@ -98,18 +98,20 @@ const key = (name) => `window.dispatchEvent(new KeyboardEvent("keydown", { key: 
 
 // Each scene: where to look, what to do, and what to wait for.
 const SCENES = {
-  night: { project: () => project(-1), url: "?time=23:00" },
-  day: { project: () => project(-1), url: "?time=13:00" },
-  "cool-theme": { project: () => project(-1), url: "?time=23:00", actions: [key("t")] },
+  night: { project: () => project(-1), url: "?time=23:00&breaks=off" },
+  day: { project: () => project(-1), url: "?time=13:00&breaks=off" },
+  "cool-theme": { project: () => project(-1), url: "?time=23:00&breaks=off", actions: [key("t")] },
   "agent-report": {
     project: () => project(-1),
-    url: "?time=13:00",
+    url: "?time=13:00&breaks=off",
     actions: [...Array(8).fill(key("ArrowRight")), `document.querySelector(".frise button").click()`],
   },
-  decisions: { project: () => project(-1), url: "?time=13:00", actions: [key("d")] },
-  blocked: { project: blockedProject, url: "?time=23:00", actions: [key("f")] },
+  decisions: { project: () => project(-1), url: "?time=13:00&breaks=off", actions: [key("d")] },
+  blocked: { project: blockedProject, url: "?time=23:00&breaks=off", actions: [key("f")] },
   // Live: the run is written step by step while the page is open, so the journal fills and an agent walks.
-  "journal-dawn": { project: () => project(1), url: "?time=06:30", live: true },
+  "journal-dawn": { project: () => project(1), url: "?time=06:30&breaks=off", live: true },
+  // The run is over and everyone rests: the break room fills at once, two chat at the high table.
+  "break-room": { project: () => project(-1), url: "?time=15:00&breaks=busy", wait: 35000 },
 };
 
 // The server answers, then the page is drawn: a blank page (a reset connection) is tried again.
@@ -159,7 +161,7 @@ for i in range(1, 8):
       await browser.send("Runtime.evaluate", { expression: action });
       await sleep(120);
     }
-    await sleep(1800);
+    await sleep(scene.wait ?? 1800);
     const { data } = await browser.send("Page.captureScreenshot", { format: FORMAT, quality: QUALITY });
     writeFileSync(join(HERE, `${name}.${FORMAT}`), Buffer.from(data, "base64"));
     console.log(`${name}.${FORMAT}`);
@@ -187,5 +189,11 @@ try {
 } finally {
   chrome.kill();
   await new Promise((done) => (chrome.exitCode === null ? chrome.once("exit", done) : done()));
-  rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+  // Chrome's helper processes can still write to the profile after the main one exits: the images are
+  // already written, so a leftover temporary folder is only worth a warning.
+  try {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+  } catch (failure) {
+    console.warn(`Could not remove the temporary Chrome profile ${profile}: ${failure.code ?? failure.message}`);
+  }
 }
