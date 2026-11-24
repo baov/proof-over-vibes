@@ -39,7 +39,7 @@ export const PARTITIONS = [
 ];
 
 // Where the furniture stands, so that scene.js draws it and the walkers go round it from the same numbers.
-export const PLANTS = [[0.8, 0.8], [11.4, 4.6], [8.6, 4.6], [0.8, 13.2], [19.2, 13.2], [19.2, 0.8], [7.4, 13.2], [12.6, 13.2]];
+export const PLANTS = [[0.8, 0.8], [11.4, 3.6], [8.6, 3.6], [0.8, 13.2], [19.2, 13.2], [19.2, 0.8], [7.4, 13.2], [12.6, 13.2]];
 export const BOOKSHELVES = [[[7.2, 0.28], "z"], [[19.2, 0.28], "z"], [[0.28, 11], "x"], [[0.28, 3.4], "x"]];
 export const CABINETS = [[5.2, 11.5], [16.4, 0.35]];
 export const SOFA = { x: 10, z: 10.9, w: 2.0 }; // its back to the hub, facing the break room
@@ -95,6 +95,9 @@ export function createLayout(roleTeams) {
   // quality, whose doorway is behind its desks, seats two a row too, so that aisles lead to every chair.
   const PER_ROW = { common: 2, quality: 2 };
   const ROW_STEP = 2.8; // the depth of a row: desk, chair and the room to walk past
+  // How far the first chair sits from the back of the room. The hub starts higher, which leaves room
+  // between its second row and the break room's glass.
+  const FIRST_SEAT = { common: 1.8 };
   const DESK_W = 1.95; // a desk and a hand of room
   const seats = new Map();
   for (const [team, roles] of Object.entries(byTeam)) {
@@ -110,7 +113,8 @@ export function createLayout(roleTeams) {
         : room.x + (room.w * (2 * slot + 1)) / (2 * inRow);
       // Desk against the back of the room, the agent sits south of it facing north (-z):
       // the camera sees the agent's back and the screen over the desk.
-      const seat = { x, z: room.z + 2.4 + row * ROW_STEP, deskZ: room.z + 1.4 + row * ROW_STEP, rotY: Math.PI, team, row };
+      const z = room.z + (FIRST_SEAT[team] ?? 2.4) + row * ROW_STEP;
+      const seat = { x, z, deskZ: z - 1, rotY: Math.PI, team, row };
       seats.set(role, seat);
     });
   }
