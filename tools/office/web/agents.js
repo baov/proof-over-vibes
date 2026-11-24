@@ -221,7 +221,8 @@ export function createAgents(scene, layout, stations) {
   function makeTrail(path, color) {
     const trail = new THREE.Group();
     const dot = new THREE.CircleGeometry(0.11, 12);
-    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthTest: false, toneMapped: false });
+    // Painted on the floor: desks, chairs and people hide it, as they would hide a mark on the ground.
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     for (let i = 1; i < path.length; i++) {
       const a = path[i - 1];
       const b = path[i];
@@ -322,6 +323,9 @@ export function createAgents(scene, layout, stations) {
       walk.idx += 1;
       if (walk.idx >= path.length) {
         if (walk.phase === "out") {
+          // Standing beside the receiver's chair: turn to it to hand the folder over.
+          const receiver = layout.seats.get(walk.to);
+          agent.root.rotation.y = Math.atan2(receiver.x - target.x, receiver.z - target.z);
           walk.phase = "pause";
           walk.pause = HANDOVER_PAUSE;
           deferred.delete(walk.to);
