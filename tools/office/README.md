@@ -52,6 +52,12 @@ The floor follows your machine's clock. Sunrise is at 6:00 and sunset at 18:00 e
 
 The time box under the run card is folded to the hour; click it to open the controls. Pick `Dawn`, `Day`, `Dusk` or `Night` to fix a period, drag the slider to fix an hour, and `Auto` to follow the clock again. `N` cycles auto, dawn, day, dusk, night. Opening the page with `?time=19:30` starts at that hour, which is handy for a screenshot or a test. `T` (warm or cool palette) is independent of the hour.
 
+## Break room
+
+![The break room past the hub, behind its glass: a coffee counter under its sign, a high table under a pendant lamp, the sofa facing the room](docs/break-room.webp)
+
+Past the hub, behind a glass wall with a doorway at each end, the `휴게실` (break) room has its own warm light, a sofa facing the room, the vending machine, a coffee counter and a high table under a pendant lamp. Now and then a role of the run with nothing to do strolls there, sits on the sofa or stands at the counter or the table for a while, then walks back to its desk; the tooltip says `on a break`. Someone at the high table draws the next one there more often than not, and two at the table chat: they turn their heads to each other, nod and talk with a hand. No more than three are away at once, so the floor still reads who is where, and they leave no trail: a dotted trail always means a handoff. A role that is at work, blocked, waiting for a human, about to receive a folder, shown in the panel, or outside the run stays at its desk, and one on a break goes straight back when work comes its way. `?breaks=off` keeps everyone at their desk and `?breaks=busy` fills the break room at once, for a screenshot or a test.
+
 ## Reading an agent's screen
 
 ![QA's example map: each business rule with its examples and their source, and the open questions; the numbered buttons switch to its proof reports](docs/agent-report.webp)

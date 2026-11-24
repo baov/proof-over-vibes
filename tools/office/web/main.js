@@ -14,7 +14,9 @@ const first = await (await fetch("/api/snapshot")).json();
 const layout = createLayout(first.role_teams);
 const canvas = document.getElementById("floor");
 const view = createScene(canvas, layout);
-const agents = createAgents(view.scene, layout, view.stations);
+// ?breaks=off keeps everyone at their desk, ?breaks=busy fills the break room at once: a screenshot or a test
+// then does not depend on chance.
+const agents = createAgents(view.scene, layout, view.stations, { breaks: new URLSearchParams(location.search).get("breaks") ?? "on" });
 const aboutRole = first.role_about ?? {};
 
 // The hour follows the machine's clock, unless a period or an hour is picked by hand (or ?time=HH:MM).
@@ -326,7 +328,7 @@ createPicker({
     }
     const info = lastRun?.roles?.[role];
     const last = info?.reports?.at(-1);
-    const lines = [[layout.seats.get(role).team, info?.state ?? "idle", info?.verdict].filter(Boolean).join(" · ")];
+    const lines = [[layout.seats.get(role).team, info?.state ?? "idle", info?.verdict, agents.onBreak(role) && "on a break"].filter(Boolean).join(" · ")];
     if (aboutRole[role]) lines.push(aboutRole[role].length > 110 ? `${aboutRole[role].slice(0, 110).replace(/\s+\S*$/, "")}…` : aboutRole[role]);
     if (last) lines.push(`${last.name} · ${ago(last.mtime)}${last.duration != null ? ` · took ${took(last.duration)}` : ""}`);
     hud.showTip(roleTitle(role), lines, event.clientX, event.clientY);

@@ -1,6 +1,6 @@
 // The static floor: building, furniture, signs, night city. No workflow knowledge here.
 import * as THREE from "three";
-import { BOOKSHELVES, CABINETS, FLOOR, HUB, PARTITIONS, PLANTS, ROOMS, SIGN_FALLBACK, SIGN_LABELS, SOFA, TEAM_COLORS, VENDING } from "./layout.js";
+import { BOOKSHELVES, BREAK_ROOM, CABINETS, COFFEE, FLOOR, HIGH_TABLE, HUB, PARTITIONS, PLANTS, ROOMS, SIGN_FALLBACK, SIGN_LABELS, SOFA, TEAM_COLORS, VENDING } from "./layout.js";
 import { daylightAt, mix, skyGradient, sunArc, twilightAt } from "./daylight.js";
 import { createOutside } from "./outside.js";
 import { hangulAvailable, mulberry32, signTexture } from "./textures.js";
@@ -331,7 +331,7 @@ export function createScene(canvas, layout) {
   }
 
   // Furniture that makes it an office.
-  // Past the hub's second row of desks (z 8 to 10): the sofa and the vending machine wait in the corridor.
+  // Past the hub's second row of desks (z 8 to 10), the break room: the vending machine against its west glass.
   const VENDING_Z = VENDING.z;
   const vending = box(0.95, 2.1, 0.85, 0xe6ebf5, [VENDING.x, 1.05, VENDING_Z]);
   const front = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 1.5), new THREE.MeshStandardMaterial({ color: 0x20324a, emissive: 0x4fb4ff, emissiveIntensity: 0.6 }));
@@ -344,8 +344,50 @@ export function createScene(canvas, layout) {
   scene.add(glow(0x4fb4ff, 2.6, 0.35, [VENDING.x, 1.2, VENDING_Z + 0.6]));
   for (const [at, facing] of BOOKSHELVES) scene.add(bookshelf(at, facing));
   for (const [x, z] of CABINETS) scene.add(box(1.0, 1.0, 0.5, 0xeef2fa, [x, 0.5, z]));
-  scene.add(box(2.4, 0.55, 0.9, 0x4a3f82, [SOFA.x, 0.28, SOFA.z]), box(2.4, 0.5, 0.2, 0x4a3f82, [SOFA.x, 0.7, SOFA.z + 0.4]));
+  // The sofa, its back to the hub: who sits there faces the room, and the camera.
+  scene.add(box(SOFA.w, 0.55, 0.9, 0x4a3f82, [SOFA.x, 0.28, SOFA.z]), box(SOFA.w, 0.5, 0.2, 0x4a3f82, [SOFA.x, 0.7, SOFA.z - 0.4]));
+  for (const dx of [-1, 1]) scene.add(box(0.16, 0.4, 0.9, 0x3d3470, [SOFA.x + dx * (SOFA.w / 2 - 0.08), 0.62, SOFA.z]));
   for (const [x, z] of PLANTS) scene.add(plant(x, z));
+
+  // The break room: a tinted floor, a coffee counter with its machine, a high table, and its sign.
+  const breakTint = new THREE.Mesh(new THREE.PlaneGeometry(BREAK_ROOM.w, BREAK_ROOM.d), new THREE.MeshBasicMaterial({ color: BREAK_ROOM.color, transparent: true, opacity: 0.3 }));
+  breakTint.rotation.x = -Math.PI / 2;
+  breakTint.position.set(BREAK_ROOM.x + BREAK_ROOM.w / 2, 0.015, BREAK_ROOM.z + BREAK_ROOM.d / 2);
+  scene.add(breakTint);
+  // Its own light, warmer than the desks', dimmed by day with the other lamps.
+  const breakLamp = new THREE.PointLight(0xffc78a, 22, 7, 1.3);
+  breakLamp.position.set(BREAK_ROOM.x + BREAK_ROOM.w / 2, 2.6, BREAK_ROOM.z + BREAK_ROOM.d / 2);
+  scene.add(breakLamp);
+  lamps.push(breakLamp);
+  // A pendant lamp over the high table, lit with the other lamps.
+  const pendantShade = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.24, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0xffc78a, emissive: 0xffc78a, emissiveIntensity: 1.4, side: THREE.DoubleSide }));
+  pendantShade.position.set(HIGH_TABLE.x, 2.2, HIGH_TABLE.z);
+  SHADES.push({ material: pendantShade.material, base: 1.4 });
+  const pendantCord = box(0.02, 0.7, 0.02, 0x2a2e44, [HIGH_TABLE.x, 2.65, HIGH_TABLE.z]);
+  pendantCord.castShadow = false;
+  scene.add(pendantShade, pendantCord, glow(0xffc78a, 1.8, 0.5, [HIGH_TABLE.x, 2.12, HIGH_TABLE.z]));
+  scene.add(box(0.7, 0.95, 1.4, 0xb98a58, [COFFEE.x, 0.475, COFFEE.z]), box(0.78, 0.05, 1.48, 0xf4f6fb, [COFFEE.x, 0.97, COFFEE.z]));
+  scene.add(box(0.36, 0.5, 0.34, 0x2a2e44, [COFFEE.x - 0.08, 1.25, COFFEE.z - 0.3]), box(0.1, 0.12, 0.1, 0xf1f5f9, [COFFEE.x + 0.06, 1.06, COFFEE.z - 0.3]));
+  for (const dz of [0.15, 0.35]) scene.add(box(0.09, 0.11, 0.09, 0xf1f5f9, [COFFEE.x + 0.05, 1.05, COFFEE.z + dz]));
+  const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.05, 20), new THREE.MeshStandardMaterial({ color: 0xf4f6fb, roughness: 0.5 }));
+  tableTop.position.set(HIGH_TABLE.x, 1.05, HIGH_TABLE.z);
+  tableTop.castShadow = true;
+  const tableFoot = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.2, 1.03, 10), new THREE.MeshStandardMaterial({ color: 0x8a93ad, roughness: 0.4, metalness: 0.4 }));
+  tableFoot.position.set(HIGH_TABLE.x, 0.515, HIGH_TABLE.z);
+  scene.add(tableTop, tableFoot, box(0.09, 0.11, 0.09, 0xf1f5f9, [HIGH_TABLE.x + 0.1, 1.13, HIGH_TABLE.z - 0.05]));
+  const breakLabel = useHangul ? "휴게실" : "break";
+  const breakSign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.82), new THREE.MeshBasicMaterial({ map: signTexture(breakLabel, BREAK_ROOM.color, useHangul ? "BREAK" : null), transparent: true, toneMapped: false }));
+  SIGN_MATERIALS.push(breakSign.material);
+  // Hung over the coffee counter and turned to the camera, which looks from +x, +z: flat on the partition, it read edge-on.
+  breakSign.rotation.y = Math.PI / 4;
+  breakSign.position.set(COFFEE.x + 0.5, 2.45, COFFEE.z - 0.6);
+  scene.add(breakSign, glow(new THREE.Color(BREAK_ROOM.color), 2.6, 0.2, [breakSign.position.x + 0.14, breakSign.position.y, breakSign.position.z + 0.14]));
+  for (const dx of [-0.9, 0.9]) {
+    // Two thin cords from the ceiling, along the sign.
+    const cord = box(0.02, 0.6, 0.02, 0x8a93ad, [breakSign.position.x + dx * Math.SQRT1_2, 2.95, breakSign.position.z - dx * Math.SQRT1_2]);
+    cord.castShadow = false;
+    scene.add(cord);
+  }
   for (const [x, w] of [[2.4, 1.2], [4.6, 0.9], [14.4, 1.2], [17.2, 0.9]]) {
     scene.add(box(w, 0.8, 0.06, 0xf4f6fb, [x, 2.55, 0.06]), box(w - 0.16, 0.64, 0.02, [0xe8505b, 0x3b82f6, 0xf5a623, 0x22c55e][Math.round(x) % 4], [x, 2.55, 0.1], { emissive: 0x111111 }));
   }

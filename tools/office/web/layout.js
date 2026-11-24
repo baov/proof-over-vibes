@@ -35,14 +35,30 @@ export const PARTITIONS = [
   [8, 8, 8, 14],
   [12, 8, 20, 8, [13, 15]],
   [12, 8, 12, 14],
+  [8.9, 10, 11.1, 10], // the break room's glass behind the sofa, a doorway on each side of it
 ];
 
 // Where the furniture stands, so that scene.js draws it and the walkers go round it from the same numbers.
 export const PLANTS = [[0.8, 0.8], [11.4, 4.6], [8.6, 4.6], [0.8, 13.2], [19.2, 13.2], [19.2, 0.8], [7.4, 13.2], [12.6, 13.2]];
 export const BOOKSHELVES = [[[7.2, 0.28], "z"], [[19.2, 0.28], "z"], [[0.28, 11], "x"], [[0.28, 3.4], "x"]];
 export const CABINETS = [[5.2, 11.5], [16.4, 0.35]];
-export const SOFA = { x: 10, z: 10.9 };
-export const VENDING = { x: 11.2, z: 12.6 };
+export const SOFA = { x: 10, z: 10.9, w: 2.0 }; // its back to the hub, facing the break room
+export const VENDING = { x: 8.53, z: 10.9 }; // against the west glass, beside the sofa, which it no longer hides
+
+// The break room, past the hub's second row: the sofa, the vending machine, a coffee counter and a high table.
+export const BREAK_ROOM = { x: 8, z: 10, w: 4, d: 4, color: "#14b8a6" };
+export const COFFEE = { x: 8.55, z: 12.4 }; // a counter 0.7 by 1.4, the machine on top
+export const HIGH_TABLE = { x: 10, z: 12.7 };
+// Where a resting agent goes: two places on the sofa, one at the coffee counter, three round the high table.
+// rotY is the way it faces, as on a seat; `sits` for the sofa; `table` where two can chat.
+export const BREAK_SPOTS = [
+  { x: 9.5, z: 11.0, rotY: 0, sits: true },
+  { x: 10.5, z: 11.0, rotY: 0, sits: true },
+  { x: 9.2, z: 11.95, rotY: -Math.PI / 2 },
+  { x: 10, z: 12.02, rotY: 0, table: true },
+  { x: 10, z: 13.38, rotY: Math.PI, table: true },
+  { x: 9.33, z: 12.85, rotY: Math.PI / 2, table: true },
+];
 
 const rect = (name, x, z, w, d) => ({ name, x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2 });
 
@@ -59,8 +75,10 @@ export const OBSTACLES = [
   ...PLANTS.map(([x, z]) => rect("plant", x, z, 0.8, 0.8)), // the leaves spread wider than the pot
   ...BOOKSHELVES.map(([[x, z], facing]) => (facing === "z" ? rect("bookshelf", x, z, 1.2, 0.42) : rect("bookshelf", x, z, 0.42, 1.2))),
   ...CABINETS.map(([x, z]) => rect("cabinet", x, z, 1.0, 0.5)),
-  { name: "sofa", x0: SOFA.x - 1.2, x1: SOFA.x + 1.2, z0: SOFA.z - 0.45, z1: SOFA.z + 0.5 },
+  { name: "sofa", x0: SOFA.x - SOFA.w / 2, x1: SOFA.x + SOFA.w / 2, z0: SOFA.z - 0.5, z1: SOFA.z + 0.45 },
   rect("vending machine", VENDING.x, VENDING.z, 0.95, 0.85),
+  rect("coffee counter", COFFEE.x, COFFEE.z, 0.7, 1.4),
+  rect("high table", HIGH_TABLE.x, HIGH_TABLE.z, 0.7, 0.7),
 ];
 
 const DESK = { w: 1.9, d: 0.85 };
@@ -194,11 +212,11 @@ export function createLayout(roleTeams) {
     return true;
   };
 
-  // Out of the chair, round the desks, chairs, partitions and furniture, to stand next to the receiver's chair.
+  // Out of the chair, round the desks, chairs, partitions and furniture, as close to `b` as the floor lets it:
+  // next to the receiver's chair for a handoff, onto the sofa or by the counter for a break.
   // The route found on the grid is pulled tight into a few straight segments, the way a person would walk it.
-  function walkPath(fromRole, toRole) {
+  function walkTo(fromRole, b) {
     const { free, dist, prev, centre } = routeFrom(fromRole);
-    const b = seatOf(toRole);
     let goal = -1;
     let best = Infinity;
     for (let i = 0; i < dist.length; i++) {
@@ -225,5 +243,15 @@ export function createLayout(roleTeams) {
     return path.map((p) => ({ x: Math.round(p.x * 100) / 100, z: Math.round(p.z * 100) / 100 }));
   }
 
-  return { FLOOR, ROOMS, HUB, seats, seatOf, walkPath };
+  const walkPath = (fromRole, toRole) => walkTo(fromRole, seatOf(toRole));
+
+  // To a place in the break room. The sofa is solid for the router: the last step sits down on it.
+  function breakPath(fromRole, spot) {
+    const path = walkTo(fromRole, spot);
+    const end = path.at(-1);
+    if (Math.hypot(end.x - spot.x, end.z - spot.z) > 0.01) path.push({ x: spot.x, z: spot.z });
+    return path;
+  }
+
+  return { FLOOR, ROOMS, HUB, seats, seatOf, walkPath, breakPath };
 }

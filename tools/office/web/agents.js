@@ -1,6 +1,6 @@
 // One low-poly agent per role. Draws what the snapshot says; decides nothing about the workflow.
 import * as THREE from "three";
-import { TEAM_COLORS } from "./layout.js";
+import { BREAK_SPOTS, TEAM_COLORS } from "./layout.js";
 import { STATE_COLORS, STATE_GLYPHS, roleTitle } from "./roles.js";
 
 const SPEED = 3; // world units per second while walking a handoff: slow enough to follow with the eye
@@ -11,7 +11,14 @@ const HANDOVER_PAUSE = 0.6;
 const DEFER_MAX = 9; // the receiver starts working when the walker arrives, or after this
 const CHECK_SECONDS = 3;
 const IDLE_CYCLE = 18; // seconds of one resting routine: look around, stretch, sip, daydream
-const SKIN = 0xf1c7a0;
+// The break room: now and then a resting agent strolls there for a coffee or a sit on the sofa, and back.
+const BREAK_MAX = 3; // at most this many away from their desk at once, so the floor still reads who is where
+const BREAK_GAP = [4, 9]; // seconds between two departures
+const BREAK_STAY = [12, 20]; // seconds spent in the break room
+const BREAK_REST = 30; // back from a break, an agent stays at its desk at least this long
+const JOIN_CHANCE = 0.7; // someone already at the high table draws the next one there, to chat
+const BREAK_SPEED = 1.8; // a stroll, slower than a handoff
+const between = ([lo, hi]) => lo + Math.random() * (hi - lo);
 
 function textSprite(text, { fg, bg, size, w, h, scale }) {
   const c = document.createElement("canvas");
@@ -175,7 +182,9 @@ function makeAgent(role, seat) {
   return { role, seat, root, body, neck, arms, legs, folder, label, pips, sprites, materials, dim: 0, mode: "seated", phase: Math.random() * 6 };
 }
 
-export function createAgents(scene, layout, stations) {
+// breaks: "on", "off" (everyone stays at the desk), or "busy" (the break room fills at once and stays full).
+export function createAgents(scene, layout, stations, { breaks: breakMode = "on" } = {}) {
+  const busy = breakMode === "busy";
   const agents = new Map();
   const targets = []; // invisible boxes the pointer can hit, one on the desk and one on the agent
   const hitMaterial = new THREE.MeshBasicMaterial({ visible: false });
@@ -212,6 +221,9 @@ export function createAgents(scene, layout, stations) {
   const walks = []; // handoffs under way: a walker keeps its way home after the next handoff has begun
   const deferred = new Map(); // role -> seconds left before it shows as working
   const checks = new Map(); // role -> seconds left of the green check
+  const breaks = new Map(); // role -> { path, back, idx, phase: "out" | "stay" | "back", stay, spot, hurry }
+  const rested = new Map(); // role -> the time it came back from its last break
+  let nextBreak = breakMode === "busy" ? 0.3 : 4;
   let time = 0;
 
   const stateOf = (role) => (deferred.has(role) ? "idle" : run?.roles?.[role]?.state ?? "idle");
@@ -260,12 +272,102 @@ export function createAgents(scene, layout, stations) {
 
   function cancelWalks() {
     for (const walk of [...walks]) endWalk(walk, { seat: true });
+    for (const role of [...breaks.keys()]) endBreak(role);
     deferred.clear();
+  }
+
+  function endBreak(role) {
+    if (!breaks.delete(role)) return;
+    rested.set(role, time);
+    sit(agents.get(role));
+  }
+
+  // Work, a handoff on its way, or the role leaving the run: back to the desk now, at a handoff's pace.
+  function callBack(role) {
+    const leave = breaks.get(role);
+    if (!leave || leave.phase === "back") return;
+    // Walking out between path[idx - 1] and path[idx]: the way back starts at path[idx - 1].
+    leave.idx = leave.phase === "out" ? leave.path.length - leave.idx : 1;
+    leave.phase = "back";
+    leave.hurry = true;
+    agents.get(role).mode = "walking";
+  }
+
+  const resting = (role) => ["idle", "done"].includes(run?.roles?.[role]?.state ?? "idle");
+
+  // Who may leave: a role of the run (or any, with no run) with nothing to do, at its desk, not shown in the
+  // panel, not about to receive a folder, and not just back from a break.
+  function mayLeave(role, agent) {
+    return agent.mode === "seated" && !breaks.has(role) && !deferred.has(role) && !checks.has(role) && !outside(role)
+      && resting(role) && role !== selected && !walks.some((walk) => walk.agent === agent)
+      && time - (rested.get(role) ?? -Infinity) > BREAK_REST;
+  }
+
+  function scheduleBreak() {
+    if (breaks.size >= BREAK_MAX) return;
+    const taken = new Set([...breaks.values()].map((leave) => leave.spot));
+    const spots = BREAK_SPOTS.filter((spot) => !taken.has(spot));
+    const candidates = [...agents].filter(([role, agent]) => mayLeave(role, agent));
+    if (!spots.length || !candidates.length) return;
+    const [role, agent] = candidates[Math.floor(Math.random() * candidates.length)];
+    // Someone at the high table: the next one joins them more often than not.
+    const tableTaken = [...taken].some((spot) => spot.table);
+    const tableFree = spots.filter((spot) => spot.table);
+    const pool = tableFree.length && (busy || (tableTaken && Math.random() < JOIN_CHANCE)) ? tableFree : spots;
+    const spot = pool[Math.floor(Math.random() * pool.length)];
+    const path = layout.breakPath(role, spot);
+    breaks.set(role, { path, back: [...path].reverse(), idx: 1, phase: "out", stay: busy ? Infinity : between(BREAK_STAY), spot, hurry: false });
+    agent.mode = "walking";
+  }
+
+  function stepBreak(role, leave, dt) {
+    const agent = agents.get(role);
+    if (leave.phase === "stay") {
+      leave.stay -= dt;
+      if (leave.stay > 0) return;
+      leave.phase = "back";
+      leave.idx = 1;
+      agent.mode = "walking";
+    }
+    const path = leave.phase === "out" ? leave.path : leave.back;
+    const target = path[leave.idx];
+    const dx = target.x - agent.root.position.x;
+    const dz = target.z - agent.root.position.z;
+    const dist = Math.hypot(dx, dz);
+    const step = (leave.hurry ? SPEED : BREAK_SPEED) * dt;
+    if (dist > 1e-6) agent.root.rotation.y = Math.atan2(dx, dz);
+    if (step < dist) {
+      agent.root.position.x += (dx / dist) * step;
+      agent.root.position.z += (dz / dist) * step;
+      return;
+    }
+    agent.root.position.set(target.x, 0, target.z);
+    leave.idx += 1;
+    if (leave.idx < path.length) return;
+    if (leave.phase === "back") {
+      endBreak(role);
+      return;
+    }
+    leave.phase = "stay";
+    agent.root.rotation.y = leave.spot.rotY;
+    agent.mode = leave.spot.sits ? "seated" : "standing";
+  }
+
+  // Another agent standing at the high table, to chat with: the nearest one.
+  function chatPartner(role) {
+    const mine = breaks.get(role);
+    if (!mine || mine.phase !== "stay" || !mine.spot.table) return null;
+    let partner = null;
+    for (const [other, leave] of breaks) {
+      if (other !== role && leave.phase === "stay" && leave.spot.table) partner = agents.get(other);
+    }
+    return partner;
   }
 
   // A new handoff cuts short the walkers who have not yet reached their receiver, and the one
   // who is about to walk again; the others finish their way back to their desk.
   function startWalk(from, to, red) {
+    endBreak(from); // it was at work, so at its desk; never leave a walker in the break room
     for (const walk of [...walks]) {
       if (walk.agent.role !== from && walk.phase !== "out") continue;
       deferred.delete(walk.to);
@@ -361,6 +463,15 @@ export function createAgents(scene, layout, stations) {
       if (left - dt <= 0) checks.delete(role);
       else checks.set(role, left - dt);
     }
+    for (const role of breaks.keys()) {
+      if (deferred.has(role) || !resting(role) || outside(role)) callBack(role);
+    }
+    for (const [role, leave] of [...breaks]) stepBreak(role, leave, dt);
+    nextBreak -= dt;
+    if (breakMode !== "off" && nextBreak <= 0) {
+      nextBreak = busy ? 0.3 : between(BREAK_GAP);
+      scheduleBreak();
+    }
 
     for (const [role, agent] of agents) {
       const state = stateOf(role);
@@ -376,7 +487,8 @@ export function createAgents(scene, layout, stations) {
         agent.arms[1].rotation.x = -0.9;
         agent.body.rotation.z = 0;
       } else {
-        agent.legs[0].rotation.x = agent.legs[1].rotation.x = -Math.PI / 2; // seated: thighs forward
+        // Seated, at the desk or on the sofa: thighs forward. Standing at the counter or the table: straight.
+        agent.legs[0].rotation.x = agent.legs[1].rotation.x = agent.mode === "standing" ? 0 : -Math.PI / 2;
         const typing = working ? Math.sin(t) * 0.18 : 0;
         agent.arms[0].rotation.x = (working ? -1.15 : -0.35) + typing;
         agent.arms[1].rotation.x = (working ? -1.15 : -0.35) - typing;
@@ -390,6 +502,18 @@ export function createAgents(scene, layout, stations) {
         if (pose) {
           agent.arms[0].rotation.x += pose.armLeft;
           agent.arms[1].rotation.x += pose.armRight;
+        }
+        // Chatting at the high table: the head turns to the other one and nods, a hand talks along.
+        const partner = chatPartner(role);
+        if (partner) {
+          const toward = Math.atan2(partner.root.position.x - agent.root.position.x, partner.root.position.z - agent.root.position.z);
+          let yaw = toward - agent.root.rotation.y;
+          yaw = Math.atan2(Math.sin(yaw), Math.cos(yaw));
+          agent.neck.rotation.y = Math.max(-1.1, Math.min(1.1, yaw));
+          agent.neck.rotation.x = 0.06 * Math.sin(time * 3.2 + agent.phase);
+          agent.body.rotation.x = 0;
+          agent.arms[0].rotation.x = -0.35;
+          agent.arms[1].rotation.x = -0.35 - 0.7 * Math.max(0, Math.sin(time * 1.7 + agent.phase * 2));
         }
       }
       if (walking) {
@@ -441,5 +565,5 @@ export function createAgents(scene, layout, stations) {
     selected = select;
   };
 
-  return { apply, update, targets, setHighlight };
+  return { apply, update, targets, setHighlight, onBreak: (role) => breaks.has(role) };
 }
