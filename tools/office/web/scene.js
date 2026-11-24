@@ -376,18 +376,11 @@ export function createScene(canvas, layout) {
   tableFoot.position.set(HIGH_TABLE.x, 0.515, HIGH_TABLE.z);
   scene.add(tableTop, tableFoot, box(0.09, 0.11, 0.09, 0xf1f5f9, [HIGH_TABLE.x + 0.1, 1.13, HIGH_TABLE.z - 0.05]));
   const breakLabel = useHangul ? "휴게실" : "break";
-  const breakSign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.82), new THREE.MeshBasicMaterial({ map: signTexture(breakLabel, BREAK_ROOM.color, useHangul ? "BREAK" : null), transparent: true, toneMapped: false }));
+  const breakSign = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.69), new THREE.MeshBasicMaterial({ map: signTexture(breakLabel, BREAK_ROOM.color, useHangul ? "BREAK" : null), transparent: true, toneMapped: false }));
   SIGN_MATERIALS.push(breakSign.material);
-  // Hung over the coffee counter and turned to the camera, which looks from +x, +z: flat on the partition, it read edge-on.
-  breakSign.rotation.y = Math.PI / 4;
-  breakSign.position.set(COFFEE.x + 0.5, 2.45, COFFEE.z - 0.6);
-  scene.add(breakSign, glow(new THREE.Color(BREAK_ROOM.color), 2.6, 0.2, [breakSign.position.x + 0.14, breakSign.position.y, breakSign.position.z + 0.14]));
-  for (const dx of [-0.9, 0.9]) {
-    // Two thin cords from the ceiling, along the sign.
-    const cord = box(0.02, 0.6, 0.02, 0x8a93ad, [breakSign.position.x + dx * Math.SQRT1_2, 2.95, breakSign.position.z - dx * Math.SQRT1_2]);
-    cord.castShadow = false;
-    scene.add(cord);
-  }
+  // Like the front rooms' signs: resting on the glass at the back of the room (behind the sofa), facing the room.
+  breakSign.position.set(SOFA.x, 1.9 + 0.345, 10.06); // as wide as the glass, in the proportions of the others
+  scene.add(breakSign, glow(new THREE.Color(BREAK_ROOM.color), 2.2, 0.2, [breakSign.position.x, breakSign.position.y, breakSign.position.z + 0.2]));
   for (const [x, w] of [[2.4, 1.2], [4.6, 0.9], [14.4, 1.2], [17.2, 0.9]]) {
     scene.add(box(w, 0.8, 0.06, 0xf4f6fb, [x, 2.55, 0.06]), box(w - 0.16, 0.64, 0.02, [0xe8505b, 0x3b82f6, 0xf5a623, 0x22c55e][Math.round(x) % 4], [x, 2.55, 0.1], { emissive: 0x111111 }));
   }

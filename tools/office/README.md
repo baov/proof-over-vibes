@@ -36,7 +36,7 @@ It needs Python 3 and a browser; nothing to install. The server listens on `127.
 - **Journal:** the last events (a role started, finished, is blocked, a verdict, an iteration), at the top right.
 - **Banner:** `Ready to merge`, `Human needed`, `<role> is blocked`, or who is at work. The tab title carries the same state.
 - **Agents:** the roles of the run stand out and the others fade to grey. A glyph above each head shows its state (`…` working, `✓` done), a ring under whoever is at work pulses in the color of its state, and a large `?` or `!` says a role is blocked or waits for a human. A walking agent says who it hands over to, goes round the desks, chairs, partitions and furniture, and leaves a dotted trail on the floor in the color of the receiving team (red after a NO-GO), which whatever stands on it hides; once the folder is handed over it walks back to its desk empty-handed, without the badge, even if the next handoff has begun.
-- **Rooms:** each is named in Hangul with its Latin name under it, hung facing the desks: on the north wall for product and design, on top of the glass partition at the back of build and quality, which have no wall there, and low on the hub.
+- **Rooms:** each is named in Hangul with its Latin name under it, hung facing the desks: on the north wall for product and design, on top of the glass partition at the back of build, quality and the break room, which have no wall there, and low on the hub.
 
 ## Day and night
 
@@ -54,7 +54,7 @@ The time box under the run card is folded to the hour; click it to open the cont
 
 ## Break room
 
-![The break room past the hub, behind its glass: a coffee counter under its sign, a high table under a pendant lamp, the sofa facing the room](docs/break-room.webp)
+![The break room past the hub, its sign on the glass behind the sofa, which faces the room; a coffee counter and a high table under a pendant lamp](docs/break-room.webp)
 
 Past the hub, behind a glass wall with a doorway at each end, the `휴게실` (break) room has its own warm light, a sofa facing the room, the vending machine, a coffee counter and a high table under a pendant lamp. Now and then a role of the run with nothing to do strolls there, sits on the sofa or stands at the counter or the table for a while, then walks back to its desk; the tooltip says `on a break`. Someone at the high table draws the next one there more often than not, and two at the table chat: they turn their heads to each other, nod and talk with a hand. No more than three are away at once, so the floor still reads who is where, and they leave no trail: a dotted trail always means a handoff. A role that is at work, blocked, waiting for a human, about to receive a folder, shown in the panel, or outside the run stays at its desk, and one on a break goes straight back when work comes its way. `?breaks=off` keeps everyone at their desk and `?breaks=busy` fills the break room at once, for a screenshot or a test.
 
