@@ -12,7 +12,7 @@ Mutation testing answers exactly that: the tool introduces mechanical alteration
 
 To be said to the user explicitly, because it is the most frequent confusion: **the mutation score is not an improved coverage**. Coverage measures which lines run; the mutation score measures whether the assertions are worth anything. It is the metric coverage pretends to be without ever being it — and the only one that justifies not reading a test by hand.
 
-The converse holds too: **a line with no mutant is a line the score says nothing about.** A function that only delegates and returns a non-null object (common in Kotlin) gives the default mutators nothing to alter, so it produces no mutant at all, tested or not: a public function added with no test leaves the score unchanged. Mutation does not replace knowing that a test exists; that is for coverage or the review.
+The converse holds too: **a line with no mutant is a line the score says nothing about.** With PIT, a function that only delegates and returns a non-null object gives the default mutators nothing to alter, so it produces no mutant at all, tested or not: a public function added with no test leaves the score unchanged. Mutation does not replace knowing that a test exists; that is for coverage or the review.
 
 > Consistency with `behavior-driven-testing`: this skill sets no numeric target as an end in itself. The mutation score is a **diagnostic tool** — a surviving mutant is a question ("which behavior is unprotected here?"), not a box to tick. A threshold in CI is there to prevent a regression, not to push a number up.
 
